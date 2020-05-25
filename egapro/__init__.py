@@ -1,10 +1,12 @@
 from roll import Roll, HttpError
-from roll.extensions import simple_server, traceback
+from roll.extensions import cors, options, simple_server, traceback
 
 from . import config, db, emails, tokens
 
 app = Roll()
 traceback(app)
+cors(app, methods=["GET", "PUT"], headers="*")
+options(app)
 
 
 def ensure_owner(view):
@@ -30,7 +32,7 @@ async def declare(request, response, siren, year):
     data = request.json
     declarant = request["email"]
     db.declaration.put(siren, year, declarant, data)
-    response.status = 200
+    response.status = 204
     if data.get("confirm") is True:
         emails.send(declarant, "Votre déclaration est confirmée", emails.SUCCESS)
 
