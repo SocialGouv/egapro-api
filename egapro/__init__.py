@@ -42,7 +42,7 @@ async def declare(request, response, siren, year):
 @ensure_owner
 async def get_declaration(request, response, siren, year):
     try:
-        response.body = db.declaration.get(siren, year)
+        response.json = dict(db.declaration.get(siren, year))
     except db.NoData:
         raise HttpError(404, f"No declaration with siren {siren} and year {year}")
     response.status = 200
@@ -53,24 +53,36 @@ async def start_simulation(request, response):
     data = request.json
     email = request.json.get("data", {}).get("informationsDeclarant", {}).get("email")
     uid = db.simulation.create(data)
-    response.json = {"uuid": uid}
+    response.json = {"id": uid}
     if email:
-        body = emails.SIMULATION.format(link="fhttp://somewhere.on.egapro.fr/{uid}")
+        body = emails.SIMULATION.format(link=f"http://somewhere.on.egapro.fr/{uid}")
         emails.send(email, "Votre simulation", body)
     response.status = 200
+
+
+# KILL THIS ENDPOINT
+@app.route("/simulation/{uuid}/send-code", methods=["POST"])
+async def send_simulation_code(request, response, uuid):
+    data = request.json
+    email = request.json.get("email", {})
+    if email:
+        body = emails.SIMULATION.format(link=f"http://somewhere.on.egapro.fr/{uuid}")
+        emails.send(email, "Votre simulation", body)
+    response.status = 204
 
 
 @app.route("/simulation/{uuid}", methods=["PUT"])
 async def simulate(request, response, uuid):
     data = request.json
     db.simulation.put(uuid, data)
-    response.status = 204
+    response.json = db.simulation.get(uuid)
+    response.status = 200
 
 
 @app.route("/simulation/{uuid}", methods=["GET"])
 async def get_simulation(request, response, uuid):
     try:
-        response.body = db.simulation.get(uuid)
+        response.json = db.simulation.get(uuid)
     except db.NoData:
         raise HttpError(404, f"No simulation found with uuid {uuid}")
     response.status = 200

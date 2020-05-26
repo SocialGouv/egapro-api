@@ -113,8 +113,8 @@ async def test_start_new_simulation(client):
     resp = await client.post("/simulation", body={"foo": "bar"})
     assert resp.status == 200
     data = json.loads(resp.body)
-    assert "uuid" in data
-    assert db.simulation.get(data["uuid"])
+    assert "id" in data
+    assert db.simulation.get(data["id"])
 
 
 async def test_get_simulation(client):

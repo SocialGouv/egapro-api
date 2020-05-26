@@ -19,12 +19,16 @@ def pytest_configure(config):
 
 
 def pytest_runtest_setup(item):
+    # Make sure the current active database is the test one before deleting.
     with db.declaration.conn as conn:
         cursor = conn.execute("PRAGMA database_list;")
         dbname = cursor.fetchone()[2]
     assert dbname.endswith("test_egapro.db")
+
+    # Ok, it's the test database, we can now delete the data.
     with db.declaration.conn as conn:
         conn.execute("DELETE FROM declaration;")
+        conn.execute("DELETE FROM simulation;")
 
 
 @pytest.fixture

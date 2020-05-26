@@ -21,28 +21,32 @@ class table:
             row = cursor.fetchone()
         if not row:
             raise NoData
-        return row[0]
+        return row
+
+    @classmethod
+    def fetchvalue(cls, sql, *params):
+        return cls.fetchone(sql, *params)[0]
 
 
 class declaration(table):
     @classmethod
     def get(cls, siren, year):
         return cls.fetchone(
-            "SELECT data FROM declaration WHERE siren=? AND year=?", siren, year
+            "SELECT * FROM declaration WHERE siren=? AND year=?", siren, year
         )
 
     @classmethod
     def put(cls, siren, year, owner, data):
         with cls.conn as conn:
             conn.execute(
-                "INSERT OR REPLACE INTO declaration (siren, year, at, owner, data) "
+                "INSERT OR REPLACE INTO declaration (siren, year, last_modified, owner, data) "
                 "VALUES (?, ?, ?, ?, ?)",
-                (siren, year, utils.utcnow(), owner, json.dumps(data)),
+                (siren, year, utils.utcnow(), owner, data),
             )
 
     @classmethod
     def owner(cls, siren, year):
-        return cls.fetchone(
+        return cls.fetchvalue(
             "SELECT owner FROM declaration WHERE siren=? AND year=?", siren, year
         )
 
@@ -58,14 +62,14 @@ class declaration(table):
 class simulation(table):
     @classmethod
     def get(cls, uuid):
-        return cls.fetchone("SELECT data FROM simulation WHERE uuid=?", uuid)
+        return cls.fetchone("SELECT * FROM simulation WHERE id=?", uuid)
 
     @classmethod
     def put(cls, uuid, data):
         with cls.conn as conn:
             conn.execute(
-                "INSERT OR REPLACE INTO simulation (uuid, at, data) VALUES (?, ?, ?)",
-                (uuid, utils.utcnow(), json.dumps(data)),
+                "INSERT OR REPLACE INTO simulation (id, last_modified, data) VALUES (?, ?, ?)",
+                (uuid, utils.utcnow(), data),
             )
 
     @classmethod
@@ -79,20 +83,35 @@ class simulation(table):
         return cls.create(data)
 
 
+def from_json(b):
+    """Convert a json payload stored in sqlite to a proper python object."""
+    return json.loads(b)
+
+
+def to_json(obj):
+    """Serialize a python object to a json string."""
+    return json.dumps(obj)
+
+
+sqlite3.register_converter("json", from_json)
+sqlite3.register_adapter(dict, to_json)
+
+
 def init():
     conn = sqlite3.connect(
         config.DBNAME, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
     )
+    conn.row_factory = sqlite3.Row
     table.conn = conn
     with conn as cursor:
         cursor.execute(
             "CREATE TABLE IF NOT EXISTS declaration "
-            "(siren TEXT, year INT, at TIMESTAMP, owner TEXT, data JSON)"
+            "(siren TEXT, year INT, last_modified TIMESTAMP, owner TEXT, data JSON)"
         )
         cursor.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS primary_key ON declaration(siren, year);"
         )
         cursor.execute(
             "CREATE TABLE IF NOT EXISTS simulation "
-            "(uuid TEXT PRIMARY KEY, at TIMESTAMP, data JSON)"
+            "(id TEXT PRIMARY KEY, last_modified TIMESTAMP, data JSON)"
         )
