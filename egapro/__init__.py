@@ -44,7 +44,35 @@ async def get_declaration(request, response, siren, year):
     try:
         response.body = db.declaration.get(siren, year)
     except db.NoData:
-        raise HttpError(404, "No declaration with siren {siren} and year {year}")
+        raise HttpError(404, f"No declaration with siren {siren} and year {year}")
+    response.status = 200
+
+
+@app.route("/simulation", methods=["POST"])
+async def start_simulation(request, response):
+    data = request.json
+    email = request.json.get("data", {}).get("informationsDeclarant", {}).get("email")
+    uid = db.simulation.create(data)
+    response.json = {"uuid": uid}
+    if email:
+        body = emails.SIMULATION.format(link="fhttp://somewhere.on.egapro.fr/{uid}")
+        emails.send(email, "Votre simulation", body)
+    response.status = 200
+
+
+@app.route("/simulation/{uuid}", methods=["PUT"])
+async def simulate(request, response, uuid):
+    data = request.json
+    db.simulation.put(uuid, data)
+    response.status = 204
+
+
+@app.route("/simulation/{uuid}", methods=["GET"])
+async def get_simulation(request, response, uuid):
+    try:
+        response.body = db.simulation.get(uuid)
+    except db.NoData:
+        raise HttpError(404, f"No simulation found with uuid {uuid}")
     response.status = 200
 
 

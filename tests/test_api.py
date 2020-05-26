@@ -94,16 +94,52 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch):
 
     monkeypatch.setattr("egapro.emails.send", mock_send)
     resp = await client.put("/declaration/514027945/2020", body={"foo": False})
-    assert resp.status == 200
+    assert resp.status == 204
     assert not calls
     resp = await client.put("/declaration/514027945/2020", body={"confirm": False})
-    assert resp.status == 200
+    assert resp.status == 204
     assert not calls
     resp = await client.put("/declaration/514027945/2020", body={"confirm": True})
-    assert resp.status == 200
+    assert resp.status == 204
     assert calls == 1
 
 
 async def test_with_unknown_siren_or_year(client):
     resp = await client.get("/declaration/514027945/2020")
     assert resp.status == 404
+
+
+async def test_start_new_simulation(client):
+    resp = await client.post("/simulation", body={"foo": "bar"})
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert "uuid" in data
+    assert db.simulation.get(data["uuid"])
+
+
+async def test_get_simulation(client):
+    uid = db.simulation.create({"foo": "bar"})
+    resp = await client.get(f"/simulation/{uid}")
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert data == {"foo": "bar"}
+
+
+async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
+    calls = 0
+
+    def mock_send(to, subject, body):
+        assert to == "foo@bar.org"
+        assert "http://" in body
+        nonlocal calls
+        calls += 1
+
+    monkeypatch.setattr("egapro.emails.send", mock_send)
+    resp = await client.post("/simulation", body={"foo": "bar"})
+    assert resp.status == 200
+    assert not calls
+    resp = await client.post(
+        "/simulation",
+        body={"data": {"informationsDeclarant": {"email": "foo@bar.org"}}},
+    )
+    assert resp.status == 200

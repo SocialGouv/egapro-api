@@ -22,6 +22,17 @@ Merci poulet.
 L'équipe Egapro
 """
 
+SIMULATION = """Bonjour,
+
+Le lien pour retrouver votre simulation:
+
+{link}
+
+Merci poulet.
+
+L'équipe Egapro
+"""
+
 
 def send(to, subject, body):
     msg = EmailMessage()
