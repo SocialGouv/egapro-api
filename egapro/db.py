@@ -32,13 +32,16 @@ class declaration:
     def put(cls, siren, year, owner, data):
         with cls.conn as conn:
             conn.execute(
-                "INSERT OR REPLACE INTO declaration (siren, year, at, owner, data) VALUES (?, ?, ?, ?, ?)",
+                "INSERT OR REPLACE INTO declaration (siren, year, at, owner, data) "
+                "VALUES (?, ?, ?, ?, ?)",
                 (siren, year, utils.utcnow(), owner, json.dumps(data)),
             )
 
     @classmethod
     def owner(cls, siren, year):
-        return cls.fetchone("SELECT owner FROM declaration WHERE siren=? AND year=?", siren, year)
+        return cls.fetchone(
+            "SELECT owner FROM declaration WHERE siren=? AND year=?", siren, year
+        )
 
     @classmethod
     def own(cls, siren, year, owner):
@@ -56,7 +59,8 @@ def init():
     declaration.conn = conn
     with conn as cursor:
         cursor.execute(
-            "CREATE TABLE IF NOT EXISTS declaration (siren TEXT, year INT, at TIMESTAMP, owner TEXT, data JSON)"
+            "CREATE TABLE IF NOT EXISTS declaration "
+            "(siren TEXT, year INT, at TIMESTAMP, owner TEXT, data JSON)"
         )
         cursor.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS primary_key ON declaration(siren, year);"
