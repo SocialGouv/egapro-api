@@ -10,6 +10,7 @@ from egapro import db, tokens
 
 def pytest_configure(config):
     os.environ["EGAPRO_DBNAME"] = "test_egapro.db"
+    os.environ["EGAPRO_REQUIRE_TOKEN"] = "1"
     egapro_config.init()
     db.init()
     with db.declaration.conn as cursor:

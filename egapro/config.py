@@ -3,6 +3,7 @@ import os
 
 SECRET = "sikretfordevonly"
 JWT_ALGORITHM = "HS256"
+REQUIRE_TOKEN = False
 SEND_EMAILS = False
 SMTP_HOST = "mail.gandi.net"
 SMTP_PASSWORD = ""
