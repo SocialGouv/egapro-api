@@ -63,7 +63,6 @@ async def start_simulation(request, response):
 # KILL THIS ENDPOINT
 @app.route("/simulation/{uuid}/send-code", methods=["POST"])
 async def send_simulation_code(request, response, uuid):
-    data = request.json
     email = request.json.get("email", {})
     if email:
         body = emails.SIMULATION.format(link=f"http://somewhere.on.egapro.fr/{uuid}")
@@ -82,7 +81,7 @@ async def simulate(request, response, uuid):
 @app.route("/simulation/{uuid}", methods=["GET"])
 async def get_simulation(request, response, uuid):
     try:
-        response.json = db.simulation.get(uuid)
+        response.json = dict(db.simulation.get(uuid))
     except db.NoData:
         raise HttpError(404, f"No simulation found with uuid {uuid}")
     response.status = 200

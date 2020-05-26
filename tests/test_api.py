@@ -47,7 +47,15 @@ async def test_basic_declaration_should_save_data(client):
     assert resp.status == 204
     resp = await client.get("/declaration/514027945/2020")
     assert resp.status == 200
-    assert json.loads(resp.body) == {"foo": "bar"}
+    data = json.loads(resp.body)
+    assert "last_modified" in data
+    del data["last_modified"]
+    assert data == {
+        "data": {"foo": "bar"},
+        "owner": "foo@bar.org",
+        "siren": "514027945",
+        "year": 2020,
+    }
 
 
 async def test_cannot_load_not_owned_declaration(client, monkeypatch):
@@ -80,7 +88,7 @@ async def test_declaring_twice_should_not_duplicate(client, app):
         )
         data = curs.fetchall()
     assert len(data) == 1
-    assert json.loads(data[0][0]) == {"foo": "baz"}
+    assert data[0][0] == {"foo": "baz"}
 
 
 async def test_confirmed_declaration_should_send_email(client, monkeypatch):
@@ -122,7 +130,12 @@ async def test_get_simulation(client):
     resp = await client.get(f"/simulation/{uid}")
     assert resp.status == 200
     data = json.loads(resp.body)
-    assert data == {"foo": "bar"}
+    assert "last_modified" in data
+    del data["last_modified"]
+    assert data == {
+        "data": {"foo": "bar"},
+        "id": uid,
+    }
 
 
 async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
