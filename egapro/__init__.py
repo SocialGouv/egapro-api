@@ -72,9 +72,9 @@ async def send_simulation_code(request, response, uuid):
 
 @app.route("/simulation/{uuid}", methods=["PUT"])
 async def simulate(request, response, uuid):
-    data = request.json
+    data = request.json.get("data", {})
     db.simulation.put(uuid, data)
-    response.json = db.simulation.get(uuid)
+    response.json = dict(db.simulation.get(uuid))
     response.status = 200
 
 

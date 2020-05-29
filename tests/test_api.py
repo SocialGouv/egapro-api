@@ -138,6 +138,18 @@ async def test_get_simulation(client):
     }
 
 
+async def test_basic_simulation_should_save_data(client):
+    resp = await client.put("/simulation/1234", body={"data": {"foo": "bar"}})
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert "last_modified" in data
+    del data["last_modified"]
+    assert data == {
+        "data": {"foo": "bar"},
+        "id": "1234",
+    }
+
+
 async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
     calls = 0
 
