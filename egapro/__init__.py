@@ -55,7 +55,7 @@ async def start_simulation(request, response):
     uid = db.simulation.create(data)
     response.json = {"id": uid}
     if email:
-        body = emails.SIMULATION.format(link=f"http://somewhere.on.egapro.fr/{uid}")
+        body = emails.SIMULATION.format(link=f"{request.headers['REFERER']}")
         emails.send(email, "Votre simulation", body)
     response.status = 200
 
@@ -65,7 +65,7 @@ async def start_simulation(request, response):
 async def send_simulation_code(request, response, uuid):
     email = request.json.get("email", {})
     if email:
-        body = emails.SIMULATION.format(link=f"http://somewhere.on.egapro.fr/{uuid}")
+        body = emails.SIMULATION.format(link=f"{request.headers['REFERER']}")
         emails.send(email, "Votre simulation", body)
     response.status = 204
 

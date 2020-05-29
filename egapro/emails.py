@@ -41,7 +41,9 @@ def send(to, subject, body):
     msg["From"] = config.FROM_EMAIL
     msg["To"] = to
     if not config.SEND_EMAILS:
-        return print("Sending email", str(msg))
+        print("Sending email", str(msg))
+        print("email body:", body)
+        return
     try:
         server = smtplib.SMTP_SSL(config.SMTP_HOST)
         server.login(config.FROM_EMAIL, config.SMTP_PASSWORD)
