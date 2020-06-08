@@ -127,7 +127,3 @@ def serve(reload=False):
 
         hupper.start_reloader("egapro.serve")
     simple_server(app, port=2626)
-
-
-def main():
-    minicli.run()
