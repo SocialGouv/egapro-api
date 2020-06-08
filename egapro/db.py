@@ -39,7 +39,10 @@ class declaration(table):
         )
 
     @classmethod
-    async def put(cls, siren, year, owner, data):
+    async def put(cls, siren, year, owner, data, last_modified=None):
+        # Allow to force last_modified, eg. during migrations.
+        if last_modified is None:
+            last_modified = utils.utcnow()
         async with cls.pool.acquire() as conn:
             await conn.execute(
                 "INSERT INTO declaration (siren, year, last_modified, owner, data) "
@@ -47,7 +50,7 @@ class declaration(table):
                 "SET last_modified=$3, owner=$4, data=$5",
                 siren,
                 int(year),
-                utils.utcnow(),
+                last_modified,
                 owner,
                 data,
             )
@@ -75,13 +78,16 @@ class simulation(table):
         return await cls.fetchrow("SELECT * FROM simulation WHERE id=$1", uuid)
 
     @classmethod
-    async def put(cls, uuid, data):
+    async def put(cls, uuid, data, last_modified=None):
+        # Allow to force last_modified, eg. during migrations.
+        if last_modified is None:
+            last_modified = utils.utcnow()
         async with cls.pool.acquire() as conn:
             await conn.execute(
                 "INSERT INTO simulation (id, last_modified, data) VALUES ($1, $2, $3) "
                 "ON CONFLICT (id) DO UPDATE SET last_modified = $2, data = $3",
                 uuid,
-                utils.utcnow(),
+                last_modified,
                 data,
             )
 
