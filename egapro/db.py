@@ -96,6 +96,13 @@ class simulation(table):
         return await cls.create(data)
 
 
+async def set_type_codecs(conn):
+    await conn.set_type_codec(
+        "jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog"
+    )
+    await conn.set_type_codec("uuid", encoder=str, decoder=str, schema="pg_catalog")
+
+
 async def init():
     table.pool = await asyncpg.create_pool(
         database=config.DBNAME,
@@ -103,12 +110,9 @@ async def init():
         user=config.DBUSER,
         password=config.DBPASS,
         max_size=config.DBMAXSIZE,
+        init=set_type_codecs,
     )
     async with table.pool.acquire() as conn:
-        await conn.set_type_codec(
-            "jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog"
-        )
-        await conn.set_type_codec("uuid", encoder=str, decoder=str, schema="pg_catalog")
         await conn.execute(
             "CREATE TABLE IF NOT EXISTS declaration "
             "(siren TEXT, year INT, last_modified TIMESTAMP WITH TIME ZONE, owner TEXT, data JSONB,"
