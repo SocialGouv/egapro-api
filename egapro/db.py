@@ -98,7 +98,11 @@ class simulation(table):
 
 async def init():
     table.pool = await asyncpg.create_pool(
-        database=config.DBNAME, user=config.DBUSER, max_size=config.DBMAXSIZE
+        database=config.DBNAME,
+        host=config.DBHOST,
+        user=config.DBUSER,
+        password=config.DBPASS,
+        max_size=config.DBMAXSIZE,
     )
     async with table.pool.acquire() as conn:
         await conn.set_type_codec(

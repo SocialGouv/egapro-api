@@ -13,7 +13,9 @@ LOCALE = "fr_FR.UTF-8"
 SITE_DESCRIPTION = "Egapro"
 EMAIL_SIGNATURE = "Egapro"
 DBNAME = "egapro"
+DBHOST = "localhost"
 DBUSER = "postgres"
+DBPASS = "postgres"
 DBMAXSIZE = 10
 
 
