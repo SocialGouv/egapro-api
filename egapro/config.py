@@ -12,7 +12,9 @@ FROM_EMAIL = "contact@egapro.org"
 LOCALE = "fr_FR.UTF-8"
 SITE_DESCRIPTION = "Egapro"
 EMAIL_SIGNATURE = "Egapro"
-DBNAME = "egapro.db"
+DBNAME = "egapro"
+DBUSER = "postgres"
+DBMAXSIZE = 10
 
 
 def init():

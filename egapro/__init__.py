@@ -1,3 +1,5 @@
+import minicli
+
 from roll import Roll, HttpError
 from roll.extensions import cors, options, simple_server, traceback
 
@@ -10,17 +12,17 @@ options(app)
 
 
 def ensure_owner(view):
-    def wrapper(request, response, siren, year, *args, **kwargs):
+    async def wrapper(request, response, siren, year, *args, **kwargs):
         declarant = request["email"]
         try:
-            owner = db.declaration.owner(siren, year)
+            owner = await db.declaration.owner(siren, year)
         except db.NoData:
             pass
         else:
             if owner != declarant:
                 # TODO should we obfuscate the existance of the resource?
                 raise HttpError(403, "Sorry, no")
-        return view(request, response, siren, year, *args, **kwargs)
+        return await view(request, response, siren, year, *args, **kwargs)
 
     return wrapper
 
@@ -31,7 +33,7 @@ def ensure_owner(view):
 async def declare(request, response, siren, year):
     data = request.json
     declarant = request["email"]
-    db.declaration.put(siren, year, declarant, data)
+    await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.get("confirm") is True:
         emails.send(declarant, "Votre déclaration est confirmée", emails.SUCCESS)
@@ -42,7 +44,7 @@ async def declare(request, response, siren, year):
 @ensure_owner
 async def get_declaration(request, response, siren, year):
     try:
-        response.json = dict(db.declaration.get(siren, year))
+        response.json = dict(await db.declaration.get(siren, year))
     except db.NoData:
         raise HttpError(404, f"No declaration with siren {siren} and year {year}")
     response.status = 200
@@ -52,7 +54,7 @@ async def get_declaration(request, response, siren, year):
 async def start_simulation(request, response):
     data = request.json
     email = request.json.get("data", {}).get("informationsDeclarant", {}).get("email")
-    uid = db.simulation.create(data)
+    uid = await db.simulation.create(data)
     response.json = {"id": uid}
     if email:
         body = emails.SIMULATION.format(
@@ -77,15 +79,15 @@ async def send_simulation_code(request, response, uuid):
 @app.route("/simulation/{uuid}", methods=["PUT"])
 async def simulate(request, response, uuid):
     data = request.json.get("data", {})
-    db.simulation.put(uuid, data)
-    response.json = dict(db.simulation.get(uuid))
+    await db.simulation.put(uuid, data)
+    response.json = dict(await db.simulation.get(uuid))
     response.status = 200
 
 
 @app.route("/simulation/{uuid}", methods=["GET"])
 async def get_simulation(request, response, uuid):
     try:
-        response.json = dict(db.simulation.get(uuid))
+        response.json = dict(await db.simulation.get(uuid))
     except db.NoData:
         raise HttpError(404, f"No simulation found with uuid {uuid}")
     response.status = 200
@@ -107,12 +109,18 @@ async def send_token(request, response):
 
 @app.listen("startup")
 async def on_startup():
-    init()
+    await init()
 
 
-def init():
+@app.listen("shutdown")
+async def on_shutdown():
+    await db.terminate()
+
+
+@minicli.cli
+async def init():
     config.init()
-    db.init()
+    await db.init()
 
 
 def serve(reload=False):
@@ -122,3 +130,7 @@ def serve(reload=False):
 
         hupper.start_reloader("egapro.serve")
     simple_server(app, port=2626)
+
+
+def main():
+    minicli.run()

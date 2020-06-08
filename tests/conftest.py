@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 import pytest
@@ -9,26 +10,43 @@ from egapro import db, tokens
 
 
 def pytest_configure(config):
-    os.environ["EGAPRO_DBNAME"] = "test_egapro.db"
-    os.environ["EGAPRO_REQUIRE_TOKEN"] = "1"
-    egapro_config.init()
-    db.init()
-    with db.declaration.conn as cursor:
-        cursor.execute("DROP TABLE IF EXISTS declaration")
-    db.init()
+    async def configure():
+        os.environ["EGAPRO_DBNAME"] = "test_egapro"
+        os.environ["EGAPRO_REQUIRE_TOKEN"] = "1"
+        egapro_config.init()
+        await db.init()
+        async with db.declaration.pool.acquire() as conn:
+            await conn.execute("DROP TABLE IF EXISTS declaration")
+        await db.init()
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(configure())
 
 
 def pytest_runtest_setup(item):
-    # Make sure the current active database is the test one before deleting.
-    with db.declaration.conn as conn:
-        cursor = conn.execute("PRAGMA database_list;")
-        dbname = cursor.fetchone()[2]
-    assert dbname.endswith("test_egapro.db")
+    async def setup():
+        await db.init()
+        # Make sure the current active database is the test one before deleting.
+        async with db.declaration.pool.acquire() as conn:
+            dbname = await conn.fetchval("SELECT current_database();")
+        assert dbname == "test_egapro"
 
-    # Ok, it's the test database, we can now delete the data.
-    with db.declaration.conn as conn:
-        conn.execute("DELETE FROM declaration;")
-        conn.execute("DELETE FROM simulation;")
+        # Ok, it's the test database, we can now delete the data.
+        async with db.declaration.pool.acquire() as conn:
+            await conn.execute("TRUNCATE TABLE declaration;")
+            await conn.execute("TRUNCATE TABLE simulation;")
+        await db.terminate()
+
+    asyncio.get_event_loop().run_until_complete(setup())
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    # Override default pytest-asyncio fixture in order to get the same loop on all the
+    # tests and setup / teardown.
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture

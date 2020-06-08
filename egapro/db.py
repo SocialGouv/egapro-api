@@ -1,6 +1,6 @@
-import sqlite3
 import uuid
 
+import asyncpg
 import ujson as json
 
 from . import config, utils
@@ -15,103 +15,106 @@ class table:
     conn = None
 
     @classmethod
-    def fetchone(cls, sql, *params):
-        with cls.conn as conn:
-            cursor = conn.execute(sql, params,)
-            row = cursor.fetchone()
+    async def fetchrow(cls, sql, *params):
+        async with cls.pool.acquire() as conn:
+            row = await conn.fetchrow(sql, *params)
         if not row:
             raise NoData
         return row
 
     @classmethod
-    def fetchvalue(cls, sql, *params):
-        return cls.fetchone(sql, *params)[0]
+    async def fetchval(cls, sql, *params):
+        async with cls.pool.acquire() as conn:
+            row = await conn.fetchval(sql, *params)
+        if not row:
+            raise NoData
+        return row
 
 
 class declaration(table):
     @classmethod
-    def get(cls, siren, year):
-        return cls.fetchone(
-            "SELECT * FROM declaration WHERE siren=? AND year=?", siren, year
+    async def get(cls, siren, year):
+        return await cls.fetchrow(
+            "SELECT * FROM declaration WHERE siren=$1 AND year=$2", siren, int(year)
         )
 
     @classmethod
-    def put(cls, siren, year, owner, data):
-        with cls.conn as conn:
-            conn.execute(
-                "INSERT OR REPLACE INTO declaration (siren, year, last_modified, owner, data) "
-                "VALUES (?, ?, ?, ?, ?)",
-                (siren, year, utils.utcnow(), owner, data),
+    async def put(cls, siren, year, owner, data):
+        async with cls.pool.acquire() as conn:
+            await conn.execute(
+                "INSERT INTO declaration (siren, year, last_modified, owner, data) "
+                "VALUES ($1, $2, $3, $4, $5) ON CONFLICT (siren, year) DO UPDATE "
+                "SET last_modified=$3, owner=$4, data=$5",
+                siren,
+                int(year),
+                utils.utcnow(),
+                owner,
+                data,
             )
 
     @classmethod
-    def owner(cls, siren, year):
-        return cls.fetchvalue(
-            "SELECT owner FROM declaration WHERE siren=? AND year=?", siren, year
+    async def owner(cls, siren, year):
+        return await cls.fetchval(
+            "SELECT owner FROM declaration WHERE siren=$1 AND year=$2", siren, int(year)
         )
 
     @classmethod
-    def own(cls, siren, year, owner):
-        with cls.conn as conn:
+    async def own(cls, siren, year, owner):
+        async with cls.pool.acquire() as conn:
             conn.execute(
-                "UPDATE declaration SET owner=? WHERE siren=? AND year=?",
-                (siren, year, owner),
+                "UPDATE declaration SET owner=$1 WHERE siren=$2 AND year=$3",
+                siren,
+                int(year),
+                owner,
             )
 
 
 class simulation(table):
     @classmethod
-    def get(cls, uuid):
-        return cls.fetchone("SELECT * FROM simulation WHERE id=?", uuid)
+    async def get(cls, uuid):
+        return await cls.fetchrow("SELECT * FROM simulation WHERE id=$1", uuid)
 
     @classmethod
-    def put(cls, uuid, data):
-        with cls.conn as conn:
-            conn.execute(
-                "INSERT OR REPLACE INTO simulation (id, last_modified, data) VALUES (?, ?, ?)",
-                (uuid, utils.utcnow(), data),
+    async def put(cls, uuid, data):
+        async with cls.pool.acquire() as conn:
+            await conn.execute(
+                "INSERT INTO simulation (id, last_modified, data) VALUES ($1, $2, $3) "
+                "ON CONFLICT (id) DO UPDATE SET last_modified = $2, data = $3",
+                uuid,
+                utils.utcnow(),
+                data,
             )
 
     @classmethod
-    def create(cls, data):
+    async def create(cls, data):
         uid = str(uuid.uuid1())
         try:
-            cls.get(uid)
+            await cls.get(uid)
         except NoData:
-            cls.put(uid, data)
+            await cls.put(uid, data)
             return uid
-        return cls.create(data)
+        return await cls.create(data)
 
 
-def from_json(b):
-    """Convert a json payload stored in sqlite to a proper python object."""
-    return json.loads(b)
-
-
-def to_json(obj):
-    """Serialize a python object to a json string."""
-    return json.dumps(obj)
-
-
-sqlite3.register_converter("json", from_json)
-sqlite3.register_adapter(dict, to_json)
-
-
-def init():
-    conn = sqlite3.connect(
-        config.DBNAME, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
+async def init():
+    table.pool = await asyncpg.create_pool(
+        database=config.DBNAME, user=config.DBUSER, max_size=config.DBMAXSIZE
     )
-    conn.row_factory = sqlite3.Row
-    table.conn = conn
-    with conn as cursor:
-        cursor.execute(
+    async with table.pool.acquire() as conn:
+        await conn.set_type_codec(
+            "jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog"
+        )
+        await conn.set_type_codec("uuid", encoder=str, decoder=str, schema="pg_catalog")
+        await conn.execute(
             "CREATE TABLE IF NOT EXISTS declaration "
-            "(siren TEXT, year INT, last_modified TIMESTAMP, owner TEXT, data JSON)"
+            "(siren TEXT, year INT, last_modified TIMESTAMP WITH TIME ZONE, owner TEXT, data JSONB,"
+            "PRIMARY KEY (siren, year))"
         )
-        cursor.execute(
-            "CREATE UNIQUE INDEX IF NOT EXISTS primary_key ON declaration(siren, year);"
-        )
-        cursor.execute(
+        await conn.execute(
             "CREATE TABLE IF NOT EXISTS simulation "
-            "(id TEXT PRIMARY KEY, last_modified TIMESTAMP, data JSON)"
+            "(id uuid PRIMARY KEY, last_modified TIMESTAMP WITH TIME ZONE, data JSONB)"
         )
+
+
+async def terminate():
+    table.pool.terminate()

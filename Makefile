@@ -11,7 +11,11 @@ serve:
 
 init: SHELL := python3
 init:
-	from egapro import config, db
-	config.init()
-	db.init()
+	import asyncio
+	from egapro import init
+	asyncio.run(init())
 .PHONY: init
+
+test:
+	py.test -vvx
+.PHONI: test

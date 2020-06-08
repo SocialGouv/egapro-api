@@ -38,7 +38,7 @@ async def test_declaration_should_contain_declarant_email_if_token_not_active(cl
         body={"data": {"informationsDeclarant": {"email": "foo@bar.org"}}},
     )
     assert resp.status == 204
-    assert db.declaration.owner("514027945", "2020") == "foo@bar.org"
+    assert await db.declaration.owner("514027945", "2020") == "foo@bar.org"
     config.REQUIRE_TOKEN = True
 
 
@@ -59,18 +59,20 @@ async def test_basic_declaration_should_save_data(client):
 
 
 async def test_cannot_load_not_owned_declaration(client, monkeypatch):
-    monkeypatch.setattr(
-        "egapro.db.declaration.owner", lambda *args, **kwargs: "foo@bar.baz"
-    )
+    async def mock_owner(*args, **kwargs):
+        return "foo@bar.baz"
+
+    monkeypatch.setattr("egapro.db.declaration.owner", mock_owner)
     client.login("other@email.com")
     resp = await client.get("/declaration/514027945/2020")
     assert resp.status == 403
 
 
 async def test_cannot_put_not_owned_declaration(client, monkeypatch):
-    monkeypatch.setattr(
-        "egapro.db.declaration.owner", lambda *args, **kwargs: "foo@bar.baz"
-    )
+    async def mock_owner(*args, **kwargs):
+        return "foo@bar.baz"
+
+    monkeypatch.setattr("egapro.db.declaration.owner", mock_owner)
     client.login("other@email.com")
     resp = await client.put("/declaration/514027945/2020")
     assert resp.status == 403
@@ -81,14 +83,14 @@ async def test_declaring_twice_should_not_duplicate(client, app):
     assert resp.status == 204
     resp = await client.put("/declaration/514027945/2020", body={"foo": "baz"})
     assert resp.status == 204
-    with db.declaration.conn as conn:
-        curs = conn.execute(
-            "SELECT data FROM declaration WHERE siren=? and year=?",
-            ("514027945", "2020"),
+    async with db.declaration.pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT data FROM declaration WHERE siren=$1 and year=$2",
+            "514027945",
+            2020,
         )
-        data = curs.fetchall()
-    assert len(data) == 1
-    assert data[0][0] == {"foo": "baz"}
+    assert len(rows) == 1
+    assert rows[0]["data"] == {"foo": "baz"}
 
 
 async def test_confirmed_declaration_should_send_email(client, monkeypatch):
@@ -122,11 +124,11 @@ async def test_start_new_simulation(client):
     assert resp.status == 200
     data = json.loads(resp.body)
     assert "id" in data
-    assert db.simulation.get(data["id"])
+    assert await db.simulation.get(data["id"])
 
 
 async def test_get_simulation(client):
-    uid = db.simulation.create({"foo": "bar"})
+    uid = await db.simulation.create({"foo": "bar"})
     resp = await client.get(f"/simulation/{uid}")
     assert resp.status == 200
     data = json.loads(resp.body)
@@ -139,14 +141,17 @@ async def test_get_simulation(client):
 
 
 async def test_basic_simulation_should_save_data(client):
-    resp = await client.put("/simulation/1234", body={"data": {"foo": "bar"}})
+    resp = await client.put(
+        "/simulation/12345678-1234-5678-9012-123456789012",
+        body={"data": {"foo": "bar"}},
+    )
     assert resp.status == 200
     data = json.loads(resp.body)
     assert "last_modified" in data
     del data["last_modified"]
     assert data == {
         "data": {"foo": "bar"},
-        "id": "1234",
+        "id": "12345678-1234-5678-9012-123456789012",
     }
 
 
