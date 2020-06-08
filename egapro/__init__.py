@@ -1,5 +1,3 @@
-import minicli
-
 from roll import Roll, HttpError
 from roll.extensions import cors, options, simple_server, traceback
 
@@ -117,7 +115,6 @@ async def on_shutdown():
     await db.terminate()
 
 
-@minicli.cli
 async def init():
     config.init()
     await db.init()
