@@ -122,11 +122,10 @@ async def init():
         await conn.execute(
             "CREATE TABLE IF NOT EXISTS declaration "
             "(siren TEXT, year INT, last_modified TIMESTAMP WITH TIME ZONE, owner TEXT, data JSONB,"
-            "PRIMARY KEY (siren, year))"
-        )
-        await conn.execute(
+            "PRIMARY KEY (siren, year));"
+            "CREATE INDEX IF NOT EXISTS idx_effectifs ON declaration ((data->'informations'->'trancheEffectifs'));"
             "CREATE TABLE IF NOT EXISTS simulation "
-            "(id uuid PRIMARY KEY, last_modified TIMESTAMP WITH TIME ZONE, data JSONB)"
+            "(id uuid PRIMARY KEY, last_modified TIMESTAMP WITH TIME ZONE, data JSONB);"
         )
 
 

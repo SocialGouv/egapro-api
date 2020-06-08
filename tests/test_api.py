@@ -173,3 +173,21 @@ async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
         body={"data": {"informationsDeclarant": {"email": "foo@bar.org"}}},
     )
     assert resp.status == 200
+
+
+async def test_stats_endpoint(client):
+    rows = [
+        ("12345671", "1000 et plus"),
+        ("12345672", "1000 et plus"),
+        ("12345673", "251 à 999"),
+        ("12345674", "50 à 250"),
+        ("12345675", "50 à 250"),
+        ("12345676", "50 à 250"),
+    ]
+    for siren, tranche in rows:
+        await db.declaration.put(
+            siren, 2020, "foo@bar.org", {"informations": {"trancheEffectifs": tranche}},
+        )
+    resp = await client.get("/stats")
+    assert resp.status == 200
+    assert json.loads(resp.body) == {"1000 et plus": 2, "251 à 999": 1, "50 à 250": 3}

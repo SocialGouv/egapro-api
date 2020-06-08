@@ -105,6 +105,16 @@ async def send_token(request, response):
     response.status = 204
 
 
+@app.route("/stats")
+async def stats(request, response):
+    async with db.table.pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT data->'informations'->>'trancheEffectifs' as tranche, COUNT(*) "
+            "FROM declaration GROUP BY tranche;"
+        )
+    response.json = dict(rows)
+
+
 @app.listen("startup")
 async def on_startup():
     await init()
