@@ -58,9 +58,7 @@ async def test_basic_declaration_should_save_data(client):
 
 
 async def test_basic_declaration_should_remove_data_namespace_if_present(client):
-    await client.put(
-        "/declaration/514027945/2020", body={"data": {"foo": "bar"}}
-    )
+    await client.put("/declaration/514027945/2020", body={"data": {"foo": "bar"}})
     assert (await db.declaration.get("514027945", "2020"))["data"] == {"foo": "bar"}
 
 
@@ -179,6 +177,36 @@ async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
         body={"data": {"informationsDeclarant": {"email": "foo@bar.org"}}},
     )
     assert resp.status == 200
+
+
+async def test_put_simulation_should_redirect_to_declaration_if_validated(client):
+    resp = await client.put(
+        "/simulation/12345678-1234-5678-9012-123456789012",
+        body={
+            "data": {
+                "declaration": {"formValidated": "Valid"},
+                "informationsEntreprise": {"siren": "12345678"},
+                "informations": {"anneeDeclaration": 2020},
+            },
+        },
+    )
+    assert resp.status == 307
+    assert resp.headers["Location"] == "/declaration/12345678/2020"
+    async with db.table.pool.acquire() as conn:
+        assert not await conn.fetchval("SELECT COUNT(*) FROM simulation")
+
+
+async def test_get_simulation_should_redirect_to_declaration_if_validated(client):
+    uid = await db.simulation.create(
+        {
+            "declaration": {"formValidated": "Valid"},
+            "informationsEntreprise": {"siren": "12345678"},
+            "informations": {"anneeDeclaration": 2020},
+        }
+    )
+    resp = await client.get(f"/simulation/{uid}")
+    assert resp.status == 302
+    assert resp.headers["Location"] == "/declaration/12345678/2020"
 
 
 async def test_stats_endpoint(client):

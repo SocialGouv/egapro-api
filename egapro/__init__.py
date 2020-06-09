@@ -93,7 +93,13 @@ async def send_simulation_code(request, response, uuid):
 
 @app.route("/simulation/{uuid}", methods=["PUT"])
 async def simulate(request, response, uuid):
-    data = request.json.get("data", {})
+    data = request.data
+    if data.validated:
+        # This is a declaration, for now let's redirect.
+        response.headers["Location"] = f"/declaration/{data.siren}/{data.year}"
+        # https://tools.ietf.org/html/rfc7231#section-6.4.7
+        response.status = 307
+        return
     await db.simulation.put(uuid, data)
     response.json = db.simulation.as_resource(await db.simulation.get(uuid))
     response.status = 200
@@ -101,8 +107,14 @@ async def simulate(request, response, uuid):
 
 @app.route("/simulation/{uuid}", methods=["GET"])
 async def get_simulation(request, response, uuid):
+    record = await db.simulation.get(uuid)
+    data = models.Data(record["data"])
+    if data.validated:
+        response.headers["Location"] = f"/declaration/{data.siren}/{data.year}"
+        response.status = 302
+        return
     try:
-        response.json = db.simulation.as_resource(await db.simulation.get(uuid))
+        response.json = db.simulation.as_resource(record)
     except db.NoData:
         raise HttpError(404, f"No simulation found with uuid {uuid}")
     response.status = 200
