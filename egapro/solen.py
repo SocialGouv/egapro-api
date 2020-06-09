@@ -12,11 +12,10 @@ from itertools import islice
 from jsonschema import Draft7Validator
 from jsonschema.exceptions import ValidationError
 from progressist import ProgressBar
-from requests.exceptions import ConnectionError
 from xlrd.biffh import XLRDError
 import minicli
 
-from . import db
+from . import db, models
 
 
 # TODO:
@@ -222,7 +221,7 @@ class RowProcessor:
             return value
 
     def toKintoRecord(self):
-        kintoRecord = {"id": self.get("id"), "data": self.record}
+        kintoRecord = {"id": self.get("id"), "data": models.Data(self.record)}
         if self.validator:
             try:
                 self.validator.validate(kintoRecord)
@@ -850,11 +849,10 @@ class App:
         failed = []
         bar = ProgressBar(prefix="Import…", total=len(self.records))
         for record in bar.iter(self.records):
-            year = record["data"]["informations"]["anneeDeclaration"]
-            siren = record["data"]["informationsEntreprise"]["siren"]
-            try:
-                owner = record["data"]["informationsDeclarant"]["email"]
-            except KeyError:
+            year = record["data"].year
+            siren = record["data"].siren
+            owner = record["data"].email
+            if not owner:
                 failed.append(record)
                 continue
             await db.declaration.put(siren, year, owner, record["data"])

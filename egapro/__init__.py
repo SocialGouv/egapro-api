@@ -1,9 +1,21 @@
 from roll import Roll, HttpError
+from roll import Request as BaseRequest
 from roll.extensions import cors, options, simple_server, traceback
 
-from . import config, db, emails, tokens
+from . import config, db, emails, models, tokens
 
-app = Roll()
+
+class Request(BaseRequest):
+    @property
+    def data(self):
+        return models.Data(self.json)
+
+
+class App(Roll):
+    Request = Request
+
+
+app = App()
 traceback(app)
 cors(app, methods=["GET", "PUT"], headers="*")
 options(app)

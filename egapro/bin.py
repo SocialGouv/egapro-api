@@ -3,7 +3,7 @@ import minicli
 import progressist
 import ujson as json
 
-from egapro import db
+from egapro import db, models
 from egapro.solen import import_solen  # noqa: expose to minicli
 
 
@@ -18,18 +18,12 @@ async def migrate_legacy():
             data = json.loads(row["data"])
             if "data" not in data:
                 continue
-            data = data["data"]
-            validated = data.get("declaration", {}).get("formValidated") == "Valid"
+            data = models.Data(data["data"])
             last_modified = row["last_modified"]
-            if validated:
-                siren = data["informationsEntreprise"]["siren"]
-                owner = data["informationsDeclarant"]["email"]
-                try:
-                    year = data["informations"]["anneeDeclaration"]
-                except KeyError:
-                    # TODO use finPeriodeReference.
-                    year = data["informations"]["debutPeriodeReference"][-4:]
-                await db.declaration.put(siren, year, owner, data, last_modified)
+            if data.validated:
+                await db.declaration.put(
+                    data.siren, data.year, data.email, data, last_modified
+                )
             else:
                 uuid = row["id"]
                 await db.simulation.put(uuid, data, last_modified)
