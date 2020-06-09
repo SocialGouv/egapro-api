@@ -42,7 +42,9 @@ async def declare(request, response, siren, year):
 @ensure_owner
 async def get_declaration(request, response, siren, year):
     try:
-        response.json = dict(await db.declaration.get(siren, year))
+        response.json = db.declaration.as_resource(
+            await db.declaration.get(siren, year)
+        )
     except db.NoData:
         raise HttpError(404, f"No declaration with siren {siren} and year {year}")
     response.status = 200
@@ -78,14 +80,14 @@ async def send_simulation_code(request, response, uuid):
 async def simulate(request, response, uuid):
     data = request.json.get("data", {})
     await db.simulation.put(uuid, data)
-    response.json = dict(await db.simulation.get(uuid))
+    response.json = db.simulation.as_resource(await db.simulation.get(uuid))
     response.status = 200
 
 
 @app.route("/simulation/{uuid}", methods=["GET"])
 async def get_simulation(request, response, uuid):
     try:
-        response.json = dict(await db.simulation.get(uuid))
+        response.json = db.simulation.as_resource(await db.simulation.get(uuid))
     except db.NoData:
         raise HttpError(404, f"No simulation found with uuid {uuid}")
     response.status = 200
@@ -113,6 +115,13 @@ async def stats(request, response):
             "FROM declaration GROUP BY tranche;"
         )
     response.json = dict(rows)
+
+
+@app.route("/search")
+async def search(request, response):
+    q = request.query.get("q")
+    results = await db.declaration.search(q)
+    response.json = {"data": results, "total": len(results)}
 
 
 @app.listen("startup")

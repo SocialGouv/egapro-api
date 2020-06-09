@@ -52,7 +52,6 @@ async def test_basic_declaration_should_save_data(client):
     del data["last_modified"]
     assert data == {
         "data": {"foo": "bar"},
-        "owner": "foo@bar.org",
         "siren": "514027945",
         "year": 2020,
     }

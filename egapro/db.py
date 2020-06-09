@@ -13,6 +13,7 @@ class NoData(Exception):
 class table:
 
     conn = None
+    fields = []
 
     @classmethod
     async def fetchrow(cls, sql, *params):
@@ -30,8 +31,14 @@ class table:
             raise NoData
         return row
 
+    @classmethod
+    def as_resource(cls, row):
+        return {k: v for k, v in row.items() if k in cls.fields}
+
 
 class declaration(table):
+    fields = ["siren", "year", "data", "last_modified"]
+
     @classmethod
     async def get(cls, siren, year):
         return await cls.fetchrow(
@@ -43,16 +50,19 @@ class declaration(table):
         # Allow to force last_modified, eg. during migrations.
         if last_modified is None:
             last_modified = utils.utcnow()
+        ft = data.get("informationsEntreprise", {}).get("nomEntreprise")
         async with cls.pool.acquire() as conn:
             await conn.execute(
-                "INSERT INTO declaration (siren, year, last_modified, owner, data) "
-                "VALUES ($1, $2, $3, $4, $5) ON CONFLICT (siren, year) DO UPDATE "
-                "SET last_modified=$3, owner=$4, data=$5",
+                "INSERT INTO declaration (siren, year, last_modified, owner, data, ft) "
+                "VALUES ($1, $2, $3, $4, $5, to_tsvector('french', $6)) "
+                "ON CONFLICT (siren, year) DO UPDATE "
+                "SET last_modified=$3, owner=$4, data=$5, ft=to_tsvector('french', $6)",
                 siren,
                 int(year),
                 last_modified,
                 owner,
                 data,
+                ft,
             )
 
     @classmethod
@@ -71,8 +81,28 @@ class declaration(table):
                 owner,
             )
 
+    @classmethod
+    async def search(cls, query):
+        async with cls.pool.acquire() as conn:
+            rows = await conn.fetch(
+                "SELECT data FROM declaration WHERE ft @@ to_tsquery('french', $1)",
+                utils.prepare_query(query),
+            )
+        return [cls.public_data(row["data"]) for row in rows]
+
+    @classmethod
+    def public_data(cls, data):
+        out = {
+            "id": data.get("id"),
+            "declaration": {"noteIndex": data.get("declaration", {}).get("noteIndex")},
+            "informationsEntreprise": data.get("informationsEntreprise", {}),
+        }
+        return out
+
 
 class simulation(table):
+    fields = ["id", "data", "last_modified"]
+
     @classmethod
     async def get(cls, uuid):
         return await cls.fetchrow("SELECT * FROM simulation WHERE id=$1", uuid)
@@ -121,7 +151,7 @@ async def init():
     async with table.pool.acquire() as conn:
         await conn.execute(
             "CREATE TABLE IF NOT EXISTS declaration "
-            "(siren TEXT, year INT, last_modified TIMESTAMP WITH TIME ZONE, owner TEXT, data JSONB,"
+            "(siren TEXT, year INT, last_modified TIMESTAMP WITH TIME ZONE, owner TEXT, data JSONB, ft TSVECTOR, "
             "PRIMARY KEY (siren, year));"
             "CREATE INDEX IF NOT EXISTS idx_effectifs ON declaration ((data->'informations'->'trancheEffectifs'));"
             "CREATE TABLE IF NOT EXISTS simulation "
