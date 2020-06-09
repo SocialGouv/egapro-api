@@ -1,12 +1,14 @@
 import asyncpg
+import minicli
 import progressist
 import ujson as json
 
 from egapro import db
+from egapro.solen import import_solen  # noqa: expose to minicli
 
 
-async def migrate_from_legacy():
-    await db.init()
+@minicli.cli
+async def migrate_legacy():
     conn = await asyncpg.connect("postgresql://postgres@localhost/legacy_egapro")
     rows = await conn.fetch("SELECT * FROM objects;")
     await conn.close()
@@ -25,8 +27,20 @@ async def migrate_from_legacy():
                 try:
                     year = data["informations"]["anneeDeclaration"]
                 except KeyError:
+                    # TODO use finPeriodeReference.
                     year = data["informations"]["debutPeriodeReference"][-4:]
                 await db.declaration.put(siren, year, owner, data, last_modified)
             else:
                 uuid = row["id"]
                 await db.simulation.put(uuid, data, last_modified)
+
+
+@minicli.wrap
+async def wrapper():
+    await db.init()
+    yield
+    await db.terminate()
+
+
+def main():
+    minicli.run()
