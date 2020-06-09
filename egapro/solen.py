@@ -670,27 +670,6 @@ class RowProcessor:
         return self.toKintoRecord()
 
 
-def prompt(logger, question, default="oui"):
-    valid = {"oui": True, "o": True, "non": False, "n": False}
-    if default is None:
-        choices = " [o/n] "
-    elif default == "oui":
-        choices = " [O/n] "
-    elif default == "non":
-        choices = " [o/N] "
-    else:
-        raise ValueError(f"Valeur par défaut invalide: '{default}'.")
-    while True:
-        logger.std(question + choices)
-        choice = input().lower()
-        if default is not None and choice == "":
-            return valid[default]
-        elif choice in valid:
-            return valid[choice]
-        else:
-            logger.warn("Répondez par 'oui' ou 'non' (ou 'o' ou 'n')")
-
-
 def initValidator(jsonschema_path):
     with open(jsonschema_path, "r") as schema_file:
         return Draft7Validator(json.load(schema_file))
@@ -770,9 +749,8 @@ class App:
         siren=None,
         debug=False,
         progress=False,
-        usePrompt=False,
         logger=None,
-        json_schema=None
+        json_schema=None,
     ):
         # arguments positionnels requis
         self.xls_path = xls_path
@@ -782,7 +760,6 @@ class App:
         self.siren = siren
         self.debug = debug
         self.progress = progress
-        self.usePrompt = usePrompt
         self.logger = logger if logger else NoLogger()
         # initialisation des flags de lecture des champs CSV
         RowProcessor.READ_FIELDS = set({})
@@ -871,7 +848,7 @@ async def import_solen(
     dry_run=False,
     progress=False,
     siren=None,
-    json_schema=None
+    json_schema=None,
 ):
     """Import des données Solen.
 
@@ -898,7 +875,6 @@ async def import_solen(
             siren=siren,
             debug=debug,
             progress=progress,
-            usePrompt=True,
             logger=logger,
             json_schema=json_schema,
         )
@@ -937,9 +913,7 @@ async def import_solen(
                 )
 
         if not dry_run:
-            logger.info(
-                "Import en base (cela peut prendre plusieurs minutes)..."
-            )
+            logger.info("Import en base (cela peut prendre plusieurs minutes)...")
             await app.run()
             logger.success("Import effectué.")
 
