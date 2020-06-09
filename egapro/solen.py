@@ -875,7 +875,18 @@ async def import_solen(
 ):
     """Import des données Solen.
 
-    :path: chemin vers l'export Excel Solen
+    :path:          chemin vers l'export Excel Solen
+    :year:          année correspondant à l'export solen
+    :debug:         afficher les messages de debug
+    :indent:        niveau d'indentation JSON
+    :max:           nombre maximum de lignes à importer
+    :show_json:     afficher la sortie JSON
+    :info:          afficher les informations d'utilisation des champs
+    :output:        sauvegarder la sortie JSON, CSV ou XLSX dans un fichier
+    :dry_run:       ne pas procéder à l'import dans la base de données
+    :progress:      afficher une barre de progression
+    :siren:         importer le SIREN spécifié uniquement
+    :json_schema:   chemin vers le schema json à utiliser pour la validation
     """
 
     logger = ConsoleLogger()
@@ -942,129 +953,3 @@ async def import_solen(
         logger.std("")
         logger.warn("Script d'import interrompu.")
         exit(1)
-
-
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description="Import des données Solen.")
-#     parser.add_argument(
-#         "solen_year", type=str, help="année correspondant à l'export solen"
-#     )
-#     parser.add_argument(
-#         "-d",
-#         "--debug",
-#         help="afficher les messages de debug",
-#         action="store_true",
-#         default=False,
-#     )
-#     parser.add_argument(
-#         "-i", "--indent", type=int, help="niveau d'indentation JSON", default=None
-#     )
-#     parser.add_argument(
-#         "-m",
-#         "--max",
-#         type=int,
-#         help="nombre maximum de lignes à importer",
-#         default=None,
-#     )
-#     parser.add_argument(
-#         "-j",
-#         "--show-json",
-#         help="afficher la sortie JSON",
-#         action="store_true",
-#         default=False,
-#     )
-#     parser.add_argument(
-#         "-f",
-#         "--info",
-#         help="afficher les informations d'utilisation des champs",
-#         action="store_true",
-#         default=False,
-#     )
-#     parser.add_argument(
-#         "-s",
-#         "--save-as",
-#         type=str,
-#         help="sauvegarder la sortie JSON, CSV ou XLSX dans un fichier",
-#     )
-#     parser.add_argument(
-#         "-r",
-#         "--dry-run",
-#         help="ne pas procéder à l'import dans Kinto",
-#         action="store_true",
-#         default=False,
-#     )
-#     parser.add_argument(
-#         "-p",
-#         "--progress",
-#         help="afficher une barre de progression",
-#         action="store_true",
-#         default=False,
-#     )
-#     parser.add_argument(
-#         "--siren", type=str, help="importer le SIREN spécifié uniquement"
-#     )
-
-#     logger = ConsoleLogger()
-#     try:
-#         args = parser.parse_args()
-#         app = App(
-#             args.xls_path,
-#             args.solen_year,
-#             max=args.max,
-#             siren=args.siren,
-#             debug=args.debug,
-#             progress=args.progress,
-#             usePrompt=True,
-#             logger=logger,
-#         )
-
-#         if args.show_json:
-#             logger.std(json.dumps(app.records, indent=args.indent))
-
-#         if args.info:
-#             logger.info(
-#                 "Informations complémentaires sur l'extraction des données Excel :"
-#             )
-#             for message in app.getStats():
-#                 logger.info(message)
-
-#         if args.save_as:
-#             if args.save_as.endswith(".json"):
-#                 with open(args.save_as, "w") as json_file:
-#                     json_file.write(app.toJSON(indent=args.indent))
-#                 logger.success(
-#                     f"Enregistrements JSON exportés dans le fichier '{args.save_as}'."
-#                 )
-#             elif args.save_as.endswith(".csv"):
-#                 with open(args.save_as, "w") as csv_file:
-#                     csv_file.write(app.toCSV())
-#                 logger.success(
-#                     f"Enregistrements CSV exportés dans le fichier '{args.save_as}'."
-#                 )
-#             elif args.save_as.endswith(".xlsx"):
-#                 app.toXLSX(args.save_as)
-#                 logger.success(
-#                     f"Enregistrements XLSX exportés dans le fichier '{args.save_as}'."
-#                 )
-#             else:
-#                 raise AppError(
-#                     "Seuls les formats JSON, CSV et XLSX sont supportés pour la sauvegarde."
-#                 )
-
-#         if not args.dry_run:
-#             logger.info(
-#                 "Importation dans Kinto (cela peut prendre plusieurs minutes)..."
-#             )
-#             app.importIntoKinto(init_collection=args.init_collection)
-#             logger.success("Importation effectuée.")
-
-#     except AppError as err:
-#         logger.error(err)
-#         for error in err.errors:
-#             logger.error(error)
-#         exit(1)
-
-#     except KeyboardInterrupt:
-#         logger.std("")
-#         logger.warn("Script d'import interrompu.")
-#         exit(1)
