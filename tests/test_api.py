@@ -57,6 +57,13 @@ async def test_basic_declaration_should_save_data(client):
     }
 
 
+async def test_basic_declaration_should_remove_data_namespace_if_present(client):
+    await client.put(
+        "/declaration/514027945/2020", body={"data": {"foo": "bar"}}
+    )
+    assert (await db.declaration.get("514027945", "2020"))["data"] == {"foo": "bar"}
+
+
 async def test_cannot_load_not_owned_declaration(client, monkeypatch):
     async def mock_owner(*args, **kwargs):
         return "foo@bar.baz"

@@ -8,7 +8,10 @@ from . import config, db, emails, models, tokens
 class Request(BaseRequest):
     @property
     def data(self):
-        return models.Data(self.json)
+        data = self.json
+        if "data" in data:
+            data = data["data"]
+        return models.Data(data)
 
 
 class App(Roll):
@@ -30,7 +33,7 @@ def ensure_owner(view):
             pass
         else:
             if owner != declarant:
-                # TODO should we obfuscate the existance of the resource?
+                # TODO should we obfuscate the existence of the resource?
                 raise HttpError(403, "Sorry, no")
         return await view(request, response, siren, year, *args, **kwargs)
 
@@ -41,7 +44,7 @@ def ensure_owner(view):
 @tokens.require
 @ensure_owner
 async def declare(request, response, siren, year):
-    data = request.json
+    data = request.data
     declarant = request["email"]
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
@@ -64,8 +67,8 @@ async def get_declaration(request, response, siren, year):
 
 @app.route("/simulation", methods=["POST"])
 async def start_simulation(request, response):
-    data = request.json
-    email = request.json.get("data", {}).get("informationsDeclarant", {}).get("email")
+    data = request.data
+    email = data.email
     uid = await db.simulation.create(data)
     response.json = {"id": uid}
     if email:
