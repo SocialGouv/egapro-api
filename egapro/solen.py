@@ -706,7 +706,7 @@ class ExcelData(object):
                 sheet_name=[EXCEL_NOM_FEUILLE_REPONDANTS, EXCEL_NOM_FEUILLE_UES],
                 dtype={"CP": str, "telephone": str, "SIREN_ets": str, "SIREN_UES": str},
             )
-        except XLRDError as err:
+        except XLRDError:
             raise ExcelDataError(
                 f"Le format du fichier '{pathToExcelFile}' n'a pu être interprété."
             )
@@ -762,94 +762,7 @@ class ExcelData(object):
         return len(self.repondants)
 
 
-class KintoImporter:
-    def __init__(self, logger, schema, truncate=False, dryRun=False, usePrompt=False):
-        self.toImport = []
-        self.usePrompt = usePrompt
-        self.schema = schema
-        self.truncate = truncate
-        self.dryRun = dryRun
-        self.logger = logger
-        if not dryRun:
-            self.client = self.setUp()
-        else:
-            self.client = None
-
-    def setUp(self):
-        self.logger.info("Vérifications Kinto")
-        client = kinto_http.Client(
-            server_url=KINTO_SERVER, auth=(KINTO_ADMIN_LOGIN, KINTO_ADMIN_PASSWORD)
-        )
-        try:
-            info = client.server_info()
-        except ConnectionError as err:
-            raise KintoImporterError(
-                f"Connection au serveur Kinto impossible: {err}. Vérifiez la documentation pour paramétrer l'accès."
-            )
-        if "schema" not in info["capabilities"]:
-            raise KintoImporterError(
-                "Le serveur Kinto ne supporte pas la validation par schéma."
-            )
-        else:
-            self.logger.success("Validation de schéma activée.")
-        if self.truncate:
-            if self.usePrompt and not prompt(
-                self.logger,
-                "Confimer la suppression et recréation de la collection existante ?",
-                "non",
-            ):
-                raise KintoImporterError("Commande annulée.")
-            self.logger.warn("Suppression de la collection Kinto existante...")
-            client.delete_collection(id=KINTO_COLLECTION, bucket=KINTO_BUCKET)
-            self.logger.success("La collection précédente a été supprimée.")
-        try:
-            coll = client.get_collection(id=KINTO_COLLECTION, bucket=KINTO_BUCKET)
-            self.logger.success("La collection existe.")
-        except KintoException as err:
-            self.logger.warn("La collection n'existe pas, création")
-            try:
-                coll = client.create_collection(
-                    id=KINTO_COLLECTION,
-                    data={"schema": self.schema},
-                    bucket=KINTO_BUCKET,
-                )
-                self.logger.success("La collection a été crée.")
-            except KintoException as err:
-                raise KintoImporterError(
-                    f"Impossible de créer la collection {KINTO_BUCKET}/{KINTO_COLLECTION}: {err}"
-                )
-        if "schema" not in coll["data"]:
-            self.logger.warn("La collection ne possède pas schéma de validation JSON.")
-            self.logger.info(f"Ajout du schéma à la collection {KINTO_COLLECTION}.")
-            try:
-                patch = BasicPatch(data={"schema": self.schema})
-                client.patch_collection(
-                    id=KINTO_COLLECTION, bucket=KINTO_BUCKET, changes=patch
-                )
-                self.logger.info(
-                    "Le schéma de validation JSON a été ajouté à la collection."
-                )
-            except (KintoException, TypeError, KeyError, ValueError) as err:
-                raise KintoImporterError(
-                    f"Impossible d'ajouter le schéma de validation à la collection {KINTO_COLLECTION}: {err}"
-                )
-        return client
-
-    def add(self, record):
-        self.toImport.append(record)
-
-    def run(self):
-        with self.client.batch() as batch:
-            for record in self.toImport:
-                self.logger.info(
-                    f"Ajout de la déclaration id={record['id']} au batch d'import."
-                )
-                batch.update_record(
-                    bucket=KINTO_BUCKET, collection=KINTO_COLLECTION, data=record
-                )
-
-
-class App(object):
+class App:
     def __init__(
         self,
         xls_path,
@@ -928,7 +841,7 @@ class App(object):
             bar.finish()
         if len(errors) > 0:
             raise AppError(
-                "Erreur(s) rencontrée(s) lors de la préparation des enregistrements Kinto",
+                "Erreur(s) rencontrée(s) lors de la préparation des enregistrements",
                 errors=errors,
             )
         return records
@@ -945,66 +858,6 @@ class App(object):
                 failed.append(record)
                 continue
             await db.declaration.put(siren, year, owner, record["data"])
-
-    def toCSV(self):
-        "Retourne les enregistrements Kinto concordants générés comme chaîne CSV."
-        flattenedJson = json.dumps([flattenJson(r) for r in self.records])
-        data = pandas.read_json(io.StringIO(flattenedJson))
-        return data.to_csv(index=False)
-
-    def toXLSX(self, save_as):
-        "Retourne les enregistrements Kinto concordants générés comme fichier XLSX."
-        flattenedJson = json.dumps([flattenJson(r) for r in self.records])
-        data = pandas.read_json(io.StringIO(flattenedJson))
-        return data.to_excel(save_as, index=False)
-
-    def toJSON(self, indent=None):
-        "Retourne les enregistrements Kinto concordants générés comme chaîne JSON."
-        return json.dumps(self.records, indent=indent)
-
-    def getStats(self):
-        "Retourne des informations sur l'utilisation des champs Excel dans l'import."
-        messages = []
-        for sheet, sheetFields in self.excelData.fields.items():
-            for sheetField in sheetFields:
-                used = False
-                # Ici nous excluons du rapport :
-                # - les champs vides
-                # - les champs niv01* à niv50* de la feuille répondants
-                # - les champs UES01 à UES500 de la feuille UES
-                if (
-                    sheetField == ""
-                    or sheetField.startswith("niv")
-                    or sheetField.startswith("UES")
-                ):
-                    continue
-                elif sheetField in RowProcessor.READ_FIELDS:
-                    used = True
-                if not used:
-                    messages.append(
-                        f"Le champ '{sheetField}' de la feuille '{sheet}' n'a jamais été consommé."
-                    )
-        return messages
-
-
-def flattenJson(b, prefix="", delim="/", val=None):
-    "See https://stackoverflow.com/a/57228641/330911"
-    if val is None:
-        val = {}
-    if isinstance(b, dict):
-        for j in b.keys():
-            flattenJson(b[j], prefix + delim + j, delim, val)
-    elif isinstance(b, list):
-        get = b
-        for j in range(len(get)):
-            key = str(j)
-            if isinstance(get[j], dict):
-                if "key" in get[j]:
-                    key = get[j]["key"]
-            flattenJson(get[j], prefix + delim + key, delim, val)
-    else:
-        val[prefix] = b
-    return val
 
 
 @minicli.cli
