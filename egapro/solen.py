@@ -17,10 +17,6 @@ import minicli
 
 from . import db, models
 
-
-# TODO:
-# - empêcher l'import dans Kinto si tous les enregistrements ne valident pas
-
 # Configuration de l'import CSV
 
 CELL_SKIPPABLE_VALUES = [
@@ -124,7 +120,7 @@ class ExcelDataError(RuntimeError):
     pass
 
 
-class KintoImporterError(RuntimeError):
+class ImporterError(RuntimeError):
     pass
 
 
@@ -220,11 +216,11 @@ class RowProcessor:
                 )
             return value
 
-    def toKintoRecord(self):
-        kintoRecord = {"id": self.get("id"), "data": models.Data(self.record)}
+    def as_record(self):
+        record = {"id": self.get("id"), "data": models.Data(self.record)}
         if self.validator:
             try:
-                self.validator.validate(kintoRecord)
+                self.validator.validate(record)
             except ValidationError as err:
                 raise RowProcessorError(
                     "\n   ".join(
@@ -235,7 +231,7 @@ class RowProcessor:
                         ]
                     )
                 )
-        return kintoRecord
+        return record
 
     def importPeriodeDeReference(self):
         # Année et périmètre retenus pour le calcul et la publication des indicateurs
@@ -667,7 +663,7 @@ class RowProcessor:
         self.importIndicateurCinq()
         self.importNiveauDeResultatGlobal()
 
-        return self.toKintoRecord()
+        return self.as_record()
 
 
 def initValidator(jsonschema_path):
@@ -675,7 +671,7 @@ def initValidator(jsonschema_path):
         return Draft7Validator(json.load(schema_file))
 
 
-class ExcelData(object):
+class ExcelData:
     def __init__(self, logger, pathToExcelFile):
         self.logger = logger
         try:
@@ -795,8 +791,7 @@ class App:
             )
         if self.progress:
             bar = ProgressBar(
-                prefix="Préparation des enregistrements Kinto",
-                total=max or self.nb_rows,
+                prefix="Préparation des enregistrements", total=max or self.nb_rows,
             )
         for lineno, id in enumerate(rows):
             try:
