@@ -1,4 +1,5 @@
 from datetime import timedelta
+from functools import wraps
 
 import jwt
 from roll import HttpError
@@ -23,6 +24,7 @@ def read(token):
 
 
 def require(view):
+    @wraps(view)
     def wrapper(request, response, *args, **kwargs):
         if config.REQUIRE_TOKEN:
             token = request.headers.get("API-KEY")

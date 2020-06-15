@@ -1,3 +1,5 @@
+from functools import wraps
+
 from roll import Roll, HttpError
 from roll import Request as BaseRequest
 from roll.extensions import cors, options, simple_server, traceback
@@ -25,6 +27,7 @@ options(app)
 
 
 def ensure_owner(view):
+    @wraps(view)
     async def wrapper(request, response, siren, year, *args, **kwargs):
         declarant = request["email"]
         try:
