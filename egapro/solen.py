@@ -791,7 +791,9 @@ class App:
             )
         if self.progress:
             bar = ProgressBar(
-                prefix="Préparation des enregistrements", total=max or self.nb_rows,
+                prefix="Préparation des enregistrements",
+                total=max or self.nb_rows,
+                throttle=100,
             )
         for lineno, id in enumerate(rows):
             try:
@@ -819,8 +821,9 @@ class App:
 
     async def run(self, init_collection=False, dryRun=False):
         failed = []
-        bar = ProgressBar(prefix="Import…", total=len(self.records))
+        bar = ProgressBar(prefix="Import…", total=len(self.records), throttle=100)
         for record in bar.iter(self.records):
+            record["data"]["id"] = record["id"]
             year = record["data"].year
             siren = record["data"].siren
             owner = record["data"].email

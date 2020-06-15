@@ -6,6 +6,7 @@ import ujson as json
 from egapro import db, models
 from egapro.solen import import_solen  # noqa: expose to minicli
 from egapro.exporter import dump  # noqa: expose to minicli
+from egapro.dgt import *  # noqa: expose to minicli
 
 
 @minicli.cli
@@ -19,6 +20,8 @@ async def migrate_legacy():
             data = json.loads(row["data"])
             if "data" not in data:
                 continue
+            uuid = row["id"]
+            data["data"]["id"] = uuid
             data = models.Data(data["data"])
             last_modified = row["last_modified"]
             if data.validated:
@@ -26,7 +29,6 @@ async def migrate_legacy():
                     data.siren, data.year, data.email, data, last_modified
                 )
             else:
-                uuid = row["id"]
                 await db.simulation.put(uuid, data, last_modified)
 
 

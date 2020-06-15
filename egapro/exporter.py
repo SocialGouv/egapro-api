@@ -9,11 +9,10 @@ from egapro import db
 
 
 @minicli.cli
-async def dump(path: Path, all=False):
+async def dump(path: Path):
     """Export des données Egapro.
 
     :path:          chemin vers le fichier d'export
-    :all:           inclure les déclarations non validées
     """
 
     records = await db.declaration.all()
