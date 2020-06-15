@@ -8,6 +8,8 @@ pytestmark = pytest.mark.asyncio
 @pytest.fixture(autouse=True)
 async def init_db():
     await db.init()
+    yield
+    await db.terminate()
 
 
 async def test_simulation_fetchval():
