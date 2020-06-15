@@ -1,4 +1,3 @@
-import io
 import json
 from pathlib import Path
 
@@ -33,5 +32,25 @@ async def test_dgt_dump_should_compute_declaration_url():
             "indicateurUn": {"nombreCoefficients": 0},
         },
     )
-    f = io.BytesIO()
-    await dgt.dump(f)
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook.active
+    assert sheet["B1"].value == "URL_declaration"
+    assert sheet["B2"].value == "'https://index-egapro.travail.gouv.fr/simulateur/12345678-1234-5678-9012-123456789012"
+
+
+async def test_dgt_dump_should_compute_declaration_url_for_solen_data():
+    await db.declaration.put(
+        "12345678",
+        2020,
+        "foo@bar.com",
+        {
+            "source": "solen-2019",
+            "id": "123456781234-123456789012",
+            "informationsEntreprise": {"nombreEntreprises": 0},
+            "indicateurUn": {"nombreCoefficients": 0},
+        },
+    )
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook.active
+    assert sheet["B1"].value == "URL_declaration"
+    assert sheet["B2"].value == "'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P=123456781234-123456789012"

@@ -1,23 +1,18 @@
 """DGT specific utils"""
 
-from pathlib import Path
-from pprint import pprint
-
-import minicli
-import pandas
+from openpyxl import Workbook
+from progressist import ProgressBar
 
 from egapro import db
 from egapro.utils import flatten
 
 
-def get_num_coefficient(data):
-    """Return the max number of custom coefficient in the data."""
-    return int(data["/indicateurUn/nombreCoefficients"].max())
-
-
-def get_ues_cols(data):
+async def get_ues_cols():
     """Return a list of `nom` and `siren` cols for the max number of UES columns."""
-    max_num_ues = int(data["/informationsEntreprise/nombreEntreprises"].max())
+    max_num_ues = await db.declaration.fetchval(
+        "SELECT coalesce(MAX((data->'informationsEntreprise'->>'nombreEntreprises')::int),0) AS max_val "
+        "FROM declaration WHERE data->'informationsEntreprise' ? 'nombreEntreprises'"
+    )
     # The entreprise that made the declaration is counted in the number of UES,
     # but its nom/siren is given elsewhere.
     max_num_ues -= 1
@@ -40,8 +35,12 @@ def get_ues_cols(data):
     return flattened_cols
 
 
-def get_headers_columns(data):
+async def get_headers_columns():
     """Return a tuple of lists of (header_names, column_names) that we want in the export."""
+    num_coefficient = await db.declaration.fetchval(
+        "SELECT coalesce(MAX((data->'indicateurUn'->>'nombreCoefficients')::int),0) AS max_val "
+        "FROM declaration WHERE data->'indicateurUn' ? 'nombreCoefficients'"
+    )
     interesting_cols = (
         [
             ("source", "/source"),
@@ -68,7 +67,7 @@ def get_headers_columns(data):
             ("Nom_UES", "/informationsEntreprise/nomUES"),
             ("Nb_ets_UES", "/informationsEntreprise/nombreEntreprises"),
         ]
-        + get_ues_cols(data)
+        + await get_ues_cols()
         + [
             ("Date_publication", "/declaration/datePublication"),
             ("Site_internet_publication", "/declaration/lienPublication"),
@@ -99,7 +98,7 @@ def get_headers_columns(data):
                 f"Indic1_Niv{index_coef}_{tranche_age}",
                 f"/indicateurUn/coefficient/{index_coef}/tranchesAges/{index_tranche_age}/ecartTauxRemuneration",
             )
-            for index_coef in range(get_num_coefficient(data))
+            for index_coef in range(num_coefficient)
             for (index_tranche_age, tranche_age) in enumerate(
                 ["30", "30-39", "40-49", "50"]
             )
@@ -185,61 +184,54 @@ def get_headers_columns(data):
             ("Mesures_correction", "/declaration/mesuresCorrection"),
         ]
     )
-    print("List of interesting columns to export: (alias_name, json_name)")
-    pprint(interesting_cols)
-    import_cols = [
-        (header, column)
-        for header, column in interesting_cols
-        if column in data.columns
-    ]
-    if len(import_cols) != len(interesting_cols):
-        print(
-            "!!!!! those columns are 'interesting' but not found in the input file! !!!!!"
-        )
-        pprint(
-            [
-                column
-                for _header, column in interesting_cols
-                if column not in data.columns
-            ]
-        )
-    headers = [header for header, _column in import_cols]
-    columns = [column for _header, column in import_cols]
+    # print("List of interesting columns to export: (alias_name, json_name)")
+    # pprint(interesting_cols)
+    # import_cols = [
+    #     (header, column)
+    #     for header, column in interesting_cols
+    #     if column in data.columns
+    # ]
+    # if len(import_cols) != len(interesting_cols):
+    #     print(
+    #         "!!!!! those columns are 'interesting' but not found in the input file! !!!!!"
+    #     )
+    #     pprint(
+    #         [
+    #             column
+    #             for _header, column in interesting_cols
+    #             if column not in data.columns
+    #         ]
+    #     )
+    headers = [header for header, _column in interesting_cols]
+    columns = [column for _header, column in interesting_cols]
     return (headers, columns)
 
 
-@minicli.cli(name="dump-dgt")
-async def dump(path, nb_rows: int = 0):
-    """Export des données au format souhaité par la DGT."""
+async def as_xlsx(max_rows=None, debug=False):
+    """Export des données au format souhaité par la DGT.
+
+    :max_rows:          Max number of rows to process.
+    :debug:             Turn on debug to be able to read the generated Workbook
+    """
     print("Reading from DB")
     records = await db.declaration.all()
     print("Flattening JSON")
-    if nb_rows:
-        records = records[:nb_rows]
-    flattened = [flatten(r["data"]) for r in records]
-    print("Loading data in pandas")
-    data = pandas.DataFrame(flattened)
-    print("Adding a source of 'egapro' for records without a source")
-    data["/source"] = data.apply(
-        lambda d: (
-            "egapro"
-            if d.get("/source") not in ("solen-2019", "solen-2020")
-            else d["/source"]
-        ),
-        axis=1,
-    )
-    print("Adding 'URL de déclaration' column based on the ID and the source")
-    # print(data["/id"])
-    data["URL_declaration"] = data["/id"]
-    data["URL_declaration"] = data.apply(
-        lambda d: (
-            "'https://index-egapro.travail.gouv.fr/simulateur/" + d["/id"]
-            if d["/source"] == "egapro"
-            else "'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P=" + d["/id"]
-        ),
-        axis=1,
-    )
-    headers, columns = get_headers_columns(data)
-    print("Writing the XLSX to", path)
-    data[columns].to_excel(path, index=False, header=headers)
-    print("Done")
+    if max_rows:
+        records = records[:max_rows]
+    wb = Workbook(write_only=not debug)
+    ws = wb.create_sheet()
+    wb.active = ws
+    headers, columns = await get_headers_columns()
+    ws.append(headers)
+    bar = ProgressBar(prefix="Computing", total=len(records))
+    for record in bar.iter(records):
+        data = flatten(record["data"])
+        source = data.get("/source")
+        if source in ("solen-2019", "solen-2020"):
+            url = f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={data['/id']}"
+        else:
+            data["/source"] = "egapro"
+            url = f"'https://index-egapro.travail.gouv.fr/simulateur/{data['/id']}"
+        data["URL_declaration"] = url
+        ws.append([data.get(c) for c in columns])
+    return wb

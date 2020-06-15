@@ -32,7 +32,7 @@ class table:
     async def fetchval(cls, sql, *params):
         async with cls.pool.acquire() as conn:
             row = await conn.fetchval(sql, *params)
-        if not row:
+        if row is None:
             raise NoData
         return row
 
