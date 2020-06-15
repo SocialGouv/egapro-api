@@ -16,6 +16,11 @@ class table:
     fields = []
 
     @classmethod
+    async def fetch(cls, sql, *params):
+        async with cls.pool.acquire() as conn:
+            return await conn.fetch(sql, *params)
+
+    @classmethod
     async def fetchrow(cls, sql, *params):
         async with cls.pool.acquire() as conn:
             row = await conn.fetchrow(sql, *params)
@@ -38,6 +43,11 @@ class table:
 
 class declaration(table):
     fields = ["siren", "year", "data", "last_modified"]
+
+    @classmethod
+    async def all(cls):
+        # TODO ORDER BY ?
+        return await cls.fetch("SELECT * FROM declaration")
 
     @classmethod
     async def get(cls, siren, year):

@@ -5,6 +5,7 @@ import ujson as json
 
 from egapro import db, models
 from egapro.solen import import_solen  # noqa: expose to minicli
+from egapro.exporter import dump  # noqa: expose to minicli
 
 
 @minicli.cli

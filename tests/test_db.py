@@ -36,3 +36,14 @@ async def test_simulation_get():
     # Then
     assert list(record.keys()) == ["id", "last_modified", "data"]
     assert record["data"] == {"foo": "baré"}
+
+
+async def test_declaration_all():
+    # Given
+    await db.declaration.put("12345678", 2020, "foo@bar.com", {"foo": "baré"})
+    await db.declaration.put("87654321", 2020, "foo@baz.com", {"foo": "bazé"})
+
+    records = await db.declaration.all()
+    assert len(records) == 2
+    assert records[0]["siren"] == "12345678"
+    assert records[1]["siren"] == "87654321"
