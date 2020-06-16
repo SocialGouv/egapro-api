@@ -110,10 +110,14 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch):
     resp = await client.put("/declaration/514027945/2020", body={"foo": False})
     assert resp.status == 204
     assert not calls
-    resp = await client.put("/declaration/514027945/2020", body={"confirm": False})
+    resp = await client.put(
+        "/declaration/514027945/2020", body={"declaration": {"formValidated": "None"}}
+    )
     assert resp.status == 204
     assert not calls
-    resp = await client.put("/declaration/514027945/2020", body={"confirm": True})
+    resp = await client.put(
+        "/declaration/514027945/2020", body={"declaration": {"formValidated": "Valid"}}
+    )
     assert resp.status == 204
     assert calls == 1
 
@@ -192,8 +196,8 @@ async def test_put_simulation_should_redirect_to_declaration_if_validated(client
     )
     assert resp.status == 307
     assert resp.headers["Location"] == "/declaration/12345678/2020"
-    async with db.table.pool.acquire() as conn:
-        assert not await conn.fetchval("SELECT COUNT(*) FROM simulation")
+    # Simulation should have been saved too
+    assert await db.simulation.get("12345678-1234-5678-9012-123456789012")
 
 
 async def test_get_simulation_should_redirect_to_declaration_if_validated(client):
