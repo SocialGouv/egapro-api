@@ -51,7 +51,7 @@ async def declare(request, response, siren, year):
     declarant = request["email"]
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
-    if data.get("confirm") is True:
+    if data.validated:
         emails.send(declarant, "Votre déclaration est confirmée", emails.SUCCESS)
 
 
