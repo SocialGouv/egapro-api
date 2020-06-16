@@ -52,7 +52,12 @@ async def declare(request, response, siren, year):
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:
-        emails.send(declarant, "Votre déclaration est confirmée", emails.SUCCESS)
+        emails.success.send(
+            declarant,
+            id=data["id"],
+            year=data.year,
+            company=data.company,
+        )
 
 
 @app.route("/declaration/{siren}/{year}", methods=["GET"])
@@ -75,10 +80,7 @@ async def start_simulation(request, response):
     uid = await db.simulation.create(data)
     response.json = {"id": uid}
     if email:
-        body = emails.SIMULATION.format(
-            link=f"{request.headers.get('REFERER', 'http://127.0.0.1:2626')}"
-        )
-        emails.send(email, "Votre simulation", body)
+        emails.permalink.send(email, id=uid)
     response.status = 200
 
 
@@ -87,10 +89,7 @@ async def start_simulation(request, response):
 async def send_simulation_code(request, response, uuid):
     email = request.json.get("email", {})
     if email:
-        body = emails.SIMULATION.format(
-            link=f"{request.headers.get('REFERER', 'http://127.0.0.1:2626')}"
-        )
-        emails.send(email, "Votre simulation", body)
+        emails.permalink.send(email, id=uuid)
     response.status = 204
 
 

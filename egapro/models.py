@@ -22,3 +22,7 @@ class Data(dict):
     @property
     def email(self):
         return self.get("informationsDeclarant", {}).get("email")
+
+    @property
+    def company(self):
+        return self.get("informationsEntreprise", {}).get("nomEntreprise")

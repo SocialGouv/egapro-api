@@ -99,10 +99,15 @@ async def test_declaring_twice_should_not_duplicate(client, app):
 
 async def test_confirmed_declaration_should_send_email(client, monkeypatch):
     calls = 0
+    id = "12345678-1234-5678-9012-123456789012"
+    company = "TotalRecall"
 
-    def mock_send(to, subject, body):
+    def mock_send(to, subject, txt, html):
         assert to == "foo@bar.org"
-        assert "Votre déclaration est maintenant confirmée" in body
+        assert id in txt
+        assert id in html
+        assert company in txt
+        assert company in html
         nonlocal calls
         calls += 1
 
@@ -116,7 +121,13 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch):
     assert resp.status == 204
     assert not calls
     resp = await client.put(
-        "/declaration/514027945/2020", body={"declaration": {"formValidated": "Valid"}}
+        "/declaration/514027945/2020",
+        body={
+            "id": id,
+            "declaration": {"formValidated": "Valid"},
+            "informations": {"anneeDeclaration": 2020},
+            "informationsEntreprise": {"nomEntreprise": company},
+        },
     )
     assert resp.status == 204
     assert calls == 1
@@ -165,11 +176,13 @@ async def test_basic_simulation_should_save_data(client):
 
 async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
     calls = 0
+    email_body = ""
 
-    def mock_send(to, subject, body):
+    def mock_send(to, subject, txt, html=None):
         assert to == "foo@bar.org"
-        assert "http://" in body
         nonlocal calls
+        nonlocal email_body
+        email_body = txt
         calls += 1
 
     monkeypatch.setattr("egapro.emails.send", mock_send)
@@ -181,6 +194,8 @@ async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
         body={"data": {"informationsDeclarant": {"email": "foo@bar.org"}}},
     )
     assert resp.status == 200
+    data = json.loads(resp.body)
+    assert data["id"] in email_body
 
 
 async def test_put_simulation_should_redirect_to_declaration_if_validated(client):
