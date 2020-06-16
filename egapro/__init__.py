@@ -97,6 +97,7 @@ async def send_simulation_code(request, response, uuid):
 @app.route("/simulation/{uuid}", methods=["PUT"])
 async def simulate(request, response, uuid):
     data = request.data
+    await db.simulation.put(uuid, data)
     if data.validated:
         # This is a declaration, for now let's redirect.
         # https://tools.ietf.org/html/rfc7231#section-6.4.7
