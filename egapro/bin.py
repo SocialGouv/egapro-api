@@ -95,8 +95,20 @@ def compare_xlsx(old: Path, new: Path, max_rows: int = None, ignore=[]):
                 # TODO: allow to type as tuple in minicli.
                 if header.startswith(tuple(ignore)):
                     continue
-                print(f"{header}: {old_row[idx]!r} vs {new_row[idx]!r} for {old_row[1]}")
+                print(
+                    f"{header}: {old_row[idx]!r} vs {new_row[idx]!r} for {old_row[1]}"
+                )
     print("Skipped", skipped, "rows")
+
+
+@minicli.cli
+async def search(q, verbose=False):
+    rows = await db.declaration.search(q)
+    for row in rows:
+        data = models.Data(row)
+        print(f"{data.siren} | {data.year} | {data.company}")
+        if verbose:
+            print(row)
 
 
 @minicli.wrap

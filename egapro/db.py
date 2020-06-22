@@ -3,7 +3,7 @@ import uuid
 import asyncpg
 import ujson as json
 
-from . import config, utils
+from . import config, models, utils
 
 
 class NoData(Exception):
@@ -102,10 +102,14 @@ class declaration(table):
 
     @classmethod
     def public_data(cls, data):
+        data = models.Data(data)
         out = {
             "id": data.get("id"),
-            "declaration": {"noteIndex": data.get("declaration", {}).get("noteIndex")},
+            "declaration": {"noteIndex": data.path("declaration.noteIndex")},
             "informationsEntreprise": data.get("informationsEntreprise", {}),
+            "informations": {
+                "anneeDeclaration": data.path("informations.anneeDeclaration")
+            },
         }
         return out
 
