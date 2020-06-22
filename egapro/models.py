@@ -1,6 +1,10 @@
 class Data(dict):
 
     @property
+    def id(self):
+        return self.get("id")
+
+    @property
     def validated(self):
         return self.get("declaration", {}).get("formValidated") == "Valid"
 

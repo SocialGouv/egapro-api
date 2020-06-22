@@ -26,6 +26,15 @@ cors(app, methods=["GET", "PUT"], headers="*")
 options(app)
 
 
+@app.listen("error")
+async def json_error_response(request, response, error):
+    if error.status == 404:
+        error.message = {"error": f"Path not found `{request.path}`"}
+    if isinstance(error.message, (str, bytes)):
+        error.message = {"error": error.message}
+    response.json = error.message
+
+
 def ensure_owner(view):
     @wraps(view)
     async def wrapper(request, response, siren, year, *args, **kwargs):
@@ -52,6 +61,8 @@ async def declare(request, response, siren, year):
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:
+        if not data.id:
+            raise HttpError(400, "Missing id")
         emails.success.send(
             declarant,
             id=data["id"],

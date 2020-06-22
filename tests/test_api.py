@@ -133,6 +133,28 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch):
     assert calls == 1
 
 
+async def test_confirmed_declaration_should_raise_if_missing_id(client, monkeypatch):
+    calls = 0
+
+    def mock_send(to, subject, txt, html):
+        nonlocal calls
+        calls += 1
+
+    monkeypatch.setattr("egapro.emails.send", mock_send)
+    resp = await client.put(
+        "/declaration/514027945/2020",
+        body={
+            "declaration": {"formValidated": "Valid"},
+            "informations": {"anneeDeclaration": 2020},
+            "informationsEntreprise": {"nomEntreprise": "NomNom"},
+        },
+    )
+    assert resp.status == 400
+    body = json.loads(resp.body)
+    assert body == {"error": "Missing id"}
+    assert not calls
+
+
 async def test_with_unknown_siren_or_year(client):
     resp = await client.get("/declaration/514027945/2020")
     assert resp.status == 404
