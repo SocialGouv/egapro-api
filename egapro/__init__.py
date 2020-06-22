@@ -121,8 +121,7 @@ async def simulate(request, response, uuid):
     if data.validated:
         # This is a declaration, for now let's redirect.
         # https://tools.ietf.org/html/rfc7231#section-6.4.7
-        response.headers["Location"] = f"/declaration/{data.siren}/{data.year}"
-        response.status = 307
+        response.redirect = f"/declaration/{data.siren}/{data.year}", 307
         return
     response.json = db.simulation.as_resource(await db.simulation.get(uuid))
     response.status = 200
@@ -133,8 +132,7 @@ async def get_simulation(request, response, uuid):
     record = await db.simulation.get(uuid)
     data = models.Data(record["data"])
     if data.validated:
-        response.headers["Location"] = f"/declaration/{data.siren}/{data.year}"
-        response.status = 302
+        response.redirect = f"/declaration/{data.siren}/{data.year}", 302
         return
     try:
         response.json = db.simulation.as_resource(record)
