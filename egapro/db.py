@@ -92,11 +92,13 @@ class declaration(table):
             )
 
     @classmethod
-    async def search(cls, query):
+    async def search(cls, query, limit=10):
         async with cls.pool.acquire() as conn:
             rows = await conn.fetch(
-                "SELECT data FROM declaration WHERE ft @@ to_tsquery('french', $1)",
+                "SELECT data FROM declaration WHERE ft @@ to_tsquery('french', $1) "
+                "LIMIT $2",
                 utils.prepare_query(query),
+                limit
             )
         return [cls.public_data(row["data"]) for row in rows]
 

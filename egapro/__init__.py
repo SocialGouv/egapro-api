@@ -168,7 +168,8 @@ async def stats(request, response):
 @app.route("/search")
 async def search(request, response):
     q = request.query.get("q")
-    results = await db.declaration.search(q)
+    limit = request.query.int("limit", 10)
+    results = await db.declaration.search(q, limit=limit)
     response.json = {"data": results, "total": len(results)}
 
 

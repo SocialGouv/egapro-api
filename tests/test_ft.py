@@ -43,3 +43,5 @@ async def test_search(client):
     assert len(results) == 1
     results = await db.declaration.search("bio")
     assert len(results) == 3
+    results = await db.declaration.search("bio", limit=1)
+    assert len(results) == 1

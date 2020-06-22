@@ -322,3 +322,50 @@ async def test_send_code_endpoint(client, monkeypatch):
     assert resp.status == 204
     assert uid in email_body
     assert recipient == "foo@bar.org"
+
+
+async def test_search_endpoint(client):
+    await db.declaration.put(
+        "12345671",
+        2020,
+        "foo@bar.org",
+        {
+            "declaration": {"noteIndex": 95},
+            "id": "12345678-1234-5678-9012-123456789013",
+            "informations": {"anneeDeclaration": "2020"},
+            "informationsEntreprise": {"nomEntreprise": "Bio c Bon"},
+        },
+    )
+    await db.declaration.put(
+        "12345672",
+        2020,
+        "foo@bar.org",
+        {
+            "declaration": {"noteIndex": 93},
+            "id": "12345678-1234-5678-9012-123456789012",
+            "informations": {"anneeDeclaration": "2020"},
+            "informationsEntreprise": {"nomEntreprise": "Biocoop"},
+        },
+    )
+    resp = await client.get("/search?q=bio")
+    assert resp.status == 200
+    assert json.loads(resp.body) == {
+        "data": [
+            {
+                "declaration": {"noteIndex": 95},
+                "id": "12345678-1234-5678-9012-123456789013",
+                "informations": {"anneeDeclaration": "2020"},
+                "informationsEntreprise": {"nomEntreprise": "Bio c Bon"},
+            },
+            {
+                "declaration": {"noteIndex": 93},
+                "id": "12345678-1234-5678-9012-123456789012",
+                "informations": {"anneeDeclaration": "2020"},
+                "informationsEntreprise": {"nomEntreprise": "Biocoop"},
+            },
+        ],
+        "total": 2,
+    }
+    resp = await client.get("/search?q=bio&limit=1")
+    assert resp.status == 200
+    assert len(json.loads(resp.body)["data"]) == 1
