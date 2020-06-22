@@ -266,3 +266,59 @@ async def test_stats_endpoint(client):
     resp = await client.get("/stats")
     assert resp.status == 200
     assert json.loads(resp.body) == {"1000 et plus": 2, "251 à 999": 1, "50 à 250": 3}
+
+
+async def test_send_code_endpoint(client, monkeypatch):
+    calls = 0
+    email_body = ""
+    recipient = None
+
+    def mock_send(to, subject, txt, html=None):
+        assert to == "foo@bar.org"
+        nonlocal calls
+        nonlocal email_body
+        nonlocal recipient
+        email_body = txt
+        recipient = to
+        calls += 1
+
+    monkeypatch.setattr("egapro.emails.send", mock_send)
+
+    # Invalid UUID
+    resp = await client.post("/simulation/unknown/send-code", body={"foo": "bar"})
+    assert resp.status == 400
+    assert json.loads(resp.body) == {
+        "error": 'Invalid data: invalid input syntax for type uuid: "unknown"'
+    }
+    assert not calls
+
+    # Not found UUID
+    resp = await client.post(
+        "/simulation/12345678-1234-5678-9012-123456789012/send-code",
+        body={"foo": "bar"},
+    )
+    assert resp.status == 404
+    assert not calls
+
+    # Create simulation
+    uid = await db.simulation.create(
+        {
+            "declaration": {"formValidated": "Valid"},
+            "informationsEntreprise": {"siren": "12345678"},
+            "informations": {"anneeDeclaration": 2020},
+        }
+    )
+
+    # Missing email
+    resp = await client.post(f"/simulation/{uid}/send-code", body={"foo": "bar"})
+    assert resp.status == 400
+    assert json.loads(resp.body) == {"error": "Missing `email` key"}
+    assert not calls
+
+    # Valid request.
+    resp = await client.post(
+        f"/simulation/{uid}/send-code", body={"email": "foo@bar.org"}
+    )
+    assert resp.status == 204
+    assert uid in email_body
+    assert recipient == "foo@bar.org"

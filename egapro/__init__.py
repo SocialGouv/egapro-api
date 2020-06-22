@@ -2,6 +2,7 @@ from functools import wraps
 
 from roll import Roll, HttpError
 from roll import Request as BaseRequest
+from asyncpg.exceptions import DataError
 from roll.extensions import cors, options, simple_server, traceback
 
 from . import config, db, emails, models, tokens
@@ -30,6 +31,12 @@ options(app)
 async def json_error_response(request, response, error):
     if error.status == 404:
         error.message = {"error": f"Path not found `{request.path}`"}
+    if isinstance(error.__context__, DataError):
+        response.status = 400
+        error.message = f"Invalid data: {error.__context__}"
+    if isinstance(error.__context__, db.NoData):
+        response.status = 404
+        error.message = f"Resource not found: {error.__context__}"
     if isinstance(error.message, (str, bytes)):
         error.message = {"error": error.message}
     response.json = error.message
@@ -98,10 +105,13 @@ async def start_simulation(request, response):
 # KILL THIS ENDPOINT
 @app.route("/simulation/{uuid}/send-code", methods=["POST"])
 async def send_simulation_code(request, response, uuid):
+    # Make sure given simulation exists
+    await db.simulation.get(uuid)
     email = request.json.get("email", {})
-    if email:
-        emails.permalink.send(email, id=uuid)
     response.status = 204
+    if not email:
+        raise HttpError(400, "Missing `email` key")
+    emails.permalink.send(email, id=uuid)
 
 
 @app.route("/simulation/{uuid}", methods=["PUT"])
