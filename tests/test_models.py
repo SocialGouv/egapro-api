@@ -1,3 +1,5 @@
+import pytest
+
 from egapro.models import Data
 
 
@@ -19,3 +21,19 @@ def test_data_year():
     assert data.year == 2020
     data = Data({"informations": {"finPeriodeReference": "01/02/2019"}})
     assert data.year == 2019
+
+
+@pytest.mark.parametrize(
+    "data,path,output",
+    [
+        ({"a": {"b": "ok"}}, "a.b", "ok"),
+        ({"a": {"b": "ok"}}, "a.c", None),
+        ({"a": {"b": False}}, "a.b", False),
+        ({"a": {"b": 0}}, "a.b", 0),
+        ({"a": {"b": {"c": "ok"}}}, "a.b", {"c": "ok"}),
+        ({"a": {"b": {"c": "ok"}}}, "a.b.c", "ok"),
+        ({"a": {"b": {"c": "ok"}}}, "a.b.d", None),
+    ],
+)
+def test_path(data, path, output):
+    assert Data(data).path(path) == output

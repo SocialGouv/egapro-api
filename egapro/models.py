@@ -1,5 +1,4 @@
 class Data(dict):
-
     @property
     def id(self):
         return self.get("id")
@@ -30,3 +29,9 @@ class Data(dict):
     @property
     def company(self):
         return self.get("informationsEntreprise", {}).get("nomEntreprise")
+
+    def path(self, path):
+        data = self
+        for sub in path.split("."):
+            data = data.get(sub, {})
+        return data if data or data in [False, 0] else None
