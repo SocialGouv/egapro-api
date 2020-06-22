@@ -8,6 +8,8 @@ pytestmark = pytest.mark.asyncio
 @pytest.fixture(autouse=True)
 async def init_db():
     await db.init()
+    yield
+    await db.terminate()
 
 
 async def test_search(client):
@@ -24,7 +26,10 @@ async def test_search(client):
             siren,
             2020,
             "foo@bar.org",
-            {"informationsEntreprise": {"nomEntreprise": nom}},
+            {
+                "informationsEntreprise": {"nomEntreprise": nom},
+                "informations": {"anneeDeclaration": 2020},
+            },
         )
     results = await db.declaration.search("total")
     assert len(results) == 1
@@ -32,6 +37,7 @@ async def test_search(client):
         "declaration": {"noteIndex": None},
         "id": None,
         "informationsEntreprise": {"nomEntreprise": "Total"},
+        "informations": {"anneeDeclaration": 2020},
     }
     results = await db.declaration.search("pyrenées")
     assert len(results) == 1
