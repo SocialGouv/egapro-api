@@ -29,7 +29,18 @@ async def as_csv(path: Path):
     :path:          chemin vers le fichier d'export
     """
 
-    records = await db.declaration.all()
+    records = await db.declaration.fetch(
+        """
+        SELECT data FROM declaration
+        WHERE
+            data->'informations'->>'trancheEffectifs' = '1000 et plus'
+                OR (
+                    (data->'informations'->'anneeDeclaration')::int=2018
+                    AND data->'informations'->>'trancheEffectifs' = 'Plus de 250'
+                    AND (data->'effectif'->'nombreSalariesTotal')::int >= 1000
+                    )
+        ;"""
+    )
     writer = csv.writer(path, delimiter=";")
     writer.writerow(
         [

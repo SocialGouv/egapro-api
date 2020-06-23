@@ -38,7 +38,10 @@ async def test_dgt_dump_should_compute_declaration_url():
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
     assert sheet["B1"].value == "URL_declaration"
-    assert sheet["B2"].value == "'https://index-egapro.travail.gouv.fr/simulateur/12345678-1234-5678-9012-123456789012"
+    assert (
+        sheet["B2"].value
+        == "'https://index-egapro.travail.gouv.fr/simulateur/12345678-1234-5678-9012-123456789012"
+    )
 
 
 async def test_dgt_dump_should_compute_declaration_url_for_solen_data():
@@ -56,19 +59,38 @@ async def test_dgt_dump_should_compute_declaration_url_for_solen_data():
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
     assert sheet["B1"].value == "URL_declaration"
-    assert sheet["B2"].value == "'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P=123456781234-123456789012"
+    assert (
+        sheet["B2"].value
+        == "'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P=123456781234-123456789012"
+    )
 
 
 async def test_export_as_csv(declaration):
-    await declaration(company="Mirabar", siren="87654321")
-    await declaration(company="FooBar", siren="87654322")
+    await declaration(
+        company="Mirabar",
+        siren="87654321",
+        informations={"trancheEffectifs": "1000 et plus"},
+    )
+    await declaration(
+        company="FooBar",
+        siren="87654322",
+        year=2018,
+        informations={"trancheEffectifs": "Plus de 250"},
+        data={"effectif": {"nombreSalariesTotal": 1000}}
+    )
+    # Small entreprise, should not be exported.
+    await declaration(
+        company="MiniBar",
+        siren="87654323",
+        informations={"trancheEffectifs": "Plus de 250"},
+    )
     out = io.StringIO()
     await exporter.as_csv(out)
     out.seek(0)
     assert out.read() == (
         "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
-        "Mirabar;;;26;;;;Auvergne-Rhône-Alpes;Drôme\r\n"
-        "FooBar;;;26;;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+        "Mirabar;87654321;2020;26;;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+        "FooBar;87654322;2018;26;;;;Auvergne-Rhône-Alpes;Drôme\r\n"
     )
 
 
@@ -84,11 +106,12 @@ async def test_export_ues_as_csv(declaration):
                 {"nom": "MiraPouet", "siren": "315710251"},
             ],
         },
+        informations={"trancheEffectifs": "1000 et plus"},
     )
     out = io.StringIO()
     await exporter.as_csv(out)
     out.seek(0)
     assert out.read() == (
         "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
-        "Mirabar;;;26;Unité Economique et Sociale (UES);MiraFoo;MiraBaz (315710251),MiraPouet (315710251);Auvergne-Rhône-Alpes;Drôme\r\n"
+        "Mirabar;87654321;2020;26;Unité Economique et Sociale (UES);MiraFoo;MiraBaz (315710251),MiraPouet (315710251);Auvergne-Rhône-Alpes;Drôme\r\n"
     )
