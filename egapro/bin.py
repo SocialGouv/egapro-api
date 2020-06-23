@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 import progressist
 import ujson as json
 
-from egapro import db, models
+from egapro import db, exporter, models
 from egapro.solen import import_solen  # noqa: expose to minicli
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro import dgt
@@ -109,6 +109,14 @@ async def search(q, verbose=False):
         print(f"{data.siren} | {data.year} | {data.company}")
         if verbose:
             print(row)
+
+
+@minicli.cli
+async def export(path: Path):
+    print("Writing the CSV to", path)
+    with path.open("w") as f:
+        await exporter.as_csv(f)
+    print("Done")
 
 
 @minicli.wrap

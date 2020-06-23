@@ -1,4 +1,3 @@
-import locale
 import os
 
 SECRET = "sikretfordevonly"

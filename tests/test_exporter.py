@@ -1,3 +1,4 @@
+import io
 import json
 from pathlib import Path
 
@@ -56,3 +57,38 @@ async def test_dgt_dump_should_compute_declaration_url_for_solen_data():
     sheet = workbook.active
     assert sheet["B1"].value == "URL_declaration"
     assert sheet["B2"].value == "'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P=123456781234-123456789012"
+
+
+async def test_export_as_csv(declaration):
+    await declaration(company="Mirabar", siren="87654321")
+    await declaration(company="FooBar", siren="87654322")
+    out = io.StringIO()
+    await exporter.as_csv(out)
+    out.seek(0)
+    assert out.read() == (
+        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
+        "Mirabar;;;26;;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+        "FooBar;;;26;;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+    )
+
+
+async def test_export_ues_as_csv(declaration):
+    await declaration(
+        company="Mirabar",
+        siren="87654321",
+        entreprise={
+            "nomUES": "MiraFoo",
+            "structure": "Unité Economique et Sociale (UES)",
+            "entreprisesUES": [
+                {"nom": "MiraBaz", "siren": "315710251"},
+                {"nom": "MiraPouet", "siren": "315710251"},
+            ],
+        },
+    )
+    out = io.StringIO()
+    await exporter.as_csv(out)
+    out.seek(0)
+    assert out.read() == (
+        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
+        "Mirabar;;;26;Unité Economique et Sociale (UES);MiraFoo;MiraBaz (315710251),MiraPouet (315710251);Auvergne-Rhône-Alpes;Drôme\r\n"
+    )

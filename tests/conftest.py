@@ -1,5 +1,6 @@
 import asyncio
 import os
+import uuid
 
 import pytest
 from roll.testing import Client as BaseClient
@@ -52,6 +53,42 @@ def event_loop():
 @pytest.fixture
 def app():  # Requested by Roll testing utilities.
     return egapro_app
+
+
+@pytest.fixture
+def declaration():
+    async def factory(
+        siren="12345678",
+        year=2020,
+        owner="foo@bar.com",
+        company="Total Recall",
+        departement="Drôme",
+        region="Auvergne-Rhône-Alpes",
+        grade=26,
+        entreprise=None,
+    ):
+        uid = str(uuid.uuid1())
+        informationsEntreprise = {
+            "nombreEntreprises": 0,
+            "nomEntreprise": company,
+            "departement": departement,
+            "region": region,
+        }
+        if entreprise:
+            informationsEntreprise.update(entreprise)
+        await db.declaration.put(
+            siren,
+            year,
+            owner,
+            {
+                "id": uid,
+                "informationsEntreprise": informationsEntreprise,
+                "declaration": {"noteIndex": grade},
+                "indicateurUn": {"nombreCoefficients": 0},
+            },
+        )
+
+    return factory
 
 
 class Client(BaseClient):
