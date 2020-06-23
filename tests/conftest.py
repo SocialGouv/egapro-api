@@ -65,33 +65,21 @@ def declaration():
         departement="Drôme",
         region="Auvergne-Rhône-Alpes",
         grade=26,
-        entreprise=None,
-        informations=None,
-        data=None,
+        **data,
     ):
         uid = str(uuid.uuid1())
-        _entreprise = {
-            "nombreEntreprises": 0,
-            "nomEntreprise": company,
-            "departement": departement,
-            "region": region,
-            "siren": siren,
-        }
-        _informations = {"anneeDeclaration": year}
-        if informations:
-            _informations.update(informations)
-        if entreprise:
-            _entreprise.update(entreprise)
-        _data = {
-            "id": uid,
-            "informationsEntreprise": _entreprise,
-            "declaration": {"noteIndex": grade},
-            "indicateurUn": {"nombreCoefficients": 0},
-            "informations": _informations,
-        }
-        if data:
-            _data.update(data)
-        await db.declaration.put(siren, year, owner, _data)
+        data.setdefault("informationsEntreprise", {})
+        data.setdefault("informations", {})
+        data.setdefault("declaration", {})
+        data.setdefault("id", uid)
+        data["informationsEntreprise"].setdefault("nomEntreprise", company)
+        data["informationsEntreprise"].setdefault("departement", departement)
+        data["informationsEntreprise"].setdefault("region", region)
+        data["informationsEntreprise"].setdefault("siren", siren)
+        data["informations"].setdefault("anneeDeclaration", year)
+        data["declaration"].setdefault("noteIndex", grade)
+        await db.declaration.put(siren, year, owner, data)
+        return uid
 
     return factory
 

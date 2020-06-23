@@ -76,7 +76,7 @@ async def test_export_as_csv(declaration):
         siren="87654322",
         year=2018,
         informations={"trancheEffectifs": "Plus de 250"},
-        data={"effectif": {"nombreSalariesTotal": 1000}}
+        effectif={"nombreSalariesTotal": 1000},
     )
     # Small entreprise, should not be exported.
     await declaration(
@@ -98,7 +98,7 @@ async def test_export_ues_as_csv(declaration):
     await declaration(
         company="Mirabar",
         siren="87654321",
-        entreprise={
+        informationsEntreprise={
             "nomUES": "MiraFoo",
             "structure": "Unité Economique et Sociale (UES)",
             "entreprisesUES": [
