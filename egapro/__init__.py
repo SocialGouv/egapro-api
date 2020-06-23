@@ -173,6 +173,13 @@ async def search(request, response):
     response.json = {"data": results, "total": len(results)}
 
 
+@app.route("/healthz")
+async def healthz(request, response):
+    """Expose API health to K8S."""
+    # TODO make health check, like DB connection.
+    pass
+
+
 @app.listen("startup")
 async def on_startup():
     await init()
