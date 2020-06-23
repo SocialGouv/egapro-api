@@ -9,7 +9,6 @@ SMTP_HOST = "mail.gandi.net"
 SMTP_PASSWORD = ""
 SMTP_LOGIN = ""
 FROM_EMAIL = "contact@egapro.org"
-LOCALE = "fr_FR.UTF-8"
 SITE_DESCRIPTION = "Egapro"
 EMAIL_SIGNATURE = "Egapro"
 DBNAME = "egapro"
@@ -28,7 +27,6 @@ def init():
                 typ = lambda x: x.split()
             if env_key in os.environ:
                 globals()[key] = typ(os.environ[env_key])
-    locale.setlocale(locale.LC_ALL, LOCALE)
 
 
 init()
