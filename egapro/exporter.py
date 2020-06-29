@@ -23,7 +23,7 @@ async def dump(path: Path):
 
 
 @minicli.cli
-async def as_csv(path: Path):
+async def public_data(path: Path):
     """Export des données Egapro publiques au format CSV.
 
     :path:          chemin vers le fichier d'export
@@ -60,8 +60,8 @@ async def as_csv(path: Path):
         data = models.Data(record["data"])
         ues = ",".join(
             [
-                f"{c['nom']} ({c['siren']})"
-                for c in data.path("informationsEntreprise.entreprisesUES") or []
+                f"{company['nom']} ({company['siren']})"
+                for company in data.path("informationsEntreprise.entreprisesUES") or []
             ]
         )
         rows.append(

@@ -112,10 +112,10 @@ async def search(q, verbose=False):
 
 
 @minicli.cli
-async def export(path: Path):
+async def export_public_data(path: Path):
     print("Writing the CSV to", path)
     with path.open("w") as f:
-        await exporter.as_csv(f)
+        await exporter.public_data(f)
     print("Done")
 
 

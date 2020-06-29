@@ -65,7 +65,7 @@ async def test_dgt_dump_should_compute_declaration_url_for_solen_data():
     )
 
 
-async def test_export_as_csv(declaration):
+async def test_export_public_data(declaration):
     await declaration(
         company="Mirabar",
         siren="87654321",
@@ -85,7 +85,7 @@ async def test_export_as_csv(declaration):
         informations={"trancheEffectifs": "Plus de 250"},
     )
     out = io.StringIO()
-    await exporter.as_csv(out)
+    await exporter.public_data(out)
     out.seek(0)
     assert out.read() == (
         "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
@@ -94,7 +94,7 @@ async def test_export_as_csv(declaration):
     )
 
 
-async def test_export_ues_as_csv(declaration):
+async def test_export_ues_public_data(declaration):
     await declaration(
         company="Mirabar",
         siren="87654321",
@@ -109,7 +109,7 @@ async def test_export_ues_as_csv(declaration):
         informations={"trancheEffectifs": "1000 et plus"},
     )
     out = io.StringIO()
-    await exporter.as_csv(out)
+    await exporter.public_data(out)
     out.seek(0)
     assert out.read() == (
         "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
