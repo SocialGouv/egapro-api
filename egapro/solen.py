@@ -680,9 +680,9 @@ class ExcelData:
                 sheet_name=[EXCEL_NOM_FEUILLE_REPONDANTS, EXCEL_NOM_FEUILLE_UES],
                 dtype={"CP": str, "telephone": str, "SIREN_ets": str, "SIREN_UES": str},
             )
-        except XLRDError:
+        except XLRDError as err:
             raise ExcelDataError(
-                f"Le format du fichier '{pathToExcelFile}' n'a pu être interprété."
+                f"Le format du fichier '{pathToExcelFile}' n'a pu être interprété: {err}"
             )
         self.fields = {
             EXCEL_NOM_FEUILLE_REPONDANTS: set([]),
@@ -833,8 +833,8 @@ class App:
             await db.declaration.put(siren, year, owner, record["data"])
 
 
-@minicli.cli
-async def import_solen(
+@minicli.cli(name="import-solen")
+async def main(
     path,
     year,
     debug=False,
