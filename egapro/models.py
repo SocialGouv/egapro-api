@@ -1,4 +1,21 @@
 class Data(dict):
+
+    # Emulate **kwargs.
+    def __getitem__(self, key):
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            return super().__getitem__(key)
+
+    def keys(self):
+        keys = set(super().keys())
+        # Extend with custom properties.
+        return keys | (set(dir(self)) - set(dir(dict)))
+
+    def __iter__(self):
+        yield from self.keys()
+        # End emulate **kwargs.
+
     @property
     def id(self):
         return self.get("id")

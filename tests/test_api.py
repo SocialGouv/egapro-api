@@ -57,6 +57,26 @@ async def test_basic_declaration_should_save_data(client):
     }
 
 
+async def test_patch_declaration(client, declaration):
+    await declaration(
+        siren="12345678",
+        year=2018,
+        owner="foo@bar.org",
+        informationsEntreprise={"nomEntreprise": "Roma"},
+    )
+    resp = await client.patch(
+        "/declaration/12345678/2018",
+        body={
+            "informationsEntreprise": {"nomEntreprise": "Roma"},
+            "declaration": {"formValidated": "Invalid"},
+        },
+    )
+    assert resp.status == 204
+    declaration = await db.declaration.get("12345678", 2018)
+    assert declaration["data"]["informationsEntreprise"]["nomEntreprise"] == "Roma"
+    assert declaration["data"]["declaration"] == {"formValidated": "Invalid"}
+
+
 async def test_basic_declaration_should_remove_data_namespace_if_present(client):
     await client.put("/declaration/514027945/2020", body={"data": {"foo": "bar"}})
     assert (await db.declaration.get("514027945", "2020"))["data"] == {"foo": "bar"}

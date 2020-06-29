@@ -35,11 +35,7 @@ def require(view):
             except ValueError:
                 raise HttpError(401, "Invalid token")
         else:
-            email = (
-                request.json.get("data", {})
-                .get("informationsDeclarant", {})
-                .get("email")
-            )
+            email = request.data.email
             if not email:
                 raise HttpError(422, "Missing declarant email")
         request["email"] = email
