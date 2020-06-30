@@ -8,7 +8,7 @@ import progressist
 import ujson as json
 
 from egapro import config, db, exporter, models
-from egapro.solen import import_solen  # noqa: expose to minicli
+from egapro.solen import *  # noqa: expose to minicli
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro import dgt
 
