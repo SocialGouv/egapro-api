@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 import progressist
 import ujson as json
 
-from egapro import db, exporter, models
+from egapro import config, db, exporter, models
 from egapro.solen import import_solen  # noqa: expose to minicli
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro import dgt
@@ -15,7 +15,7 @@ from egapro import dgt
 
 @minicli.cli
 async def migrate_legacy():
-    conn = await asyncpg.connect("postgresql://postgres@localhost/legacy_egapro")
+    conn = await asyncpg.connect(config.LEGACY_PSQL)
     rows = await conn.fetch("SELECT * FROM objects;")
     await conn.close()
     bar = progressist.ProgressBar(prefix="Importing…", total=len(rows), throttle=100)
