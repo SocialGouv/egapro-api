@@ -91,8 +91,6 @@ async def patch_declaration(request, response, siren, year):
 
 
 @app.route("/declaration/{siren}/{year}", methods=["GET"])
-@tokens.require
-@ensure_owner
 async def get_declaration(request, response, siren, year):
     try:
         response.json = db.declaration.as_resource(
