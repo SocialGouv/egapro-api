@@ -1,0 +1,3 @@
+recursive-include egapro/emails *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
