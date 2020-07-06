@@ -1,6 +1,8 @@
+import sys
 import uuid
 
 import asyncpg
+from asyncpg.exceptions import PostgresError
 import ujson as json
 
 from . import config, models, utils
@@ -156,14 +158,17 @@ async def set_type_codecs(conn):
 
 
 async def init():
-    table.pool = await asyncpg.create_pool(
-        database=config.DBNAME,
-        host=config.DBHOST,
-        user=config.DBUSER,
-        password=config.DBPASS,
-        max_size=config.DBMAXSIZE,
-        init=set_type_codecs,
-    )
+    try:
+        table.pool = await asyncpg.create_pool(
+            database=config.DBNAME,
+            host=config.DBHOST,
+            user=config.DBUSER,
+            password=config.DBPASS,
+            max_size=config.DBMAXSIZE,
+            init=set_type_codecs,
+        )
+    except (OSError, PostgresError) as err:
+        sys.exit(f"Cannot connect to DB: {err}")
     async with table.pool.acquire() as conn:
         await conn.execute(
             "CREATE TABLE IF NOT EXISTS declaration "
