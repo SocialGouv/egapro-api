@@ -17,6 +17,7 @@ DBPASS = "postgres"
 DBMAXSIZE = 10
 # Used for initial import from Kinto. Delete me once this is done.
 LEGACY_PSQL = "postgresql://postgres@localhost/legacy_egapro"
+BASE_URL = ""
 
 
 def init():
