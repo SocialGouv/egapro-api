@@ -14,6 +14,11 @@ class Request(BaseRequest):
         data = self.json
         if "data" in data:
             data = data["data"]
+        # Legacy identifier, be defensive and try hard to find it.
+        if "id" not in data:
+            id_ = self.json.get("id")
+            if id_:
+                data["id"] = id_
         return models.Data(data)
 
 
