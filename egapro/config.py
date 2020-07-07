@@ -32,4 +32,11 @@ def init():
                 globals()[key] = typ(os.environ[env_key])
 
 
+def debug():
+    for key, value in globals().items():
+        if not key.isupper():
+            continue
+        print(f"{key}={value}")
+
+
 init()
