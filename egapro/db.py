@@ -191,10 +191,10 @@ async def create():
         password=config.DBPASS,
         ssl=config.DBSSL,
     )
+    # Asure username is in the form user@servername.
+    user = config.DBUSER.split("@")[0]
     try:
-        await conn.fetch(
-            f"CREATE DATABASE {config.DBNAME} OWNER {config.DBUSER};"
-        )
+        await conn.fetch(f"CREATE DATABASE {config.DBNAME} OWNER {user};")
     except DuplicateDatabaseError as err:
         print(err)
     await conn.close()
