@@ -1,4 +1,4 @@
-import smtplib
+import smtplib, ssl
 from email.message import EmailMessage
 from pathlib import Path
 
@@ -27,14 +27,16 @@ def send(to, subject, txt, html=None):
         print("Sending email", str(msg))
         print("email txt:", txt)
         return
-    try:
-        server = smtplib.SMTP_SSL(config.SMTP_HOST)
-        server.login(config.FROM_EMAIL, config.SMTP_PASSWORD)
-        server.send_message(msg)
-    except smtplib.SMTPException:
-        raise RuntimeError
-    finally:
-        server.quit()
+    context = ssl.create_default_context()
+    with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT) as server:
+        if config.SMTP_SSL:
+            server.starttls(context=context)
+        try:
+            if config.SMTP_LOGIN:
+                server.login(config.SMTP_LOGIN, config.SMTP_PASSWORD)
+            server.send_message(msg)
+        except smtplib.SMTPException as err:
+            raise RuntimeError from err
 
 
 class Email:
