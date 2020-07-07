@@ -197,6 +197,8 @@ async def create():
         await conn.fetch(f"CREATE DATABASE {config.DBNAME} OWNER {user};")
     except DuplicateDatabaseError as err:
         print(err)
+    else:
+        print(f"Created database {config.DBNAME} for user {user}")
     await conn.close()
 
 
