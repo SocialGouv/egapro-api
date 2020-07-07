@@ -14,6 +14,7 @@ DBNAME = "egapro"
 DBHOST = "localhost"
 DBUSER = "postgres"
 DBPASS = "postgres"
+DBSSL = False
 DBMAXSIZE = 10
 # Used for initial import from Kinto. Delete me once this is done.
 LEGACY_PSQL = "postgresql://postgres@localhost/legacy_egapro"

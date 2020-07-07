@@ -100,7 +100,7 @@ class declaration(table):
                 "SELECT data FROM declaration WHERE ft @@ to_tsquery('french', $1) "
                 "LIMIT $2",
                 utils.prepare_query(query),
-                limit
+                limit,
             )
         return [cls.public_data(row["data"]) for row in rows]
 
@@ -166,6 +166,7 @@ async def init():
             password=config.DBPASS,
             max_size=config.DBMAXSIZE,
             init=set_type_codecs,
+            ssl=config.DBSSL,
         )
     except (OSError, PostgresError) as err:
         sys.exit(f"Cannot connect to DB: {err}")
