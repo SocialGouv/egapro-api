@@ -119,6 +119,12 @@ async def export_public_data(path: Path):
     print("Done")
 
 
+@minicli.cli
+async def create_db():
+    """Create PostgreSQL database."""
+    await db.create()
+
+
 @minicli.wrap
 async def wrapper():
     await db.init()

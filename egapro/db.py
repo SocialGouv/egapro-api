@@ -1,8 +1,7 @@
-import sys
 import uuid
 
 import asyncpg
-from asyncpg.exceptions import PostgresError
+from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
 import ujson as json
 
 from . import config, models, utils
@@ -15,6 +14,7 @@ class NoData(Exception):
 class table:
 
     conn = None
+    pool = None
     fields = []
 
     @classmethod
@@ -169,7 +169,8 @@ async def init():
             ssl=config.DBSSL,
         )
     except (OSError, PostgresError) as err:
-        sys.exit(f"Cannot connect to DB: {err}")
+        print(f"CRITICAL Cannot connect to DB: {err}")
+        return
     async with table.pool.acquire() as conn:
         await conn.execute(
             "CREATE TABLE IF NOT EXISTS declaration "
@@ -182,5 +183,25 @@ async def init():
         )
 
 
+async def create():
+    conn = await asyncpg.connect(
+        database="template1",
+        host=config.DBHOST,
+        user=config.DBUSER,
+        password=config.DBPASS,
+        ssl=config.DBSSL,
+    )
+    try:
+        await conn.fetch(
+            f"CREATE DATABASE {config.DBNAME} OWNER {config.DBUSER};"
+        )
+    except DuplicateDatabaseError as err:
+        print(err)
+    await conn.close()
+
+
 async def terminate():
-    table.pool.terminate()
+    try:
+        table.pool.terminate()
+    except AttributeError:
+        print("DB not initialized, nothing to do.")
