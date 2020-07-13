@@ -35,9 +35,9 @@ async def public_data(path: Path):
         WHERE
             data->'informations'->>'trancheEffectifs' = '1000 et plus'
                 OR (
-                    (data->'informations'->'anneeDeclaration')::int=2018
+                    (data->'informations'->>'anneeDeclaration')::int=2018
                     AND data->'informations'->>'trancheEffectifs' = 'Plus de 250'
-                    AND (data->'effectif'->'nombreSalariesTotal')::int >= 1000
+                    AND (data->'effectif'->>'nombreSalariesTotal')::int >= 1000
                     )
         ;"""
     )
