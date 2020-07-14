@@ -13,6 +13,12 @@ async def test_cannot_put_declaration_without_token(client):
     assert resp.status == 401
 
 
+async def test_cannot_get_declaration_without_token(client):
+    client.logout()
+    resp = await client.get("/declaration/514027945/2020")
+    assert resp.status == 401
+
+
 async def test_request_token(client, monkeypatch):
     calls = 0
 
@@ -82,7 +88,6 @@ async def test_basic_declaration_should_remove_data_namespace_if_present(client)
     assert (await db.declaration.get("514027945", "2020"))["data"] == {"foo": "bar"}
 
 
-@pytest.mark.xfail
 async def test_cannot_load_not_owned_declaration(client, monkeypatch):
     async def mock_owner(*args, **kwargs):
         return "foo@bar.baz"
@@ -261,6 +266,7 @@ async def test_put_simulation_should_redirect_to_declaration_if_validated(client
 async def test_get_simulation_should_redirect_to_declaration_if_validated(client):
     uid = await db.simulation.create(
         {
+            "informationsDeclarant": {"email": "foo@bar.org"},
             "declaration": {"formValidated": "Valid"},
             "informationsEntreprise": {"siren": "12345678"},
             "informations": {"anneeDeclaration": 2020},
@@ -269,6 +275,7 @@ async def test_get_simulation_should_redirect_to_declaration_if_validated(client
     resp = await client.get(f"/simulation/{uid}")
     assert resp.status == 302
     assert resp.headers["Location"] == "/declaration/12345678/2020"
+    assert "api-key" in resp.cookies
 
 
 async def test_stats_endpoint(client):

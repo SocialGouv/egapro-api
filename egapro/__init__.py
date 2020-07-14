@@ -96,6 +96,8 @@ async def patch_declaration(request, response, siren, year):
 
 
 @app.route("/declaration/{siren}/{year}", methods=["GET"])
+@tokens.require
+@ensure_owner
 async def get_declaration(request, response, siren, year):
     try:
         response.json = db.declaration.as_resource(
@@ -148,6 +150,10 @@ async def get_simulation(request, response, uuid):
     record = await db.simulation.get(uuid)
     data = models.Data(record["data"])
     if data.validated:
+        if not data.email:
+            raise HttpError(400, "Anonymous declaration")
+        token = tokens.create(data.email)
+        response.cookies.set(name='api-key', value=token.decode(), httponly=True)
         location = f"{config.BASE_URL}/declaration/{data.siren}/{data.year}"
         response.redirect = location, 302
         return

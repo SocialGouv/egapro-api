@@ -27,7 +27,7 @@ def require(view):
     @wraps(view)
     def wrapper(request, response, *args, **kwargs):
         if config.REQUIRE_TOKEN:
-            token = request.headers.get("API-KEY")
+            token = request.headers.get("API-KEY") or request.cookies.get("api-key")
             if not token:
                 raise HttpError(401, "No authentication token was provided.")
             try:
