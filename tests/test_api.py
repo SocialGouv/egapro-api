@@ -251,6 +251,7 @@ async def test_put_simulation_should_redirect_to_declaration_if_validated(client
         "/simulation/12345678-1234-5678-9012-123456789012",
         body={
             "data": {
+                "informationsDeclarant": {"email": "foo@bar.org"},
                 "declaration": {"formValidated": "Valid"},
                 "informationsEntreprise": {"siren": "12345678"},
                 "informations": {"anneeDeclaration": 2020},
@@ -273,7 +274,7 @@ async def test_get_simulation_should_redirect_to_declaration_if_validated(client
         }
     )
     resp = await client.get(f"/simulation/{uid}")
-    assert resp.status == 302
+    assert resp.status == 307
     assert resp.headers["Location"] == "/declaration/12345678/2020"
     assert "api-key" in resp.cookies
 
