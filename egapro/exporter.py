@@ -6,7 +6,7 @@ from pathlib import Path
 import minicli
 import ujson as json
 
-from egapro import db, models
+from egapro import db, models, sql
 
 
 @minicli.cli
@@ -29,18 +29,7 @@ async def public_data(path: Path):
     :path:          chemin vers le fichier d'export
     """
 
-    records = await db.declaration.fetch(
-        """
-        SELECT data FROM declaration
-        WHERE
-            data->'informations'->>'trancheEffectifs' = '1000 et plus'
-                OR (
-                    (data->'informations'->>'anneeDeclaration')::int=2018
-                    AND data->'informations'->>'trancheEffectifs' = 'Plus de 250'
-                    AND (data->'effectif'->>'nombreSalariesTotal')::int >= 1000
-                    )
-        ;"""
-    )
+    records = await db.declaration.fetch(sql.public_declarations)
     writer = csv.writer(path, delimiter=";")
     writer.writerow(
         [
