@@ -93,9 +93,7 @@ class declaration(table):
     @classmethod
     async def search(cls, query, limit=10):
         async with cls.pool.acquire() as conn:
-            rows = await conn.fetch(
-                "SELECT data FROM declaration WHERE ft @@ to_tsquery('ftdict', $1) "
-                "LIMIT $2",
+            rows = await conn.fetch(sql.search,
                 utils.prepare_query(query),
                 limit,
             )
