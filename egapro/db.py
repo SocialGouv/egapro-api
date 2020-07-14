@@ -4,7 +4,7 @@ import asyncpg
 from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
 import ujson as json
 
-from . import config, models, utils
+from . import config, models, sql, utils
 
 
 class NoData(Exception):
@@ -65,10 +65,7 @@ class declaration(table):
         ft = data.get("informationsEntreprise", {}).get("nomEntreprise")
         async with cls.pool.acquire() as conn:
             await conn.execute(
-                "INSERT INTO declaration (siren, year, last_modified, owner, data, ft) "
-                "VALUES ($1, $2, $3, $4, $5, to_tsvector('french', $6)) "
-                "ON CONFLICT (siren, year) DO UPDATE "
-                "SET last_modified=$3, owner=$4, data=$5, ft=to_tsvector('french', $6)",
+                sql.insert_declaration,
                 siren,
                 int(year),
                 last_modified,
@@ -97,12 +94,20 @@ class declaration(table):
     async def search(cls, query, limit=10):
         async with cls.pool.acquire() as conn:
             rows = await conn.fetch(
-                "SELECT data FROM declaration WHERE ft @@ to_tsquery('french', $1) "
+                "SELECT data FROM declaration WHERE ft @@ to_tsquery('ftdict', $1) "
                 "LIMIT $2",
                 utils.prepare_query(query),
                 limit,
             )
         return [cls.public_data(row["data"]) for row in rows]
+
+    @classmethod
+    async def reindex(cls):
+        async with cls.pool.acquire() as conn:
+            # TODO use a generated column (PSQL >= 12 only)
+            await conn.execute(
+                "UPDATE declaration SET ft=to_tsvector('ftdict', data->'informationsEntreprise'->>'nomEntreprise')"
+            )
 
     @classmethod
     def public_data(cls, data):
@@ -172,15 +177,10 @@ async def init():
         print(f"CRITICAL Cannot connect to DB: {err}")
         return
     async with table.pool.acquire() as conn:
-        await conn.execute(
-            "CREATE TABLE IF NOT EXISTS declaration "
-            "(siren TEXT, year INT, last_modified TIMESTAMP WITH TIME ZONE, owner TEXT, data JSONB, ft TSVECTOR, "
-            "PRIMARY KEY (siren, year));"
-            "CREATE INDEX IF NOT EXISTS idx_effectifs ON declaration ((data->'informations'->'trancheEffectifs'));"
-            "CREATE INDEX IF NOT EXISTS idx_ft ON declaration USING GIN (ft);"
-            "CREATE TABLE IF NOT EXISTS simulation "
-            "(id uuid PRIMARY KEY, last_modified TIMESTAMP WITH TIME ZONE, data JSONB);"
-        )
+        await conn.execute("CREATE EXTENSION IF NOT EXISTS unaccent")
+        await conn.execute(sql.create_ftdict)
+        await conn.execute(sql.create_declaration_table)
+        await conn.execute(sql.create_simulation_table)
 
 
 async def create():

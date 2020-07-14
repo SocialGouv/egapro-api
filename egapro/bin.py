@@ -125,6 +125,12 @@ async def create_db():
     await db.create()
 
 
+@minicli.cli
+async def reindex():
+    """Reindex Full Text search."""
+    await db.declaration.reindex()
+
+
 @minicli.wrap
 async def wrapper():
     await db.init()

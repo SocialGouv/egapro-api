@@ -20,6 +20,7 @@ async def test_search(client):
         ("12345674", "Bio c bon"),
         ("12345675", "Bio c pas bon"),
         ("12345676", "Pyrénées"),
+        ("12345677", "Decathlon"),
     ]
     for siren, nom in rows:
         await db.declaration.put(
@@ -40,6 +41,8 @@ async def test_search(client):
         "informations": {"anneeDeclaration": 2020},
     }
     results = await db.declaration.search("pyrenées")
+    assert len(results) == 1
+    results = await db.declaration.search("décathlon")
     assert len(results) == 1
     results = await db.declaration.search("bio")
     assert len(results) == 3
