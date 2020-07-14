@@ -28,7 +28,7 @@ class App(Roll):
 
 app = App()
 traceback(app)
-cors(app, methods=["GET", "PUT"], headers="*")
+cors(app, methods="*", headers=["*", "Content-Type"], credentials=True)
 options(app)
 
 
@@ -131,37 +131,40 @@ async def send_simulation_code(request, response, uuid):
     emails.permalink.send(email, id=uuid)
 
 
-@app.route("/simulation/{uuid}", methods=["PUT"])
-async def simulate(request, response, uuid):
-    data = request.data
-    await db.simulation.put(uuid, data)
-    if data.validated:
-        # This is a declaration, for now let's redirect.
-        # https://tools.ietf.org/html/rfc7231#section-6.4.7
-        location = f"{config.BASE_URL}/declaration/{data.siren}/{data.year}"
-        response.redirect = location, 307
-        return
-    response.json = db.simulation.as_resource(await db.simulation.get(uuid))
-    response.status = 200
+@app.route("/simulation/{uuid}")
+class SimulationResource:
 
+    async def on_put(self, request, response, uuid):
+        data = request.data
+        await db.simulation.put(uuid, data)
+        if self.is_declaration(response, data):
+            return
+        response.json = db.simulation.as_resource(await db.simulation.get(uuid))
+        response.status = 200
 
-@app.route("/simulation/{uuid}", methods=["GET"])
-async def get_simulation(request, response, uuid):
-    record = await db.simulation.get(uuid)
-    data = models.Data(record["data"])
-    if data.validated:
+    async def on_get(self, request, response, uuid):
+        record = await db.simulation.get(uuid)
+        data = models.Data(record["data"])
+        if self.is_declaration(response, data):
+            return
+        try:
+            response.json = db.simulation.as_resource(record)
+        except db.NoData:
+            raise HttpError(404, f"No simulation found with uuid {uuid}")
+        response.status = 200
+
+    def is_declaration(self, response, data):
+        """This is an old fashioned declaration. Let's redirect for now."""
+        if not data.validated:
+            return
         if not data.email:
             raise HttpError(400, "Anonymous declaration")
         token = tokens.create(data.email)
-        response.cookies.set(name='api-key', value=token.decode(), httponly=True)
+        response.cookies.set(name='api-key', value=token.decode())
         location = f"{config.BASE_URL}/declaration/{data.siren}/{data.year}"
-        response.redirect = location, 302
-        return
-    try:
-        response.json = db.simulation.as_resource(record)
-    except db.NoData:
-        raise HttpError(404, f"No simulation found with uuid {uuid}")
-    response.status = 200
+        # https://tools.ietf.org/html/rfc7231#section-6.4.7
+        response.redirect = location, 307
+        return True
 
 
 @app.route("/token", methods=["POST"])
