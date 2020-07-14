@@ -4,5 +4,5 @@ WHERE
     OR (
         (data->'informations'->>'anneeDeclaration')::int=2018
         AND data->'informations'->>'trancheEffectifs' = 'Plus de 250'
-        AND COALESCE((data->'effectif'->'nombreSalariesTotal')::int, 0) >= 1000
+        AND COALESCE((data->'effectif'->>'nombreSalariesTotal')::float, 0) >= 1000
     )
