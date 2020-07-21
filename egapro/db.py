@@ -199,6 +199,7 @@ async def create():
 
 async def terminate():
     try:
-        table.pool.terminate()
+        await table.pool.close()
+        print("Closing DB pool.")
     except AttributeError:
         print("DB not initialized, nothing to do.")
