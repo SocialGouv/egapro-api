@@ -1,3 +1,4 @@
+import sys
 import uuid
 
 import asyncpg
@@ -169,8 +170,7 @@ async def init():
             ssl=config.DBSSL,
         )
     except (OSError, PostgresError) as err:
-        print(f"CRITICAL Cannot connect to DB: {err}")
-        return
+        sys.exit(f"CRITICAL Cannot connect to DB: {err}")
     async with table.pool.acquire() as conn:
         await conn.execute("CREATE EXTENSION IF NOT EXISTS unaccent")
         await conn.execute(sql.create_ftdict)
