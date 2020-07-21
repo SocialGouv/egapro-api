@@ -827,10 +827,13 @@ class App:
             year = record["data"].year
             siren = record["data"].siren
             owner = record["data"].email
+            last_modified = datetime.strptime(
+                record["data"].path("declaration.dateDeclaration"), DATE_FORMAT_OUTPUT_HEURE
+            )
             if not owner:
                 failed.append(record)
                 continue
-            await db.declaration.put(siren, year, owner, record["data"])
+            await db.declaration.put(siren, year, owner, record["data"], last_modified)
 
 
 @minicli.cli(name="import-solen")

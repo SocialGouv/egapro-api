@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,9 @@ async def test_basic_solen_import():
     data = models.Data(declaration["data"])
     assert data.siren == "783247548"
     assert data["source"] == "solen-2018"
+    assert declaration["last_modified"] == datetime(
+        2020, 6, 2, 13, 20, tzinfo=timezone.utc
+    )
     assert data.path("effectif.nombreSalariesTotal") == 76
     assert data.path("declaration.datePublication") == "03/06/2020"
     assert data.validated
