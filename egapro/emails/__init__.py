@@ -17,8 +17,8 @@ L'équipe Egapro
 
 def send(to, subject, txt, html=None):
     msg = EmailMessage()
-    msg["To"] = to
     msg["From"] = config.FROM_EMAIL
+    msg["To"] = to
     msg["Subject"] = subject
     msg.set_content(txt)
     if html:
@@ -56,7 +56,8 @@ def load():
     `success`."""
     for path in Path(__file__).parent.iterdir():
         if path.is_dir() and not path.name.startswith("_"):
-            subject = (path / "subject.txt").read_text()
+            # Don't include carriage return in subject.
+            subject = (path / "subject.txt").read_text()[:-1]
             txt = (path / "body.txt").read_text()
             html = path / "body.html"
             if html.exists():
