@@ -165,6 +165,7 @@ async def init():
             host=config.DBHOST,
             user=config.DBUSER,
             password=config.DBPASS,
+            min_size=config.DBMINSIZE,
             max_size=config.DBMAXSIZE,
             init=set_type_codecs,
             ssl=config.DBSSL,
