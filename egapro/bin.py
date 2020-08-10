@@ -1,4 +1,5 @@
 import sys
+from datetime import timezone
 from pathlib import Path
 
 import asyncpg
@@ -29,9 +30,18 @@ async def migrate_legacy():
             data = models.Data(data["data"])
             last_modified = row["last_modified"]
             if data.validated:
-                await db.declaration.put(
-                    data.siren, data.year, data.email, data, last_modified
-                )
+                try:
+                    existing = await db.declaration.get(data.siren, data.year)
+                except db.NoData:
+                    current = None
+                else:
+                    current = existing["last_modified"]
+                # Allow to compare aware datetimes.
+                last_modified = last_modified.replace(tzinfo=timezone.utc)
+                if not current or last_modified > current:
+                    await db.declaration.put(
+                        data.siren, data.year, data.email, data, last_modified
+                    )
             else:
                 await db.simulation.put(uuid, data, last_modified)
 
