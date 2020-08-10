@@ -17,10 +17,10 @@ L'équipe Egapro
 
 def send(to, subject, txt, html=None):
     msg = EmailMessage()
-    msg.set_content(txt)
-    msg["Subject"] = subject
-    msg["From"] = config.FROM_EMAIL
     msg["To"] = to
+    msg["From"] = config.FROM_EMAIL
+    msg["Subject"] = subject
+    msg.set_content(txt)
     if html:
         msg.add_alternative(html, subtype="html")
     if not config.SEND_EMAILS:
