@@ -7,7 +7,7 @@ import pandas
 import sys
 
 from collections import OrderedDict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from itertools import islice
 from jsonschema import Draft7Validator
 from jsonschema.exceptions import ValidationError
@@ -828,12 +828,24 @@ class App:
             siren = record["data"].siren
             owner = record["data"].email
             last_modified = datetime.strptime(
-                record["data"].path("declaration.dateDeclaration"), DATE_FORMAT_OUTPUT_HEURE
+                record["data"].path("declaration.dateDeclaration"),
+                DATE_FORMAT_OUTPUT_HEURE,
             )
             if not owner:
                 failed.append(record)
                 continue
-            await db.declaration.put(siren, year, owner, record["data"], last_modified)
+            try:
+                declaration = await db.declaration.get(siren, year)
+            except db.NoData:
+                current = None
+            else:
+                current = declaration["last_modified"]
+            # Allow to compare aware datetimes.
+            last_modified = last_modified.replace(tzinfo=timezone.utc)
+            if not current or last_modified > current:
+                await db.declaration.put(
+                    siren, year, owner, record["data"], last_modified
+                )
 
 
 @minicli.cli(name="import-solen")
