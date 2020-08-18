@@ -5,6 +5,7 @@ import jwt
 from roll import HttpError
 
 from . import config, utils
+from .loggers import logger
 
 
 def create(email):
@@ -29,10 +30,12 @@ def require(view):
         if config.REQUIRE_TOKEN:
             token = request.headers.get("API-KEY") or request.cookies.get("api-key")
             if not token:
+                logger.debug("Request without token on %s", request.path)
                 raise HttpError(401, "No authentication token was provided.")
             try:
                 email = read(token)
             except ValueError:
+                logger.debug("Invalid token on %s (token: %s)", request.path, token)
                 raise HttpError(401, "Invalid token")
         else:
             email = request.data.email

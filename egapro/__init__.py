@@ -6,6 +6,7 @@ from asyncpg.exceptions import DataError
 from roll.extensions import cors, options, simple_server, traceback
 
 from . import config, db, emails, models, tokens
+from .loggers import logger
 
 
 class Request(BaseRequest):
@@ -57,8 +58,16 @@ def ensure_owner(view):
             pass
         else:
             if owner != declarant:
+                logger.info(
+                    "Non owner (%s instead of %s) accessing resource %s %s",
+                    declarant,
+                    owner,
+                    siren,
+                    year,
+                )
                 # TODO should we obfuscate the existence of the resource?
-                raise HttpError(403, "Sorry, no")
+                if request.method not in ("GET", "OPTIONS"):
+                    raise HttpError(403, "Sorry, no")
         return await view(request, response, siren, year, *args, **kwargs)
 
     return wrapper
@@ -133,7 +142,6 @@ async def send_simulation_code(request, response, uuid):
 
 @app.route("/simulation/{uuid}")
 class SimulationResource:
-
     async def on_put(self, request, response, uuid):
         data = request.data
         await db.simulation.put(uuid, data)
@@ -160,7 +168,7 @@ class SimulationResource:
         if not data.email:
             raise HttpError(400, "Anonymous declaration")
         token = tokens.create(data.email)
-        response.cookies.set(name='api-key', value=token.decode())
+        response.cookies.set(name="api-key", value=token.decode())
         location = f"{config.BASE_URL}/declaration/{data.siren}/{data.year}"
         # https://tools.ietf.org/html/rfc7231#section-6.4.7
         response.redirect = location, 307

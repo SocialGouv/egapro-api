@@ -2,7 +2,7 @@ import os
 
 SECRET = "sikretfordevonly"
 JWT_ALGORITHM = "HS256"
-REQUIRE_TOKEN = False
+REQUIRE_TOKEN = True
 SEND_EMAILS = False
 SMTP_HOST = "127.0.0.1"
 SMTP_PORT = 1025
@@ -22,6 +22,7 @@ DBMAXSIZE = 10
 # Used for initial import from Kinto. Delete me once this is done.
 LEGACY_PSQL = "postgresql://postgres@localhost/legacy_egapro"
 BASE_URL = ""
+ALLOW_ORIGIN = "*"
 
 
 def init():
