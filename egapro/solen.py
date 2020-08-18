@@ -131,7 +131,7 @@ class RowProcessorError(RuntimeError):
 class RowProcessor:
     READ_FIELDS = set({})
 
-    def __init__(self, solen_year, logger, row, validator, debug=False):
+    def __init__(self, solen_year, logger, row, validator=None, debug=False):
         self.solen_year = solen_year
         self.logger = logger
         if row is None:
@@ -176,11 +176,12 @@ class RowProcessor:
         date = self.get(csvFieldName)
         if date is None:
             return
-        try:
-            formatted = datetime.strptime(date, DATE_FORMAT_INPUT).strftime(format)
-            return self.set(path, formatted)
-        except ValueError:
-            raise RowProcessorError(f"Impossible de traiter la valeur date '{date}'.")
+        if not isinstance(date, datetime):
+            try:
+                date = datetime.strptime(date, DATE_FORMAT_INPUT)
+            except (ValueError, TypeError) as err:
+                raise RowProcessorError(f"Impossible de traiter la valeur date '{date}': {err}")
+        return self.set(path, date.strftime(format))
 
     def importFloatField(self, csvFieldName, path):
         return self.importField(csvFieldName, path, type=float)
@@ -672,7 +673,7 @@ def initValidator(jsonschema_path):
 
 
 class ExcelData:
-    def __init__(self, logger, pathToExcelFile):
+    def __init__(self, pathToExcelFile, logger=None):
         self.logger = logger
         try:
             excel = pandas.read_excel(
@@ -717,7 +718,7 @@ class ExcelData:
 
     def findUesById(self, id):
         found = self.ues.get(id)
-        if not found:
+        if not found and self.logger:
             self.logger.warn(
                 f"Données UES non trouvées pour l'id {id}. Vérifiez la feuille {EXCEL_NOM_FEUILLE_UES}."
             )
@@ -764,7 +765,7 @@ class App:
         if json_schema:
             self.validator = initValidator(json_schema)
         try:
-            self.excelData = ExcelData(self.logger, self.xls_path)
+            self.excelData = ExcelData(self.xls_path, self.logger)
         except ExcelDataError as err:
             raise AppError(f"Erreur de traitement du fichier '{xls_path}': {err}")
         self.nb_rows = self.excelData.getNbRepondants()
@@ -846,6 +847,8 @@ class App:
                 await db.declaration.put(
                     siren, year, owner, record["data"], last_modified
                 )
+        print("Failed rows:")
+        print(failed)
 
 
 @minicli.cli(name="import-solen")

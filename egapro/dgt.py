@@ -1,9 +1,13 @@
 """DGT specific utils"""
 
-from openpyxl import Workbook
+import time
+from collections import defaultdict
+
+from openpyxl import Workbook, load_workbook
 from progressist import ProgressBar
 
 from egapro import db
+from egapro.solen import ExcelData, RowProcessor
 from egapro.utils import flatten
 
 
@@ -184,24 +188,6 @@ async def get_headers_columns():
             ("Mesures_correction", "/declaration/mesuresCorrection"),
         ]
     )
-    # print("List of interesting columns to export: (alias_name, json_name)")
-    # pprint(interesting_cols)
-    # import_cols = [
-    #     (header, column)
-    #     for header, column in interesting_cols
-    #     if column in data.columns
-    # ]
-    # if len(import_cols) != len(interesting_cols):
-    #     print(
-    #         "!!!!! those columns are 'interesting' but not found in the input file! !!!!!"
-    #     )
-    #     pprint(
-    #         [
-    #             column
-    #             for _header, column in interesting_cols
-    #             if column not in data.columns
-    #         ]
-    #     )
     headers = [header for header, _column in interesting_cols]
     columns = [column for _header, column in interesting_cols]
     return (headers, columns)
@@ -228,10 +214,59 @@ async def as_xlsx(max_rows=None, debug=False):
         data = flatten(record["data"])
         source = data.get("/source")
         if source in ("solen-2019", "solen-2020"):
-            url = f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={data['/id']}"
+            url = (
+                f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={data['/id']}"
+            )
         else:
             data["/source"] = "egapro"
             url = f"'https://index-egapro.travail.gouv.fr/simulateur/{data['/id']}"
         data["URL_declaration"] = url
         ws.append([data.get(c) for c in columns])
+    return wb
+
+
+async def duplicates(own, *solen_data):
+    before = time.perf_counter()
+    headers, columns = await get_headers_columns()
+    reversed_headers = dict(zip(headers, columns))
+    raw = list(load_workbook(own, read_only=True, data_only=True).active.values)
+    timer, before = time.perf_counter() - before, time.perf_counter()
+    print(f"Done reading own data ({timer})")
+    data = defaultdict(list)
+    own_headers = raw[0]
+    for row in raw[1:]:
+        if row[0].startswith("solen"):
+            continue
+        key = f"{row[12]}.{row[19]}"
+        # Align to current headers (which change according to data in DB)
+        record = {
+            reversed_headers[own_headers[i]]: row[i]
+            for i in range(len(row))
+            if own_headers[i] in reversed_headers
+        }
+        data[key].append(record)
+    timer, before = time.perf_counter() - before, time.perf_counter()
+    print(f"Done filtering own data ({timer})")
+    for path in solen_data:
+        _, year = path.stem.split("-")
+        raw = ExcelData(path)
+        for row in raw.repondants.values():
+            record = flatten(RowProcessor(year, None, row,).run()["data"])
+            url = f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={record['/id']}"
+            record["URL_declaration"] = url
+            key = f'{record["/informations/anneeDeclaration"]}.{record["/informationsEntreprise/siren"]}'
+            data[key].append(record)
+    timer, before = time.perf_counter() - before, time.perf_counter()
+    print(f"Done reading solen data: ({timer})")
+    print(f"Unique entries: {len(data)}")
+    duplicates = {k: v for k, v in data.items() if len(v) > 1}
+    timer, before = time.perf_counter() - before, time.perf_counter()
+    print(f"Done computing duplicates ({timer})")
+    wb = Workbook(write_only=True)
+    ws = wb.create_sheet()
+    wb.active = ws
+    ws.append(headers)
+    for entry in duplicates.values():
+        for record in entry:
+            ws.append([record.get(c) for c in columns])
     return wb

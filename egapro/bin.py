@@ -55,6 +55,20 @@ async def dump_dgt(path: Path, max_rows: int = None):
 
 
 @minicli.cli
+async def compute_duplicates(out: Path, own: Path, *solen: Path):
+    """Compute duplicates between solen and solen or solen and egapro.
+    Should be removed as soon as we have integrated the solen form.
+
+
+    :own:   Path to consolidated export.
+    :solen: Paths to solen export, in the form solen-YYYY.xlsx"""
+    wb = await dgt.duplicates(own, *solen)
+    print("Writing the XLSX to", out)
+    wb.save(out)
+    print("Done")
+
+
+@minicli.cli
 def compare_xlsx(old: Path, new: Path, max_rows: int = None, ignore=[]):
     """Compare two XLSX.
 
