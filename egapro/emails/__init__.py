@@ -1,8 +1,10 @@
-import smtplib, ssl
+import smtplib
+import ssl
 from email.message import EmailMessage
 from pathlib import Path
 
 from .. import config
+from ..loggers import logger
 
 
 ACCESS_GRANTED = """Bonjour,
@@ -37,6 +39,8 @@ def send(to, subject, txt, html=None):
             server.send_message(msg)
         except smtplib.SMTPException as err:
             raise RuntimeError from err
+        else:
+            logger.debug(f"Email sent to {to}: {subject}")
 
 
 class Email:
