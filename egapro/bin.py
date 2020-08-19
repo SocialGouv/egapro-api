@@ -1,5 +1,5 @@
 import sys
-from datetime import timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 import asyncpg
@@ -36,9 +36,15 @@ async def migrate_legacy():
                     current = None
                 else:
                     current = existing["last_modified"]
+                # Use dateDeclaration as last_modified for declaration, so we can decide
+                # which to import between this or the same declaration from solen.
+                old_last_modified = last_modified.replace(tzinfo=timezone.utc)
+                last_modified = datetime.strptime(
+                    data.path("declaration.dateDeclaration"), "%d/%m/%Y %H:%M",
+                )
                 # Allow to compare aware datetimes.
                 last_modified = last_modified.replace(tzinfo=timezone.utc)
-                if not current or last_modified > current:
+                if not current or last_modified > current or current == old_last_modified:
                     await db.declaration.put(
                         data.siren, data.year, data.email, data, last_modified
                     )
