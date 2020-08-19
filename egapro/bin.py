@@ -42,8 +42,8 @@ async def migrate_legacy():
                     await db.declaration.put(
                         data.siren, data.year, data.email, data, last_modified
                     )
-            else:
-                await db.simulation.put(uuid, data, last_modified)
+            # Always import in simulation, so the redirect from OLD URLs can work.
+            await db.simulation.put(uuid, data, last_modified)
 
 
 @minicli.cli
