@@ -61,14 +61,15 @@ async def dump_dgt(path: Path, max_rows: int = None):
 
 
 @minicli.cli
-async def compute_duplicates(out: Path, own: Path, *solen: Path):
+async def compute_duplicates(out: Path, current: Path, legacy: Path, *solen: Path):
     """Compute duplicates between solen and solen or solen and egapro.
     Should be removed as soon as we have integrated the solen form.
 
 
-    :own:   Path to consolidated export.
-    :solen: Paths to solen export, in the form solen-YYYY.xlsx"""
-    wb = await dgt.duplicates(own, *solen)
+    :current:   Path to current consolidated export.
+    :legacy:    Path to consolidated export from legacy.
+    :solen:     Paths to solen export, in the form solen-YYYY.xlsx"""
+    wb = await dgt.duplicates(current, legacy, *solen)
     print("Writing the XLSX to", out)
     wb.save(out)
     print("Done")

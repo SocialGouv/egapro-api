@@ -225,19 +225,22 @@ async def as_xlsx(max_rows=None, debug=False):
     return wb
 
 
-async def duplicates(own, *solen_data):
+async def duplicates(current_export, legacy, *solen_data):
     before = time.perf_counter()
     headers, columns = await get_headers_columns()
     reversed_headers = dict(zip(headers, columns))
-    raw = list(load_workbook(own, read_only=True, data_only=True).active.values)
+    raw = list(load_workbook(legacy, read_only=True, data_only=True).active.values)
     timer, before = time.perf_counter() - before, time.perf_counter()
-    print(f"Done reading own data ({timer})")
+    print(f"Done reading old data ({timer})")
     data = defaultdict(list)
     own_headers = raw[0]
     for row in raw[1:]:
         if row[0].startswith("solen"):
             continue
-        key = f"{row[12]}.{row[19]}"
+        year = row[12]
+        if not year:
+            year = row[16][-4:]
+        key = f"{year}.{row[19]}"
         # Align to current headers (which change according to data in DB)
         record = {
             reversed_headers[own_headers[i]]: row[i]
@@ -246,7 +249,28 @@ async def duplicates(own, *solen_data):
         }
         data[key].append(record)
     timer, before = time.perf_counter() - before, time.perf_counter()
-    print(f"Done filtering own data ({timer})")
+    print(f"Done filtering old data ({timer})")
+    raw = list(load_workbook(current_export, read_only=True, data_only=True).active.values)
+    timer, before = time.perf_counter() - before, time.perf_counter()
+    print(f"Done reading current data ({timer})")
+    own_headers = raw[0]
+    for row in raw[1:]:
+        if row[0].startswith("solen"):
+            continue
+        if not year:
+            year = row[16][-4:]
+        key = f"{year}.{row[19]}"
+        if data[key]:  # We only want to import new records from new database.
+            continue
+        # Align to current headers (which change according to data in DB)
+        record = {
+            reversed_headers[own_headers[i]]: row[i]
+            for i in range(len(row))
+            if own_headers[i] in reversed_headers
+        }
+        data[key].append(record)
+    timer, before = time.perf_counter() - before, time.perf_counter()
+    print(f"Done filtering current data ({timer})")
     for path in solen_data:
         _, year = path.stem.split("-")
         raw = ExcelData(path)
