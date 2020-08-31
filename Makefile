@@ -25,4 +25,4 @@ migrate-legacy:
 
 test:
 	py.test -vvx
-.PHONI: test
+.PHONY: test

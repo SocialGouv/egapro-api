@@ -167,6 +167,18 @@ async def reindex():
     await db.declaration.reindex()
 
 
+@minicli.cli
+async def generate_naf_csv(
+    url: str = "https://www.insee.fr/fr/statistiques/fichier/2120875/int_courts_naf_rev_2.xls",
+    output: Path = "naf.csv",
+):
+    """Generate a CSV file for all NAF codes from INSEE XLS file."""
+    import httpx
+    import pandas
+
+    pandas.read_excel(httpx.get(url).content).to_csv(output, index=False)
+
+
 @minicli.wrap
 async def wrapper():
     await db.init()

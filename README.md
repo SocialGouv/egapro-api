@@ -17,6 +17,12 @@ Create a virtualenv, then
     make develop
     make init
 
+[Optional] Generate the naf CSV file:
+
+    pip install -e .[naf]
+    egapro generate_naf_csv
+
+
 ## Run server for development
 
     make serve
