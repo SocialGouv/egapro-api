@@ -167,6 +167,20 @@ async def reindex():
     await db.declaration.reindex()
 
 
+@minicli.cli
+def serve(reload=True):
+    """Run a web server (for development only)."""
+    from roll.extensions import simple_server
+
+    from .views import app
+
+    if reload:
+        import hupper
+
+        hupper.start_reloader("egapro.serve")
+    simple_server(app, port=2626)
+
+
 @minicli.wrap
 async def wrapper():
     await db.init()

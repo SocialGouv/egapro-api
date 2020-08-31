@@ -19,7 +19,7 @@ Create a virtualenv, then
 
 ## Run server for development
 
-    make serve
+    egapro serve
 
 
 ## Run tests
