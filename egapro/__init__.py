@@ -4,8 +4,9 @@ from roll import Roll, HttpError
 from roll import Request as BaseRequest
 from asyncpg.exceptions import DataError
 from roll.extensions import cors, options, simple_server, traceback
+from stdnum.fr.siren import is_valid as siren_is_valid
 
-from . import config, db, emails, models, tokens
+from . import config, constants, db, emails, models, tokens
 from .loggers import logger
 
 
@@ -37,12 +38,13 @@ options(app)
 async def json_error_response(request, response, error):
     if error.status == 404:
         error.message = {"error": f"Path not found `{request.path}`"}
-    if isinstance(error.__context__, DataError):
-        response.status = 400
-        error.message = f"Invalid data: {error.__context__}"
-    if isinstance(error.__context__, db.NoData):
-        response.status = 404
-        error.message = f"Resource not found: {error.__context__}"
+    if error.status == 500:  # This error as not yet been caught
+        if isinstance(error.__context__, DataError):
+            response.status = 400
+            error.message = f"Invalid data: {error.__context__}"
+        if isinstance(error.__context__, db.NoData):
+            response.status = 404
+            error.message = f"Resource not found: {error.__context__}"
     if isinstance(error.message, (str, bytes)):
         error.message = {"error": error.message}
     response.json = error.message
@@ -79,6 +81,18 @@ def ensure_owner(view):
 async def declare(request, response, siren, year):
     data = request.data
     declarant = request["email"]
+    try:
+        await db.declaration.get(siren, year)
+    except db.NoData:
+        # This is a new declaration, let's validate year and siren.
+        if not siren_is_valid(siren):
+            raise HttpError(422, f"Numéro SIREN invalide: {siren}")
+        years = [str(y) for y in constants.YEARS]  # Compare str with str
+        if year not in years:
+            years = ", ".join(years)
+            raise HttpError(
+                422, f"Il est possible de déclarer seulement pour les années {years}"
+            )
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:
