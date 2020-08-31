@@ -226,6 +226,16 @@ async def search(request, response):
     response.json = {"data": results, "total": len(results)}
 
 
+@app.route("/config")
+async def get_config(request, response):
+    response.json = {
+        "YEARS": constants.YEARS,
+        "EFFECTIFS": constants.EFFECTIFS,
+        "DEPARTEMENTS": constants.DEPARTEMENTS,
+        "REGIONS": constants.REGIONS,
+    }
+
+
 @app.listen("startup")
 async def on_startup():
     await init()

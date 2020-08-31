@@ -413,3 +413,15 @@ async def test_search_endpoint(client):
     resp = await client.get("/search?q=bio&limit=1")
     assert resp.status == 200
     assert len(json.loads(resp.body)["data"]) == 1
+
+
+async def test_config_endpoint(client):
+    resp = await client.get("/config")
+    assert resp.status == 200
+    assert list(json.loads(resp.body).keys()) == [
+        "YEARS",
+        "EFFECTIFS",
+        "DEPARTEMENTS",
+        "REGIONS",
+    ]
+    assert json.loads(resp.body)["YEARS"] == [2018, 2019]
