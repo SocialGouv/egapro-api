@@ -105,8 +105,8 @@ BLACKLIST = [
 
 
 class BaseLogger(object):
-    """ Classe de base pour logger les messages applicatifs, définissant les
-        différents niveaux de messages à traiter.
+    """Classe de base pour logger les messages applicatifs, définissant les
+    différents niveaux de messages à traiter.
     """
 
     def std(self, str):

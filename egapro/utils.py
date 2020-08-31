@@ -8,7 +8,7 @@ def utcnow():
 def prepare_query(query):
     # TODO deal with edge cases ( | , !…)
     query = query.replace("&", " ")  # Escape &.
-    query = ' '.join(query.split())  # Remove multiple whitespaces.
+    query = " ".join(query.split())  # Remove multiple whitespaces.
     query = query.replace(" ", " & ")
     if not query.endswith("*"):
         # Prefix search on last token, to autocomplete.

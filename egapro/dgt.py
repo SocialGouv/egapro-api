@@ -153,7 +153,10 @@ async def get_headers_columns():
                 "Indic2et3_precision_autre_motif",
                 "/indicateurDeuxTrois/motifNonCalculablePrecision",
             ),
-            ("Indic2et3_resultat_pourcent", "/indicateurDeuxTrois/resultatFinalEcart",),
+            (
+                "Indic2et3_resultat_pourcent",
+                "/indicateurDeuxTrois/resultatFinalEcart",
+            ),
             (
                 "Indic2et3_resultat_nb_sal",
                 "/indicateurDeuxTrois/resultatFinalNombreSalaries",
@@ -163,7 +166,10 @@ async def get_headers_columns():
                 "/indicateurDeuxTrois/sexeSurRepresente",
             ),
             ("Indic4_non_calculable", "/indicateurQuatre/nonCalculable"),
-            ("Indic4_motif_non_calculable", "/indicateurQuatre/motifNonCalculable",),
+            (
+                "Indic4_motif_non_calculable",
+                "/indicateurQuatre/motifNonCalculable",
+            ),
             (
                 "Indic4_precision_autre_motif",
                 "/indicateurQuatre/motifNonCalculablePrecision",
@@ -250,7 +256,9 @@ async def duplicates(current_export, legacy, *solen_data):
         data[key].append(record)
     timer, before = time.perf_counter() - before, time.perf_counter()
     print(f"Done filtering old data ({timer})")
-    raw = list(load_workbook(current_export, read_only=True, data_only=True).active.values)
+    raw = list(
+        load_workbook(current_export, read_only=True, data_only=True).active.values
+    )
     timer, before = time.perf_counter() - before, time.perf_counter()
     print(f"Done reading current data ({timer})")
     own_headers = raw[0]
@@ -275,7 +283,13 @@ async def duplicates(current_export, legacy, *solen_data):
         _, year = path.stem.split("-")
         raw = ExcelData(path)
         for row in raw.repondants.values():
-            record = flatten(RowProcessor(year, None, row,).run()["data"])
+            record = flatten(
+                RowProcessor(
+                    year,
+                    None,
+                    row,
+                ).run()["data"]
+            )
             url = f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={record['/id']}"
             record["URL_declaration"] = url
             key = f'{record["/informations/anneeDeclaration"]}.{record["/informationsEntreprise/siren"]}'

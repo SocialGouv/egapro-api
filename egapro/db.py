@@ -94,7 +94,11 @@ class declaration(table):
     @classmethod
     async def search(cls, query, limit=10):
         async with cls.pool.acquire() as conn:
-            rows = await conn.fetch(sql.search, utils.prepare_query(query), limit,)
+            rows = await conn.fetch(
+                sql.search,
+                utils.prepare_query(query),
+                limit,
+            )
         return [cls.public_data(row["data"]) for row in rows]
 
     @classmethod

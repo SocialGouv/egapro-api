@@ -305,7 +305,10 @@ async def test_stats_endpoint(client):
     ]
     for siren, tranche in rows:
         await db.declaration.put(
-            siren, 2019, "foo@bar.org", {"informations": {"trancheEffectifs": tranche}},
+            siren,
+            2019,
+            "foo@bar.org",
+            {"informations": {"trancheEffectifs": tranche}},
         )
     resp = await client.get("/stats")
     assert resp.status == 200
