@@ -168,7 +168,7 @@ async def reindex():
 
 
 @minicli.cli
-def serve(reload=True):
+def serve(reload=False):
     """Run a web server (for development only)."""
     from roll.extensions import simple_server
 
@@ -177,7 +177,7 @@ def serve(reload=True):
     if reload:
         import hupper
 
-        hupper.start_reloader("egapro.serve")
+        hupper.start_reloader("egapro.bin.serve")
     simple_server(app, port=2626)
 
 
