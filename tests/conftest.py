@@ -5,7 +5,7 @@ import uuid
 import pytest
 from roll.testing import Client as BaseClient
 
-from egapro import app as egapro_app
+from egapro.views import app as egapro_app
 from egapro import config as egapro_config
 from egapro import db, tokens
 
