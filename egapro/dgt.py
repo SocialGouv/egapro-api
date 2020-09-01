@@ -246,7 +246,8 @@ async def duplicates(current_export, legacy, *solen_data):
         year = row[12]
         if not year:
             year = row[16][-4:]
-        key = f"{year}.{row[19]}"
+        siren = row[19]
+        key = f"{year}.{siren}"
         # Align to current headers (which change according to data in DB)
         record = {
             reversed_headers[own_headers[i]]: row[i]
@@ -265,9 +266,11 @@ async def duplicates(current_export, legacy, *solen_data):
     for row in raw[1:]:
         if row[0].startswith("solen"):
             continue
+        year = row[12]
         if not year:
             year = row[16][-4:]
-        key = f"{year}.{row[19]}"
+        siren = row[19]
+        key = f"{year}.{siren}"
         if data[key]:  # We only want to import new records from new database.
             continue
         # Align to current headers (which change according to data in DB)
@@ -292,7 +295,9 @@ async def duplicates(current_export, legacy, *solen_data):
             )
             url = f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={record['/id']}"
             record["URL_declaration"] = url
-            key = f'{record["/informations/anneeDeclaration"]}.{record["/informationsEntreprise/siren"]}'
+            siren = record["/informationsEntreprise/siren"]
+            year = record["/informations/anneeDeclaration"]
+            key = f'{year}.{siren}'
             data[key].append(record)
     timer, before = time.perf_counter() - before, time.perf_counter()
     print(f"Done reading solen data: ({timer})")
