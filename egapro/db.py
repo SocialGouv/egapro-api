@@ -1,9 +1,11 @@
+import sys
 import uuid
 
 import asyncpg
+from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
 import ujson as json
 
-from . import config, utils
+from . import config, models, sql, utils
 
 
 class NoData(Exception):
@@ -13,6 +15,7 @@ class NoData(Exception):
 class table:
 
     conn = None
+    pool = None
     fields = []
 
     @classmethod
@@ -63,10 +66,7 @@ class declaration(table):
         ft = data.get("informationsEntreprise", {}).get("nomEntreprise")
         async with cls.pool.acquire() as conn:
             await conn.execute(
-                "INSERT INTO declaration (siren, year, last_modified, owner, data, ft) "
-                "VALUES ($1, $2, $3, $4, $5, to_tsvector('french', $6)) "
-                "ON CONFLICT (siren, year) DO UPDATE "
-                "SET last_modified=$3, owner=$4, data=$5, ft=to_tsvector('french', $6)",
+                sql.insert_declaration,
                 siren,
                 int(year),
                 last_modified,
@@ -92,20 +92,33 @@ class declaration(table):
             )
 
     @classmethod
-    async def search(cls, query):
+    async def search(cls, query, limit=10):
         async with cls.pool.acquire() as conn:
             rows = await conn.fetch(
-                "SELECT data FROM declaration WHERE ft @@ to_tsquery('french', $1)",
+                sql.search,
                 utils.prepare_query(query),
+                limit,
             )
         return [cls.public_data(row["data"]) for row in rows]
 
     @classmethod
+    async def reindex(cls):
+        async with cls.pool.acquire() as conn:
+            # TODO use a generated column (PSQL >= 12 only)
+            await conn.execute(
+                "UPDATE declaration SET ft=to_tsvector('ftdict', data->'informationsEntreprise'->>'nomEntreprise')"
+            )
+
+    @classmethod
     def public_data(cls, data):
+        data = models.Data(data)
         out = {
             "id": data.get("id"),
-            "declaration": {"noteIndex": data.get("declaration", {}).get("noteIndex")},
+            "declaration": {"noteIndex": data.path("declaration.noteIndex")},
             "informationsEntreprise": data.get("informationsEntreprise", {}),
+            "informations": {
+                "anneeDeclaration": data.path("informations.anneeDeclaration")
+            },
         }
         return out
 
@@ -150,25 +163,48 @@ async def set_type_codecs(conn):
 
 
 async def init():
-    table.pool = await asyncpg.create_pool(
-        database=config.DBNAME,
+    try:
+        table.pool = await asyncpg.create_pool(
+            database=config.DBNAME,
+            host=config.DBHOST,
+            user=config.DBUSER,
+            password=config.DBPASS,
+            min_size=config.DBMINSIZE,
+            max_size=config.DBMAXSIZE,
+            init=set_type_codecs,
+            ssl=config.DBSSL,
+        )
+    except (OSError, PostgresError) as err:
+        sys.exit(f"CRITICAL Cannot connect to DB: {err}")
+    async with table.pool.acquire() as conn:
+        await conn.execute("CREATE EXTENSION IF NOT EXISTS unaccent")
+        await conn.execute(sql.create_ftdict)
+        await conn.execute(sql.create_declaration_table)
+        await conn.execute(sql.create_simulation_table)
+
+
+async def create():
+    conn = await asyncpg.connect(
+        database="template1",
         host=config.DBHOST,
         user=config.DBUSER,
         password=config.DBPASS,
-        max_size=config.DBMAXSIZE,
-        init=set_type_codecs,
+        ssl=config.DBSSL,
     )
-    async with table.pool.acquire() as conn:
-        await conn.execute(
-            "CREATE TABLE IF NOT EXISTS declaration "
-            "(siren TEXT, year INT, last_modified TIMESTAMP WITH TIME ZONE, owner TEXT, data JSONB, ft TSVECTOR, "
-            "PRIMARY KEY (siren, year));"
-            "CREATE INDEX IF NOT EXISTS idx_effectifs ON declaration ((data->'informations'->'trancheEffectifs'));"
-            "CREATE INDEX IF NOT EXISTS idx_ft ON declaration USING GIN (ft);"
-            "CREATE TABLE IF NOT EXISTS simulation "
-            "(id uuid PRIMARY KEY, last_modified TIMESTAMP WITH TIME ZONE, data JSONB);"
-        )
+    # Asure username is in the form user@servername.
+    user = config.DBUSER.split("@")[0]
+    try:
+        await conn.fetch(f"CREATE DATABASE {config.DBNAME} OWNER {user};")
+    except DuplicateDatabaseError as err:
+        print(err)
+    else:
+        print(f"Created database {config.DBNAME} for user {user}")
+    await conn.close()
 
 
 async def terminate():
-    table.pool.terminate()
+    try:
+        await table.pool.close()
+        print("Closing DB pool.")
+    except AttributeError:
+        print("DB not initialized, nothing to do.")

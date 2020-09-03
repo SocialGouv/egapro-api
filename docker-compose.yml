@@ -1,0 +1,25 @@
+---
+version: "3.5"
+
+services:
+  egapro-api:
+    build:
+      context: .
+    environment:
+      EGAPRO_DBHOST: db
+    ports:
+      - 2626:2626
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: egapro
+    volumes:
+      - egapro-pgdata:/var/lib/postgresql/data
+
+volumes:
+  egapro-pgdata:

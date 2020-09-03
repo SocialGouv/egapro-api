@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import asyncpg
@@ -7,15 +8,15 @@ from openpyxl import load_workbook
 import progressist
 import ujson as json
 
-from egapro import db, models
-from egapro.solen import import_solen  # noqa: expose to minicli
+from egapro import config, db, exporter, models
+from egapro.solen import *  # noqa: expose to minicli
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro import dgt
 
 
 @minicli.cli
 async def migrate_legacy():
-    conn = await asyncpg.connect("postgresql://postgres@localhost/legacy_egapro")
+    conn = await asyncpg.connect(config.LEGACY_PSQL)
     rows = await conn.fetch("SELECT * FROM objects;")
     await conn.close()
     bar = progressist.ProgressBar(prefix="Importing…", total=len(rows), throttle=100)
@@ -29,11 +30,31 @@ async def migrate_legacy():
             data = models.Data(data["data"])
             last_modified = row["last_modified"]
             if data.validated:
-                await db.declaration.put(
-                    data.siren, data.year, data.email, data, last_modified
+                try:
+                    existing = await db.declaration.get(data.siren, data.year)
+                except db.NoData:
+                    current = None
+                else:
+                    current = existing["last_modified"]
+                # Use dateDeclaration as last_modified for declaration, so we can decide
+                # which to import between this or the same declaration from solen.
+                old_last_modified = last_modified.replace(tzinfo=timezone.utc)
+                last_modified = datetime.strptime(
+                    data.path("declaration.dateDeclaration"),
+                    "%d/%m/%Y %H:%M",
                 )
-            else:
-                await db.simulation.put(uuid, data, last_modified)
+                # Allow to compare aware datetimes.
+                last_modified = last_modified.replace(tzinfo=timezone.utc)
+                if (
+                    not current
+                    or last_modified > current
+                    or current == old_last_modified
+                ):
+                    await db.declaration.put(
+                        data.siren, data.year, data.email, data, last_modified
+                    )
+            # Always import in simulation, so the redirect from OLD URLs can work.
+            await db.simulation.put(uuid, data, last_modified)
 
 
 @minicli.cli
@@ -41,6 +62,21 @@ async def dump_dgt(path: Path, max_rows: int = None):
     wb = await dgt.as_xlsx(max_rows)
     print("Writing the XLSX to", path)
     wb.save(path)
+    print("Done")
+
+
+@minicli.cli
+async def compute_duplicates(out: Path, current: Path, legacy: Path, *solen: Path):
+    """Compute duplicates between solen and solen or solen and egapro.
+    Should be removed as soon as we have integrated the solen form.
+
+
+    :current:   Path to current consolidated export.
+    :legacy:    Path to consolidated export from legacy.
+    :solen:     Paths to solen export, in the form solen-YYYY.xlsx"""
+    wb = await dgt.duplicates(current, legacy, *solen)
+    print("Writing the XLSX to", out)
+    wb.save(out)
     print("Done")
 
 
@@ -95,8 +131,54 @@ def compare_xlsx(old: Path, new: Path, max_rows: int = None, ignore=[]):
                 # TODO: allow to type as tuple in minicli.
                 if header.startswith(tuple(ignore)):
                     continue
-                print(f"{header}: {old_row[idx]!r} vs {new_row[idx]!r} for {old_row[1]}")
+                print(
+                    f"{header}: {old_row[idx]!r} vs {new_row[idx]!r} for {old_row[1]}"
+                )
     print("Skipped", skipped, "rows")
+
+
+@minicli.cli
+async def search(q, verbose=False):
+    rows = await db.declaration.search(q)
+    for row in rows:
+        data = models.Data(row)
+        print(f"{data.siren} | {data.year} | {data.company}")
+        if verbose:
+            print(row)
+
+
+@minicli.cli
+async def export_public_data(path: Path):
+    print("Writing the CSV to", path)
+    with path.open("w") as f:
+        await exporter.public_data(f)
+    print("Done")
+
+
+@minicli.cli
+async def create_db():
+    """Create PostgreSQL database."""
+    await db.create()
+
+
+@minicli.cli
+async def reindex():
+    """Reindex Full Text search."""
+    await db.declaration.reindex()
+
+
+@minicli.cli
+def serve(reload=False):
+    """Run a web server (for development only)."""
+    from roll.extensions import simple_server
+
+    from .views import app
+
+    if reload:
+        import hupper
+
+        hupper.start_reloader("egapro.bin.serve")
+    simple_server(app, port=2626)
 
 
 @minicli.wrap
