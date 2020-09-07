@@ -41,7 +41,7 @@ def require(view):
             email = request.data.email
             if not email:
                 raise HttpError(422, "Missing declarant email")
-        request["email"] = email
+        request["email"] = email.lower()
         return view(request, response, *args, **kwargs)
 
     return wrapper

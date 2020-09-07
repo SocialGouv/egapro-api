@@ -77,6 +77,13 @@ async def test_basic_declaration_should_save_data(client):
     }
 
 
+async def test_owner_email_should_be_lower_cased(client):
+    client.login("FoO@BAZ.baR")
+    resp = await client.put("/declaration/514027945/2019", body={"foo": "bar"})
+    assert resp.status == 204
+    assert await db.declaration.owner("514027945", 2019) == "foo@baz.bar"
+
+
 async def test_patch_declaration(client, declaration):
     await declaration(
         siren="12345678",
@@ -121,6 +128,16 @@ async def test_cannot_put_not_owned_declaration(client, monkeypatch):
     client.login("other@email.com")
     resp = await client.put("/declaration/514027945/2019")
     assert resp.status == 403
+
+
+async def test_owner_check_is_lower_case(client):
+    client.login("FOo@baR.com")
+    await client.put("/declaration/514027945/2019", body={"some": "key"})
+    client.login("FOo@BAR.COM")
+    resp = await client.patch("/declaration/514027945/2019", {"other": "value"})
+    assert resp.status == 204
+    record = await db.declaration.get("514027945", 2019)
+    assert record["data"] == {"other": "value", "some": "key"}
 
 
 async def test_declaring_twice_should_not_duplicate(client, app):
