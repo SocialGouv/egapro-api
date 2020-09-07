@@ -85,24 +85,14 @@ def declaration():
 
 
 class Client(BaseClient):
-    headers = {}
-
-    async def request(
-        self, path, method="GET", body=b"", headers=None, content_type=None
-    ):
-        # TODO move this to Roll upstream?
-        headers = headers or {}
-        for key, value in self.headers.items():
-            headers.setdefault(key, value)
-        return await super().request(path, method, body, headers, content_type)
 
     def login(self, email):
         token = tokens.create(email)
-        self.headers["API-Key"] = token.decode()
+        self.default_headers["API-Key"] = token.decode()
 
     def logout(self):
         try:
-            del self.headers["API-Key"]
+            del self.default_headers["API-Key"]
         except KeyError:
             pass
 
