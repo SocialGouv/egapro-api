@@ -108,7 +108,7 @@ async def patch_declaration(request, response, siren, year):
     declarant = request["email"]
     declaration = await db.declaration.get(siren, year)
     current = declaration["data"]
-    current.update(request.data)
+    current.update(request.data.raw)
     data = models.Data(current)
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204

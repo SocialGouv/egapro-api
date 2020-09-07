@@ -10,11 +10,17 @@ class Data(dict):
     def keys(self):
         keys = set(super().keys())
         # Extend with custom properties.
-        return keys | (set(dir(self)) - set(dir(dict)))
+        keys = keys | (set(dir(self)) - set(dir(dict)))
+        return {k for k in keys if not k.startswith("_")}
 
     def __iter__(self):
         yield from self.keys()
         # End emulate **kwargs.
+
+    @property
+    def raw(self):
+        # Access raw data only (without the custom properties)
+        return dict(self.items())
 
     @property
     def id(self):
