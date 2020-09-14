@@ -189,6 +189,12 @@ class SimulationResource:
         return True
 
 
+@app.route("/index/{siren}")
+async def get_by_siren(request, response, siren):
+    declarations = await db.declaration.all_by_siren(siren)
+    response.json = {d["year"]: models.Data(d["data"]).grade for d in declarations}
+
+
 @app.route("/token", methods=["POST"])
 async def send_token(request, response):
     # TODO mailbomb management in nginx

@@ -53,6 +53,12 @@ class declaration(table):
         return await cls.fetch("SELECT * FROM declaration")
 
     @classmethod
+    async def all_by_siren(cls, siren):
+        return await cls.fetch(
+            "SELECT * FROM declaration WHERE siren=$1 ORDER BY year DESC", siren
+        )
+
+    @classmethod
     async def get(cls, siren, year):
         return await cls.fetchrow(
             "SELECT * FROM declaration WHERE siren=$1 AND year=$2", siren, int(year)

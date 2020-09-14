@@ -445,3 +445,11 @@ async def test_config_endpoint(client):
         "REGIONS",
     ]
     assert json.loads(resp.body)["YEARS"] == [2018, 2019]
+
+
+async def test_get_indexes_per_year(client, declaration):
+    await declaration(year=2019, grade=33)
+    await declaration(year=2020, grade=88)
+    resp = await client.get(f"/index/12345678")
+    assert resp.status == 200
+    assert json.loads(resp.body) == {'2019': 33, '2020': 88}
