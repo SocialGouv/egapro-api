@@ -447,9 +447,32 @@ async def test_config_endpoint(client):
     assert json.loads(resp.body)["YEARS"] == [2018, 2019]
 
 
+async def test_app_token_is_in_headers(client):
+    client.logout()
+    await client.app_login("Test App")
+    assert "API-Key" in client.default_headers
+    assert len(client.default_headers["API-Key"]) == 36
+
+
+async def test_get_indexes_unauthorized(client):
+    client.logout()
+    resp = await client.get(f"/index/12345678")
+    assert resp.status == 401
+
+
 async def test_get_indexes_per_year(client, declaration):
-    await declaration(year=2019, grade=33)
-    await declaration(year=2020, grade=88)
+    client.logout()
+    await client.app_login("Test App")
+    await declaration(siren="12345678", year=2019, grade=33)
+    await declaration(siren="12345678", year=2020, grade=88)
     resp = await client.get(f"/index/12345678")
     assert resp.status == 200
-    assert json.loads(resp.body) == {'2019': 33, '2020': 88}
+    assert json.loads(resp.body) == {"2019": 33, "2020": 88}
+
+
+async def test_get_indexes_for_non_existing_siren(client):
+    client.logout()
+    await client.app_login("Test App")
+    resp = await client.get(f"/index/12345678")
+    assert resp.status == 200
+    assert json.loads(resp.body) == {}

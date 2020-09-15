@@ -190,6 +190,7 @@ class SimulationResource:
 
 
 @app.route("/index/{siren}")
+@tokens.app_require
 async def get_by_siren(request, response, siren):
     declarations = await db.declaration.all_by_siren(siren)
     response.json = {d["year"]: models.Data(d["data"]).grade for d in declarations}

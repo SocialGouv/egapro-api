@@ -96,6 +96,9 @@ class Client(BaseClient):
         except KeyError:
             pass
 
+    async def app_login(self, name):
+        self.default_headers["API-Key"] = await tokens.app_create(name)
+
 
 @pytest.fixture
 def client(app, event_loop):

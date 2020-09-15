@@ -1,10 +1,11 @@
+from asyncpg.exceptions import InvalidTextRepresentationError
 from datetime import timedelta
 from functools import wraps
 
 import jwt
 from roll import HttpError
 
-from . import config, utils
+from . import config, utils, db
 from .loggers import logger
 
 
@@ -43,5 +44,27 @@ def require(view):
                 raise HttpError(422, "Missing declarant email")
         request["email"] = email.lower()
         return view(request, response, *args, **kwargs)
+
+    return wrapper
+
+
+async def app_create(name):
+    return await db.appauth.create(name)
+
+
+def app_require(view):
+    @wraps(view)
+    async def wrapper(request, response, *args, **kwargs):
+        token = request.headers.get("API-KEY") or request.cookies.get("api-key")
+        if not token:
+            logger.debug("Request without token on %s", request.path)
+            raise HttpError(401, "No authentication token was provided.")
+        try:
+            app = await db.appauth.get(token=token)
+        except (ValueError, InvalidTextRepresentationError):
+            logger.debug("Invalid token on %s (token: %s)", request.path, token)
+            raise HttpError(401, "Invalid token")
+
+        return await view(request, response, *args, **kwargs)
 
     return wrapper

@@ -161,6 +161,32 @@ class simulation(table):
         return await cls.create(data)
 
 
+class appauth(table):
+    fields = ["token", "name"]
+
+    @classmethod
+    async def get(cls, token):
+        return await cls.fetchrow("SELECT * FROM appauth WHERE token=$1 LIMIT 1", token)
+
+    @classmethod
+    async def create(cls, name):
+        uid = str(uuid.uuid1())
+        try:
+            await cls.get(uid)
+        except NoData:
+            await cls.put(uid, name)
+            return uid
+        return await cls.create(name)
+
+    @classmethod
+    async def put(cls, token, name):
+        async with cls.pool.acquire() as conn:
+            await conn.execute(
+                "INSERT INTO appauth (token, name) VALUES ($1, $2)",
+                token,
+                name
+            )
+
 async def set_type_codecs(conn):
     await conn.set_type_codec(
         "jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog"
@@ -187,6 +213,7 @@ async def init():
         await conn.execute(sql.create_ftdict)
         await conn.execute(sql.create_declaration_table)
         await conn.execute(sql.create_simulation_table)
+        await conn.execute(sql.create_appauth_table)
 
 
 async def create():

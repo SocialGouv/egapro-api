@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS appauth
+(token uuid PRIMARY KEY, name VARCHAR(255));
