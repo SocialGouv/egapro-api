@@ -25,3 +25,6 @@ download-data:
 	scp egapro.prod:/tmp/solen-2019.xlsx tmp/
 	scp egapro.prod:/tmp/solen-2020.xlsx tmp/
 	scp egapro.prod:/srv/egapro/data/dgt.xlsx tmp/
+
+download-db:
+	ssh egapro.dev "set -o allexport; source /srv/egapro/env; set +o allexport; PGPASSWORD=\$$EGAPRO_DBPASS pg_dump  --host \$$EGAPRO_DBHOST --user \$$EGAPRO_DBUSER \$$EGAPRO_DBNAME --file /tmp/dump.sql"

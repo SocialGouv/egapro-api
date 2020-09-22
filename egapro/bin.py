@@ -200,6 +200,26 @@ async def migrate_effectif(source: Path):
     )
 
 
+@minicli.cli
+async def validate():
+    from egapro.schema import from_legacy, SCHEMA
+    from jsonschema_rs import JSONSchema, ValidationError
+    try:
+        schema = JSONSchema(SCHEMA)
+    except ValueError:
+        print(SCHEMA)
+    for row in await db.declaration.all():
+        data = from_legacy(row["data"])
+        try:
+            schema.validate(data)
+        except ValidationError as err:
+            print(f"\n\nERROR WITH {row['siren']}/{row['year']}\n")
+            print(err)
+            breakpoint()
+            break
+        sys.stdout.write(".")
+
+
 @minicli.wrap
 async def wrapper():
     await db.init()
