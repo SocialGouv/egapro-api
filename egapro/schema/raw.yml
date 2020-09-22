@@ -1,0 +1,76 @@
+$schema: http://json-schema.org/draft-07/schema#
+$id: https://index-egapro.travail.gouv.fr/schema.json
+# what about the state key "formValidated"
+# French vs English
+# CamelCase vs snake_case
+# suppresion de la clé information
+declaration:
+  date_declaration: date-time
+  date_publication: date
+  url_publication: string
+  index: integer
+  +annee_indicateurs: "2018:2019"
+  periode: [date, date]
+effectif:
+  total: integer
+  # TODO: fix range syntax
+  tranche: "50:250|251:999|1000:"
+declarant:
+  +prenom: string
+  +nom: string
+  telephone: string
+  +email: email
+entreprise:
+  +raison_sociale: string
+  +siren: string
+  region: string
+  departement: string
+  +structure: simple|ues
+  ues:
+    raison_sociale: string
+    entreprises:
+      - raison_sociale: string
+        siren: string
+indicateurs:
+  =un:
+    +mode: csp|coef|autre
+    non_calculable: egvi40pcet|am
+    motif_non_calculable: string
+    remuneration_annuelle: [[number]]
+    ecart_remuneration_annuelle: [[number]]
+    resultat: number
+    en_faveur_de: femmes|hommes
+    note: integer
+    coefficient:
+      - nom: string
+        tranches:
+          - hommes: [integer, integer]
+            femmes: [integer, integer]
+  deux:
+    non_calculable: ?egvi40pcet|am
+    motif_non_calculable: string
+    taux_augmentation: [[integer, integer]]
+    ecart_taux_augmentation: [integer]
+    resultat: number
+    en_faveur_de: femmes|hommes
+    note: integer
+  trois:
+    non_calculable: ?egvi40pcet|am
+    motif_non_calculable: string
+    taux_promotion: [[integer, integer]]
+    ecart_taux_promotion: [integer]
+    resultat: number
+    en_faveur_de: femmes|hommes
+    note: integer
+  quatre:
+    non_calculable: ?egvi40pcet|am
+    motif_non_calculable: string
+    resultat: number
+    note: integer
+    presence_conges_mat: boolean
+  cinq:
+    non_calculable: ?egvi40pcet|am
+    motif_non_calculable: string
+    resultat: number
+    en_faveur_de: femmes|hommes
+    note: integer
