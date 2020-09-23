@@ -15,11 +15,12 @@ from egapro import dgt
 
 
 @minicli.cli
-async def migrate_legacy():
+async def migrate_legacy(siren=[], year: int = None):
     conn = await asyncpg.connect(config.LEGACY_PSQL)
     rows = await conn.fetch("SELECT * FROM objects;")
     await conn.close()
     bar = progressist.ProgressBar(prefix="Importing…", total=len(rows), throttle=100)
+    done = 0
     async with db.table.pool.acquire() as conn:
         for row in bar.iter(rows):
             data = json.loads(row["data"])
@@ -29,6 +30,10 @@ async def migrate_legacy():
             data["data"]["id"] = uuid
             data = models.Data(data["data"])
             last_modified = row["last_modified"]
+            if siren and str(data.siren) not in siren:
+                continue
+            if year and data.year != year:
+                continue
             if data.validated:
                 try:
                     existing = await db.declaration.get(data.siren, data.year)
@@ -55,6 +60,8 @@ async def migrate_legacy():
                     )
             # Always import in simulation, so the redirect from OLD URLs can work.
             await db.simulation.put(uuid, data, last_modified)
+            done += 1
+    print(f"Imported {done} rows")
 
 
 @minicli.cli
