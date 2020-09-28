@@ -41,36 +41,60 @@ indicateurs:
     resultat: number
     en_faveur_de: femmes|hommes
     note: integer
+    mesures_correction: boolean
     coefficient:
       - nom: string
         tranches:
           - hommes: [integer, integer]
             femmes: [integer, integer]
-  deux:
-    non_calculable: ?egvi40pcet|am
+  =deux:
+    non_calculable: egvi40pcet|am|absaugi
     motif_non_calculable: string
     taux_augmentation: [[integer, integer]]
     ecart_taux_augmentation: [integer]
     resultat: number
     en_faveur_de: femmes|hommes
     note: integer
-  trois:
-    non_calculable: ?egvi40pcet|am
+    mesures_correction: boolean
+    presence_augmentation: boolean
+  =deux_trois:
+    non_calculable: etsno5f5h|am|absaugi
+    motif_non_calculable: string
+    resultat: number
+    en_faveur_de: femmes|hommes
+    note: integer
+    mesures_correction: boolean
+    presence_augmentation_promotion: boolean
+    augmentation_femmes: integer
+    augmentation_hommes: integer
+    periode_declaration: string
+    ecart_final: number
+    nombre_salaries: number
+    note_ecart: integer
+    note_nombre_salarie: integer
+  =trois:
+    non_calculable: egvi40pcet|am|egvinf40pcet|absprom
     motif_non_calculable: string
     taux_promotion: [[integer, integer]]
     ecart_taux_promotion: [integer]
     resultat: number
     en_faveur_de: femmes|hommes
     note: integer
-  quatre:
-    non_calculable: ?egvi40pcet|am
+    mesures_correction: boolean
+    presence_promotion: boolean
+  =quatre:
+    non_calculable: absrcm|am|absretcm|absaugpdtcm|absaugpdtcong
     motif_non_calculable: string
     resultat: number
     note: integer
     presence_conges_mat: boolean
-  cinq:
-    non_calculable: ?egvi40pcet|am
+    salariees_augmentees: integer
+    salariees_augmentees_periode: integer
+  =cinq:
+    non_calculable: egvi40pcet|am
     motif_non_calculable: string
     resultat: number
-    en_faveur_de: femmes|hommes
+    en_faveur_de: femmes|hommes|egalite
     note: integer
+    salaries_femmes: integer
+    salaries_hommes: integer
