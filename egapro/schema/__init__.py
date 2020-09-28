@@ -96,6 +96,7 @@ def from_legacy(data):
     data["indicateurs"] = {
         "un": data.pop("indicateurUn", {}),
         "deux": data.pop("indicateurDeux", {}),
+        "deux_trois": data.pop("indicateurDeuxTrois", {}),
         "trois": data.pop("indicateurTrois", {}),
         "quatre": data.pop("indicateurQuatre", {}),
         "cinq": data.pop("indicateurCinq", {}),
@@ -103,18 +104,8 @@ def from_legacy(data):
     data["declaration"]["annee_indicateurs"] = data["informations"].pop(
         "anneeDeclaration"
     )
+    # Un
     un = data["indicateurs"]["un"]
-    mapping = {
-        "non_calculable": "motifNonCalculable",
-        "motif_non_calculable": "motifNonCalculablePrecision",
-        "note": "noteFinale",
-        "resultat": "resultatFinal",
-        "en_faveur_de": "sexeSurRepresente",
-    }
-    for new, old in mapping.items():
-        value = un.pop(old, None)
-        if value not in (None, ""):
-            un[new] = value
     un["mode"] = un["autre"] and "autre" or un["coef"] and "coef" or "csp"
     remuneration_annuelle = []
     for category in un.pop("remunerationAnnuelle", []):
@@ -122,6 +113,77 @@ def from_legacy(data):
             [t.get("ecartTauxRemuneration", 0) for t in category["tranchesAges"]]
         )
     un["remuneration_annuelle"] = remuneration_annuelle
+    from_legacy_indicateur(un)
+
+    # Deux
+    deux = data["indicateurs"]["deux"]
+    taux_augmentation = []
+    for category in deux.pop("tauxAugmentation", []):
+        taux_augmentation.append(
+            [
+                t.get("ecartTauxAugmentation", 0)
+                for t in category.get("tranchesAges", [])
+            ]
+        )
+    deux["taux_augmentation"] = taux_augmentation
+    from_legacy_indicateur(deux)
+
+    # DeuxTrois
+    deux_trois = data["indicateurs"]["deux_trois"]
+    from_legacy_indicateur(deux_trois)
+
+    # Trois
+    trois = data["indicateurs"]["trois"]
+    taux_promotion = []
+    for category in trois.pop("tauxPromotion", []):
+        taux_promotion.append(
+            [
+                t.get("ecartTauxPromotion", 0)
+                for t in category.get("tranchesAges", [])
+            ]
+        )
+    trois["taux_promotion"] = taux_promotion
+    from_legacy_indicateur(trois)
+
+    # Quatre
+    quatre = data["indicateurs"]["quatre"]
+    from_legacy_indicateur(quatre)
+
+    # Cinq
+    cinq = data["indicateurs"]["cinq"]
+    from_legacy_indicateur(cinq)
+    return data
+
+
+def from_legacy_indicateur(legacy):
+    mapping = {
+        "motifNonCalculable": "non_calculable",
+        "motifNonCalculablePrecision": "motif_non_calculable",
+        "noteFinale": "note",
+        "resultatFinal": "resultat",
+        "sexeSurRepresente": "en_faveur_de",
+        "mesuresCorrection": "mesures_correction",
+        "presenceAugmentation": "presence_augmentation",
+        "presencePromotion": "presence_promotion",
+        # TODO understand and rename those fields
+        "nombreSalarieesAugmentees": "salariees_augmentees",
+        "nombreSalarieesPeriodeAugmentation": "salariees_augmentees_periode",
+        "presenceCongeMat": "presence_conges_mat",
+        "nombreSalariesFemmes": "salaries_femmes",
+        "nombreSalariesHommes": "salaries_hommes",
+        "presenceAugmentationPromotion": "presence_augmentation_promotion",
+        "nombreAugmentationPromotionFemmes": "augmentation_femmes",
+        "nombreAugmentationPromotionHommes": "augmentation_hommes",
+        "periodeDeclaration": "periode_declaration",
+        "resultatFinalEcart": "ecart_final",
+        "resultatFinalNombreSalaries": "nombre_salaries",
+        "noteEcart": "note_ecart",
+        "noteNombreSalaries": "note_nombre_salarie",
+    }
+    for old, new in mapping.items():
+        value = legacy.pop(old, None)
+        if value not in (None, ""):
+            legacy[new] = value
     to_delete = [
         "autre",
         "coef",
@@ -134,10 +196,9 @@ def from_legacy(data):
     ]
     for k in to_delete:
         try:
-            del un[k]
+            del legacy[k]
         except KeyError:
             pass
-    return data
 
 
 init()
