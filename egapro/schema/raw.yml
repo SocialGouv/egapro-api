@@ -1,5 +1,7 @@
-# +key means a required key
-# ?key means a nullable key
+# +key: means a required key
+# ?key: means a nullable key
+# key: this|is|an|enum
+# key: 12:24 # this is a range
 # description comes after the # on the property definition
 # $schema: http://json-schema.org/draft-07/schema#
 # $id: https://index-egapro.travail.gouv.fr/schema.json
