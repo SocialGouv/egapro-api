@@ -1,20 +1,78 @@
-from egapro.schema import load
+from egapro.schema import Schema
+
+
+def test_parse():
+    raw = """
+key1: boolean
++key2:
+  subkey: integer  # the description
+  +subkey2:
+    - date-time
+  subkey3:
+    - +ssub1: integer
+      +ssub2: string
+"""
+    schema = Schema(raw)
+    assert schema.raw == {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["key2"],
+        "properties": {
+            "key1": {
+                "type": "boolean",
+            },
+            "key2": {
+                "additionalProperties": False,
+                "type": "object",
+                "required": ["subkey2"],
+                "properties": {
+                    "subkey": {
+                        "type": "integer",
+                        "description": "the description",
+                    },
+                    "subkey2": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "date-time",
+                        },
+                    },
+                    "subkey3": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "required": ["ssub1", "ssub2"],
+                            "properties": {
+                                "ssub1": {
+                                    "type": "integer",
+                                },
+                                "ssub2": {
+                                    "type": "string",
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
 
 
 def test_basic_object():
     raw = """
-$schema: http:foo.bar
 key1:
     subkey: integer
     subkey2: date-time
 """
-    schema = load(raw)
-    assert schema == {
-        "$schema": "http:foo.bar",
+    schema = Schema(raw)
+    assert schema.raw == {
         "type": "object",
+        "additionalProperties": False,
         "properties": {
             "key1": {
                 "type": "object",
+                "additionalProperties": False,
                 "properties": {
                     "subkey": {"type": "integer"},
                     "subkey2": {"format": "date-time", "type": "string"},
@@ -26,9 +84,10 @@ key1:
 
 def test_basic_list():
     raw = "key1: [integer]"
-    schema = load(raw)
-    assert schema == {
+    schema = Schema(raw)
+    assert schema.raw == {
         "type": "object",
+        "additionalProperties": False,
         "properties": {
             "key1": {
                 "items": {"type": "integer"},
@@ -40,9 +99,10 @@ def test_basic_list():
 
 def test_required():
     raw = "+key1: integer"
-    schema = load(raw)
+    schema = Schema(raw).raw
     assert schema == {
         "type": "object",
+        "additionalProperties": False,
         "properties": {
             "key1": {
                 "type": "integer",
@@ -54,28 +114,30 @@ def test_required():
 
 def test_nullable():
     raw = "?key1: integer"
-    schema = load(raw)
+    schema = Schema(raw).raw
     assert schema == {
         "type": "object",
+        "additionalProperties": False,
         "properties": {
             "key1": {"anyOf": [{"type": "null"}, {"type": "integer"}]},
         },
     }
 
 
-def test_strict():
+def test_liberal():
     raw = """
-=key1:
+~key1:
     subkey: integer
 """
-    schema = load(raw)
+    schema = Schema(raw).raw
     assert schema == {
         "type": "object",
+        "additionalProperties": False,
         "properties": {
             "key1": {
                 "type": "object",
                 "properties": {"subkey": {"type": "integer"}},
-                "additionalProperties": False,
+                "additionalProperties": True,
             },
         },
     }
