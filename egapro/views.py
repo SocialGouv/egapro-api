@@ -6,7 +6,7 @@ from asyncpg.exceptions import DataError
 from roll.extensions import cors, options, traceback
 from stdnum.fr.siren import is_valid as siren_is_valid
 
-from . import config, constants, db, emails, models, tokens
+from . import config, constants, db, emails, models, tokens, schema
 from .loggers import logger
 
 
@@ -239,6 +239,11 @@ async def get_config(request, response):
         "DEPARTEMENTS": constants.DEPARTEMENTS,
         "REGIONS": constants.REGIONS,
     }
+
+
+@app.route("/jsonschema.json")
+async def get_jsonschema(request, response):
+    response.json = schema.SCHEMA
 
 
 @app.listen("startup")
