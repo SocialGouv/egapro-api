@@ -206,8 +206,9 @@ async def validate():
     from jsonschema_rs import JSONSchema, ValidationError
     try:
         schema = JSONSchema(SCHEMA)
-    except ValueError:
-        print(SCHEMA)
+    except ValueError as err:
+        print(json.dumps(SCHEMA))
+        sys.exit(err)
     for row in await db.declaration.all():
         data = from_legacy(row["data"])
         try:
