@@ -7,7 +7,7 @@
 # $id: https://index-egapro.travail.gouv.fr/schema.json
 id: string
 source: string
-déclaration:
++déclaration:
   date_déclaration: date-time # Date de validation et de transmission des résultats au service Egapro
   date_publication: date # Date de publication du niveau de résultat de l'entreprise ou de l'UES
   lien_publication: string
