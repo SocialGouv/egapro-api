@@ -175,29 +175,6 @@ async def reindex():
 
 
 @minicli.cli
-async def fix_total_salaries():
-    """Reindex Full Text search."""
-    records = await db.declaration.fetch(
-        "SELECT * FROM declaration WHERE data->'effectif'->'nombreSalariesTotal' IS NULL"
-    )
-    for record in records:
-        total = 0
-        for category in record["data"]["effectif"].pop("nombreSalaries", []):
-            for tranche in category["tranchesAges"]:
-                total += tranche.get("nombreSalariesFemmes") or 0
-                total += tranche.get("nombreSalariesHommes") or 0
-        if not total:
-            print(f"Cannot set total for {record['siren']}/{record['year']}")
-            continue
-        await db.declaration.execute(
-            "UPDATE declaration SET data = jsonb_set(data, '{effectif,nombreSalariesTotal}', $1) WHERE siren=$2 AND year=$3",
-            total,
-            record["siren"],
-            record["year"],
-        )
-
-
-@minicli.cli
 def serve(reload=False):
     """Run a web server (for development only)."""
     from roll.extensions import simple_server
