@@ -82,8 +82,9 @@ async def declare(request, response, siren, year):
     data = request.data
     declarant = request["email"]
     try:
-        await db.declaration.get(siren, year)
+        current = await db.declaration.get(siren, year)
     except db.NoData:
+        current = None
         # This is a new declaration, let's validate year and siren.
         if not siren_is_valid(siren):
             raise HttpError(422, f"Numéro SIREN invalide: {siren}")
@@ -98,7 +99,11 @@ async def declare(request, response, siren, year):
     if data.validated:
         if not data.id:
             raise HttpError(400, "Missing id")
-        emails.success.send(declarant, **data)
+        # Do not send the success email on update for now (we send too much emails that
+        # are unwanted, mainly because when someone loads the frontend app a PUT is
+        # automatically sent, without any action from the user.)
+        if not current or not models.Data(current["data"]).validated:
+            emails.success.send(declarant, **data)
 
 
 @app.route("/declaration/{siren}/{year}", methods=["PATCH"])
