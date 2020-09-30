@@ -16,7 +16,7 @@ source: string
   +période_référence: [date, date] # Période de référence considérée pour le calcul des indicateurs
   date_consultation_CSE: string # Uniquement pour les modalités de calcul par niveau ou coefficient hiérarchique en application de la classification de branche ou d'une autre méthode de cotation des postes
   total_points: integer # Nombre total de points obtenus
-  total_points_calculable: integer # Nombre total de points pouvant être obtenus
+  total_points_calculables: integer # Nombre total de points pouvant être obtenus
   mesures_correctives: mmo|me|mne # Mesures de corrections prévues à l'article D. 1142-5 / Trois items : Mesures mises en œuvre (mmo), Mesures envisagées (me), Mesures non envisagées (mne)"
   index: integer # Résultat final sur 100 points
 effectif:
@@ -30,8 +30,8 @@ effectif:
 +entreprise:
   +raison_sociale: string
   +siren: string
-  region: string
-  departement: string
+  région: string
+  département: string
   adresse: string
   commune: string
   # TODO regex ?
@@ -48,54 +48,41 @@ indicateurs:
     +mode: csp|coef|autre
     non_calculable: egvi40pcet|am # Deux items : Effectif des groupes valides inférieur à 40% de l'effectif total (egvi40pcet) ou Autre motif (am)
     motif_non_calculable: string
-    resultat: number
+    résultat: number # Résultat final en % après application du seuil de pertinence à chaque catégorie
     en_faveur_de: femmes|hommes|egalite
     note: integer # Nombre de points obtenus à l'indicateur 1 relatif à l'écart de rémunération entre les femmes et les hommes
-    mesures_correction: boolean
     niveaux:
       - nom: string
         tranches:
-          "<29": number
-          "30>39": number
-          "40>49": number
-          "50>": number
+          ":29": number
+          "30:39": number
+          "40:49": number
+          "50:": number
   augmentations:  # Indicateur 2 relatif à l'écart de taux d'augmentations individuelles (hors promotion) entre les femmes et les homme
     non_calculable: egvi40pcet|am|absaugi # Trois items : Effectif des groupes valides inférieur à 40% de l'effectif total (egvi40pcet) ou Absence d'augmentations individuelles (absaugi) ou Autres motifs (am)
     motif_non_calculable: string # Précisions du "Autre motif"
-    resultat: number
+    résultat: number
     en_faveur_de: femmes|hommes|egalite
     note: integer
-    niveaux:
-      - nom: string
-        tranches:
-          "<29": number
-          "30>39": number
-          "40>49": number
-          "50>": number
+    niveaux: [integer, integer, integer, integer]
   promotions: # Indicateur 3 relatif à l'écart de taux de promotions entre les femmes et les hommes
     non_calculable: egvi40pcet|egvinf40pcet|absprom|am
     motif_non_calculable: string
-    resultat: number
+    résultat: number
     en_faveur_de: femmes|hommes|egalite
     note: integer
-    niveaux:
-      - nom: string
-        tranches:
-          "<29": number
-          "30>39": number
-          "40>49": number
-          "50>": number
+    niveaux: [integer, integer, integer, integer]
   congés_maternité: # Indicateur 4 relatif au pourcentage de salariées ayant bénéficié d'une augmentation dans l'année suivant leur retour de congé de maternité
     non_calculable: absrcm|absretcm|absaugpdtcm|absaugpdtcong|am
     motif_non_calculable: string
-    resultat: number
+    résultat: number
     note: integer
     salariees_augmentees: integer
     salariees_augmentees_periode: integer
   hautes_rémunérations:  # Indicateur 5 relatif au nombre de salariés du sexe sous-représenté parmi les 10 salariés ayant perçu les plus hautes rémunérations
     non_calculable: egvi40pcet|am
     motif_non_calculable: string
-    resultat: number
+    résultat: number
     en_faveur_de: femmes|hommes|egalite
     note: integer
     salaries_femmes: integer

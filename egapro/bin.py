@@ -104,44 +104,48 @@ def compare_xlsx(old: Path, new: Path, max_rows: int = None, ignore=[]):
     headers = old[0]
     if not headers == new[0]:
         print("Headers differ!")
+        print(headers)
+        print(old[0])
         sys.exit(1)
 
     print("Rows in each file:", len(old), "vs", len(new))
 
-    old_ids = set([r[1] for r in old if r[0]])
-    new_ids = set([r[1] for r in new if r[0]])
+    old = {r[1]: r for r in old[1:] if r[0]}
+    new = {r[1]: r for r in new[1:] if r[0]}
+
+    old_ids = set(old.keys())
+    new_ids = set(new.keys())
     print("Rows not in new", len(old_ids - new_ids))
     print("Rows not in old", len(new_ids - old_ids))
 
-    skipped = 0
-    for row_idx in range(max_rows or len(old)):
-        try:
-            old_row = old[row_idx + skipped]
-        except IndexError:
-            break
-        if old_row[0] is None:
-            # Empty row. EOF?
-            break
-        new_row = new[row_idx]
-
-        # URL differs, so IDs differs, let's try to compare with next old row instead.
-        if not old_row[1] == new_row[1]:
-            skipped += 1
-            continue
+    for url, old_row in old.items():
+        new_row = new[url]
 
         if old_row == new_row:
+            sys.stdout.write('.')
             continue  # Rows are equal.
+        to_break = False
 
         for idx in range(len(headers)):
             header = headers[idx]
-            if old_row[idx] != new_row[idx]:
+            try:
+                old_value = old_row[idx]
+            except IndexError:
+                old_value = None
+            try:
+                new_value = new_row[idx]
+            except IndexError:
+                new_value = None
+            if old_value != new_value:
                 # TODO: allow to type as tuple in minicli.
                 if header.startswith(tuple(ignore)):
                     continue
                 print(
-                    f"{header}: {old_row[idx]!r} vs {new_row[idx]!r} for {old_row[1]}"
+                    f"{header}: {old_value!r} vs {new_value!r} for {old_row[19]}/{old_row[12]}"
                 )
-    print("Skipped", skipped, "rows")
+                to_break = True
+        if to_break:
+            break
 
 
 @minicli.cli
