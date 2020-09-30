@@ -5,6 +5,8 @@ from pathlib import Path
 
 import ujson as json
 
+TRANCHES = {"50 à 250": "50:250", "251 à 999": "251:999", "1000 et plus": "1000:"}
+
 
 def parse_datetime(v):
     return datetime.strptime(v, "%d/%m/%Y %H:%M").isoformat() + "Z"
@@ -53,8 +55,8 @@ def extrapolate(definition):
 
 
 def from_legacy(data):
-    data["declarant"] = data.pop("informationsDeclarant", {})
-    clean_legacy(data["declarant"])
+    data["déclarant"] = data.pop("informationsDeclarant", {})
+    clean_legacy(data["déclarant"])
 
     data["entreprise"] = data.pop("informationsEntreprise", {})
     entreprise = data["entreprise"]
@@ -108,20 +110,43 @@ def from_legacy(data):
                 total += tranche["nombreSalariesFemmes"]
                 total += tranche["nombreSalariesHommes"]
         data["effectif"]["total"] = total
+    tranche = data["informations"]["trancheEffectifs"]
+    if tranche == "Plus de 250":
+        if data["effectif"]["total"] >= 1000:
+            tranche = "1000:"
+        else:
+            tranche = "251:999"
+    else:
+        tranche = TRANCHES[tranche]
+    data["effectif"]["tranche"] = tranche
 
     # Un
     un = data["indicateurs"]["rémunérations"]
-    un["mode"] = un["autre"] and "autre" or un["coef"] and "coef" or "csp"
+    un["mode"] = un["autre"] and "autre" or un["coef"] and "coef" or un["csp"] and "csp"
+    if un["mode"] is None:
+        un["mode"] = "coef" if "coefficient" in un and un["coefficient"] else "csp"
     niveaux = []
     # TODO coefficient
-    for idx, category in enumerate(un.get("remunerationAnnuelle", [])):
+    key = "remunerationAnnuelle" if un["mode"] == "csp" else "coefficient"
+    for idx, category in enumerate(un.get(key, [])):
         if "tranchesAges" not in category:
             continue
         niveaux.append(
             {
                 "nom": category.get("nom", f"tranche {idx}"),
                 "tranches": {
-                    "<29": category["tranchesAges"][0].get("ecartTauxRemuneration", 0)
+                    ":29": category["tranchesAges"][0].get(
+                        "ecartTauxRemuneration", None
+                    ),
+                    "30:39": category["tranchesAges"][1].get(
+                        "ecartTauxRemuneration", None
+                    ),
+                    "40:49": category["tranchesAges"][2].get(
+                        "ecartTauxRemuneration", None
+                    ),
+                    "50:": category["tranchesAges"][3].get(
+                        "ecartTauxRemuneration", None
+                    ),
                 },
             }
         )
@@ -131,21 +156,10 @@ def from_legacy(data):
     # Deux
     deux = data["indicateurs"]["augmentations"]
     if not deux.get("motifNonCalculable"):
-        niveaux = []
-        for idx, category in enumerate(deux.get("tauxAugmentation", [])):
-            if "tranchesAges" not in category:
-                continue
-            niveaux.append(
-                {
-                    "nom": category.get("nom", f"tranche {idx}"),
-                    "tranches": {
-                        "<29": category["tranchesAges"][0].get(
-                            "ecartTauxAugmentation", 0
-                        )
-                    },
-                }
-            )
-        deux["niveaux"] = niveaux
+        deux["niveaux"] = [
+            c.get("ecartTauxAugmentation", None)
+            for c in deux.get("tauxAugmentation", [])
+        ]
     clean_legacy(deux)
 
     # # DeuxTrois
@@ -160,19 +174,10 @@ def from_legacy(data):
     # Trois
     trois = data["indicateurs"]["promotions"]
     if not trois.get("motifNonCalculable"):
-        niveaux = []
-        for idx, category in enumerate(trois.get("tauxPromotion", [])):
-            if "tranchesAges" not in category:
-                continue
-            niveaux.append(
-                {
-                    "nom": category.get("nom", f"tranche {idx}"),
-                    "tranches": {
-                        "<29": category["tranchesAges"][0].get("ecartTauxPromotion", 0)
-                    },
-                }
-            )
-        trois["niveaux"] = niveaux
+        trois["niveaux"] = [
+            c.get("ecartTauxPromotion", None)
+            for c in trois.get("tauxPromotion", [])
+        ]
     clean_legacy(trois)
 
     # Quatre
@@ -192,7 +197,7 @@ def clean_legacy(legacy):
         "motifNonCalculablePrecision": "motif_non_calculable",
         "noteFinale": "note",
         "noteIndex": "index",
-        "resultatFinal": "resultat",
+        "resultatFinal": "résultat",
         "sexeSurRepresente": "en_faveur_de",
         # TODO understand and rename those fields
         "nombreSalarieesAugmentees": "salariees_augmentees",
@@ -211,13 +216,15 @@ def clean_legacy(legacy):
         "datePublication": "date_publication",
         "lienPublication": "lien_publication",
         "totalPoint": "total_points",
-        "totalPointCalculable": "total_points_calculable",
+        "totalPointCalculable": "total_points_calculables",
         "nombreSalariesTotal": "total",
         "codeNaf": "code_naf",
         "codePostal": "code_postal",
         "nomEntreprise": "raison_sociale",
         "tel": "téléphone",
         "prenom": "prénom",
+        "region": "région",
+        "departement": "département",
     }
     for old, new in mapping.items():
         value = legacy.pop(old, None)
@@ -244,7 +251,6 @@ def clean_legacy(legacy):
         "nombreSalaries",
         "nombreEntreprises",
         "acceptationCGU",
-        "nomUES",
     ]
     for k in to_delete:
         try:
@@ -357,8 +363,12 @@ class Schema:
                 line = line[2:]
                 node.kind = "array"
                 node.indent += 2
-            if ":" in line:
-                key, definition = line.split(":", maxsplit=1)
+            if ": " in line or line.endswith(":"):
+                if line.endswith(":"):
+                    key = line[:-1]
+                    definition = ""
+                else:
+                    key, definition = line.split(": ", maxsplit=1)
                 if key.startswith("+"):
                     key = key[1:]
                     node.required = True
