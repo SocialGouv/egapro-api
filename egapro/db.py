@@ -43,6 +43,11 @@ class table:
     def as_resource(cls, row):
         return {k: v for k, v in row.items() if k in cls.fields}
 
+    @classmethod
+    async def execute(cls, sql, *params):
+        async with cls.pool.acquire() as conn:
+            return await conn.execute(sql, *params)
+
 
 class declaration(table):
     fields = ["siren", "year", "data", "last_modified"]
@@ -83,13 +88,12 @@ class declaration(table):
 
     @classmethod
     async def own(cls, siren, year, owner):
-        async with cls.pool.acquire() as conn:
-            conn.execute(
-                "UPDATE declaration SET owner=$1 WHERE siren=$2 AND year=$3",
-                siren,
-                int(year),
-                owner,
-            )
+        await cls.execute(
+            "UPDATE declaration SET owner=$1 WHERE siren=$2 AND year=$3",
+            siren,
+            int(year),
+            owner,
+        )
 
     @classmethod
     async def search(cls, query, limit=10):
