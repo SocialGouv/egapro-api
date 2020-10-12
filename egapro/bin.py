@@ -194,7 +194,8 @@ def serve(reload=False):
 
 @minicli.cli
 async def validate():
-    from egapro.schema import from_legacy, SCHEMA
+    from egapro.schema import SCHEMA
+    from egapro.schema.legacy import from_legacy
     from jsonschema_rs import JSONSchema, ValidationError
     try:
         schema = JSONSchema(SCHEMA)
