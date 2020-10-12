@@ -9,7 +9,7 @@ from progressist import ProgressBar
 from egapro import db
 from egapro.solen import ExcelData, RowProcessor
 from egapro.utils import flatten
-from egapro.schema import from_legacy
+from egapro.schema.legacy import from_legacy
 
 
 AGES = {
