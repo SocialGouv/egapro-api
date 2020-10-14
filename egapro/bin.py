@@ -11,6 +11,7 @@ import ujson as json
 from egapro import config, db, exporter, models
 from egapro.solen import *  # noqa: expose to minicli
 from egapro.exporter import dump  # noqa: expose to minicli
+from egapro.utils import json_dumps
 from egapro import dgt
 
 
@@ -206,18 +207,13 @@ async def migrate_effectif(source: Path):
 
 @minicli.cli
 async def validate():
-    from egapro.schema import SCHEMA
+    from egapro.schema import JSON_SCHEMA
     from egapro.schema.legacy import from_legacy
-    from jsonschema_rs import JSONSchema, ValidationError
-    try:
-        schema = JSONSchema(SCHEMA)
-    except ValueError as err:
-        print(json.dumps(SCHEMA))
-        sys.exit(err)
+    from jsonschema_rs import ValidationError
     for row in await db.declaration.all():
         data = from_legacy(row["data"])
         try:
-            schema.validate(data)
+            JSON_SCHEMA.validate(json.loads(json_dumps(data)))
         except ValidationError as err:
             print(f"\n\nERROR WITH {row['siren']}/{row['year']}\n")
             print(err)
@@ -228,7 +224,10 @@ async def validate():
 
 @minicli.wrap
 async def wrapper():
-    await db.init()
+    try:
+        await db.init()
+    except RuntimeError as err:
+        print(err)
     yield
     await db.terminate()
 
