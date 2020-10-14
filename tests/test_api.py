@@ -445,3 +445,21 @@ async def test_config_endpoint(client):
         "REGIONS",
     ]
     assert json.loads(resp.body)["YEARS"] == [2018, 2019]
+
+
+async def test_declare_with_flat_data(client):
+    resp = await client.put(
+        "/declaration/514027945/2019",
+        body={"foo.baz": "bar"},
+        headers={"Accept": "application/vnd.egapro.v1.flat+json"},
+    )
+    assert resp.status == 204
+    declaration = await db.declaration.get("514027945", 2019)
+    assert declaration["data"] == {"foo": {"baz": "bar"}}
+    resp = await client.get(
+        "/declaration/514027945/2019",
+        headers={"Accept": "application/vnd.egapro.v1.flat+json"},
+    )
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert data["data"] == {"foo.baz": "bar"}
