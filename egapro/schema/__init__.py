@@ -3,8 +3,11 @@ from collections import namedtuple
 from dataclasses import dataclass
 from pathlib import Path
 
-from jsonschema_rs import JSONSchema
+from jsonschema_rs import JSONSchema, ValidationError
 import ujson as json
+
+SCHEMA = None
+JSON_SCHEMA = None
 
 
 def init():
@@ -16,6 +19,14 @@ def init():
     except ValueError as err:
         print(json.dumps(schema))
         sys.exit(err)
+
+
+def validate(data):
+    print(data)
+    try:
+        JSON_SCHEMA.validate(data)
+    except ValidationError as err:
+        raise ValueError(err)
 
 
 def extrapolate(definition):

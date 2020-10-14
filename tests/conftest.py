@@ -13,7 +13,6 @@ from egapro import db, tokens
 def pytest_configure(config):
     async def configure():
         os.environ["EGAPRO_DBNAME"] = "test_egapro"
-        os.environ["EGAPRO_REQUIRE_TOKEN"] = "1"
         egapro_config.init()
         await db.init()
         async with db.declaration.pool.acquire() as conn:
@@ -68,16 +67,15 @@ def declaration():
         **data,
     ):
         uid = str(uuid.uuid1())
-        data.setdefault("informationsEntreprise", {})
-        data.setdefault("informations", {})
-        data.setdefault("declaration", {})
+        data.setdefault("entreprise", {})
+        data.setdefault("déclaration", {})
         data.setdefault("id", uid)
-        data["informationsEntreprise"].setdefault("nomEntreprise", company)
-        data["informationsEntreprise"].setdefault("departement", departement)
-        data["informationsEntreprise"].setdefault("region", region)
-        data["informationsEntreprise"].setdefault("siren", siren)
-        data["informations"].setdefault("anneeDeclaration", year)
-        data["declaration"].setdefault("noteIndex", grade)
+        data["entreprise"].setdefault("raison_sociale", company)
+        data["entreprise"].setdefault("département", departement)
+        data["entreprise"].setdefault("région", region)
+        data["entreprise"].setdefault("siren", siren)
+        data["déclaration"].setdefault("année_indicateurs", year)
+        data["déclaration"].setdefault("index", grade)
         await db.declaration.put(siren, year, owner, data)
         return uid
 

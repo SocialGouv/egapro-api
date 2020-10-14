@@ -45,9 +45,11 @@ async def json_error_response(request, response, error):
         if isinstance(error.__context__, DataError):
             response.status = 400
             error.message = f"Invalid data: {error.__context__}"
-        if isinstance(error.__context__, db.NoData):
+        elif isinstance(error.__context__, db.NoData):
             response.status = 404
             error.message = f"Resource not found: {error.__context__}"
+        elif isinstance(error.__context__, ValueError):
+            response.status = 422
     if isinstance(error.message, (str, bytes)):
         error.message = {"error": error.message}
     response.json = error.message
@@ -84,7 +86,6 @@ def flatten(view):
         to_flatten = "application/vnd.egapro.v1.flat" in request.headers.get(
             "ACCEPT", ""
         )
-        print(to_flatten, request.headers)
         if to_flatten and request._body:
             request._json = utils.unflatten(request.json)
             print(request._json)
@@ -106,6 +107,7 @@ def flatten(view):
 @ensure_owner
 async def declare(request, response, siren, year):
     data = request.data
+    schema.validate(data.raw)
     declarant = request["email"]
     try:
         current = await db.declaration.get(siren, year)
@@ -141,6 +143,7 @@ async def patch_declaration(request, response, siren, year):
     declaration = await db.declaration.get(siren, year)
     current = declaration["data"]
     current.update(request.data.raw)
+    schema.validate(current)
     data = models.Data(current)
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
