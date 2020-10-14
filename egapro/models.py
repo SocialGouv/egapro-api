@@ -28,50 +28,54 @@ class Data(dict):
 
     @property
     def validated(self):
-        return self.path("declaration.formValidated") == "Valid"
+        return self.path("status") == "valid"
 
     @property
     def year(self):
         try:
-            return self["informations"]["anneeDeclaration"]
+            return self["déclaration"]["année_indicateurs"]
         except KeyError:
             try:
                 # OLD data.
-                return int(self["informations"]["finPeriodeReference"][-4:])
-            except KeyError:
+                return int(self["déclaration"]["période_référence"][1][-4:])
+            except (KeyError, IndexError):
                 return None
 
     @property
     def siren(self):
-        return self.path("informationsEntreprise.siren")
+        return self.path("entreprise.siren")
 
     @property
     def email(self):
-        return self.path("informationsDeclarant.email")
+        return self.path("déclarant.email")
 
     @property
     def company(self):
-        return self.path("informationsEntreprise.nomEntreprise")
+        return self.path("entreprise.raison_sociale")
 
     @property
     def region(self):
-        return self.path("informationsEntreprise.region")
+        return self.path("entreprise.région")
 
     @property
     def departement(self):
-        return self.path("informationsEntreprise.departement")
+        return self.path("entreprise.département")
 
     @property
     def structure(self):
-        return self.path("informationsEntreprise.structure")
+        return (
+            "Unité Economique et Sociale (UES)"
+            if self.path("entreprise.ues.entreprises")
+            else "Entreprise"
+        )
 
     @property
     def ues(self):
-        return self.path("informationsEntreprise.nomUES")
+        return self.path("entreprise.ues.raison_sociale")
 
     @property
     def grade(self):
-        return self.path("declaration.noteIndex")
+        return self.path("déclaration.index")
 
     def path(self, path):
         data = self

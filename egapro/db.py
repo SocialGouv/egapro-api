@@ -67,7 +67,7 @@ class declaration(table):
         # Allow to force last_modified, eg. during migrations.
         if last_modified is None:
             last_modified = utils.utcnow()
-        ft = data.get("informationsEntreprise", {}).get("nomEntreprise")
+        ft = data.get("entreprise", {}).get("raison_sociale")
         async with cls.pool.acquire() as conn:
             await conn.execute(
                 sql.insert_declaration,
@@ -109,7 +109,7 @@ class declaration(table):
         async with cls.pool.acquire() as conn:
             # TODO use a generated column (PSQL >= 12 only)
             await conn.execute(
-                "UPDATE declaration SET ft=to_tsvector('ftdict', data->'informationsEntreprise'->>'nomEntreprise')"
+                "UPDATE declaration SET ft=to_tsvector('ftdict', data->'entreprise'->>'raison_sociale')"
             )
 
     @classmethod
@@ -117,10 +117,12 @@ class declaration(table):
         data = models.Data(data)
         out = {
             "id": data.get("id"),
-            "declaration": {"noteIndex": data.path("declaration.noteIndex")},
-            "informationsEntreprise": data.get("informationsEntreprise", {}),
+            "declaration": {"noteIndex": data.path("déclaration.index")},
+            "informationsEntreprise": {
+                "nomEntreprise": data.path("entreprise.raison_sociale")
+            },
             "informations": {
-                "anneeDeclaration": data.path("informations.anneeDeclaration")
+                "anneeDeclaration": data.path("déclaration.année_indicateurs")
             },
         }
         return out

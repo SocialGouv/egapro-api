@@ -28,8 +28,8 @@ async def test_search(client):
             2020,
             "foo@bar.org",
             {
-                "informationsEntreprise": {"nomEntreprise": nom},
-                "informations": {"anneeDeclaration": 2020},
+                "entreprise": {"raison_sociale": nom},
+                "déclaration": {"année_indicateurs": 2020},
             },
         )
     results = await db.declaration.search("total")

@@ -27,20 +27,15 @@ def read(token):
 def require(view):
     @wraps(view)
     def wrapper(request, response, *args, **kwargs):
-        if config.REQUIRE_TOKEN:
-            token = request.headers.get("API-KEY") or request.cookies.get("api-key")
-            if not token:
-                logger.debug("Request without token on %s", request.path)
-                raise HttpError(401, "No authentication token was provided.")
-            try:
-                email = read(token)
-            except ValueError:
-                logger.debug("Invalid token on %s (token: %s)", request.path, token)
-                raise HttpError(401, "Invalid token")
-        else:
-            email = request.data.email
-            if not email:
-                raise HttpError(422, "Missing declarant email")
+        token = request.headers.get("API-KEY") or request.cookies.get("api-key")
+        if not token:
+            logger.debug("Request without token on %s", request.path)
+            raise HttpError(401, "No authentication token was provided.")
+        try:
+            email = read(token)
+        except ValueError:
+            logger.debug("Invalid token on %s (token: %s)", request.path, token)
+            raise HttpError(401, "Invalid token")
         request["email"] = email.lower()
         return view(request, response, *args, **kwargs)
 

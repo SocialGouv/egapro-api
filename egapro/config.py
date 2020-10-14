@@ -2,7 +2,6 @@ import os
 
 SECRET = "sikretfordevonly"
 JWT_ALGORITHM = "HS256"
-REQUIRE_TOKEN = True
 SEND_EMAILS = False
 SMTP_HOST = "127.0.0.1"
 SMTP_PORT = 1025

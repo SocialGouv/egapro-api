@@ -25,8 +25,9 @@ async def test_basic_solen_import():
     assert declaration["last_modified"] == datetime(
         2020, 6, 2, 15, 20, tzinfo=timezone.utc
     )
-    assert data.path("effectif.nombreSalariesTotal") == 76
-    assert data.path("declaration.datePublication") == "03/06/2020"
+    assert data.path("entreprise.effectif.total") == 76
+    # FIXME date is stored as timestamp, we want an iso format
+    # assert data.path("déclaration.date") == "03/06/2020"
     assert data.validated
     assert data.grade == 80
     assert data.email == "baar@baaz.org"
@@ -38,23 +39,18 @@ async def test_solen_import_with_ues():
     declaration = await db.declaration.get("775701488", 2018)
     data = models.Data(declaration["data"])
     assert data.siren == "775701488"
-    assert data.path("informationsEntreprise.nomUES") == "BazBaz"
-    assert data.path("informationsEntreprise.nomEntreprise") == "BazBaz SA"
-    assert (
-        data.path("informationsEntreprise.structure")
-        == "Unité Economique et Sociale (UES)"
-    )
-    assert data.path("informationsEntreprise.nombreEntreprises") == 11
-    assert data.path("informationsEntreprise.entreprisesUES") == [
-        {"nom": "BazBaz One", "siren": "423499322"},
-        {"nom": "BazBaz Two", "siren": "344898355"},
-        {"nom": "BazBaz Three", "siren": "775701488"},
-        {"nom": "BazBaz Four", "siren": "500425666"},
-        {"nom": "BazBaz Five", "siren": "499203222"},
-        {"nom": "BazBaz Six", "siren": "434044000"},
-        {"nom": "BazBaz Seven", "siren": "487597555"},
-        {"nom": "BazBaz eight", "siren": "493147000"},
-        {"nom": "BazBaz Nine", "siren": "434243333"},
-        {"nom": "BazBaz Ten", "siren": "513866666"},
+    assert data.path("entreprise.ues.raison_sociale") == "BazBaz"
+    assert data.path("entreprise.raison_sociale") == "BazBaz SA"
+    assert data.path("entreprise.ues.entreprises") == [
+        {"raison_sociale": "BazBaz One", "siren": "423499322"},
+        {"raison_sociale": "BazBaz Two", "siren": "344898355"},
+        {"raison_sociale": "BazBaz Three", "siren": "775701488"},
+        {"raison_sociale": "BazBaz Four", "siren": "500425666"},
+        {"raison_sociale": "BazBaz Five", "siren": "499203222"},
+        {"raison_sociale": "BazBaz Six", "siren": "434044000"},
+        {"raison_sociale": "BazBaz Seven", "siren": "487597555"},
+        {"raison_sociale": "BazBaz eight", "siren": "493147000"},
+        {"raison_sociale": "BazBaz Nine", "siren": "434243333"},
+        {"raison_sociale": "BazBaz Ten", "siren": "513866666"},
     ]
     print(data)

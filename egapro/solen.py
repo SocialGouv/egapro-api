@@ -16,6 +16,7 @@ from progressist import ProgressBar
 from xlrd.biffh import XLRDError
 
 from . import db, models
+from .schema.legacy import from_legacy
 
 # Configuration de l'import CSV
 
@@ -283,7 +284,7 @@ class RowProcessor:
             return value
 
     def as_record(self):
-        record = {"id": self.get("id"), "data": models.Data(self.record)}
+        record = {"id": self.get("id"), "data": models.Data(from_legacy(self.record))}
         if self.validator:
             try:
                 self.validator.validate(record)
@@ -706,7 +707,7 @@ class RowProcessor:
         self.importField("mesures_correction", "declaration/mesuresCorrection")
         # Valeur artificielle: dans egapro c'est le critère principal qui
         # permet de filtrer les déclarations par rapport aux simples simulations
-        self.set("declaration/formValidated", "Valid")
+        self.set("status", "valid")
 
     def run(self):
         self.set("source", f"solen-{self.solen_year}")
@@ -896,10 +897,7 @@ class App:
             year = record["data"].year
             siren = record["data"].siren
             owner = record["data"].email
-            last_modified = datetime.strptime(
-                record["data"].path("declaration.dateDeclaration"),
-                DATE_FORMAT_OUTPUT_HEURE,
-            )
+            last_modified = record["data"].path("déclaration.date")
             if not owner:
                 failed.append(record)
                 continue
