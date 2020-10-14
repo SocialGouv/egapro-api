@@ -1,11 +1,12 @@
 import csv
 import dpath.util
 import io
-import json
 import math
 import pandas
 import sys
 
+import minicli
+import ujson as json
 from collections import OrderedDict
 from datetime import date, datetime, timedelta, timezone
 from itertools import islice
@@ -13,7 +14,6 @@ from jsonschema import Draft7Validator
 from jsonschema.exceptions import ValidationError
 from progressist import ProgressBar
 from xlrd.biffh import XLRDError
-import minicli
 
 from . import db, models
 

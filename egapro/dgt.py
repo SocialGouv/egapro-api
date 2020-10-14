@@ -23,12 +23,15 @@ EFFECTIF = {"50:250": "50 à 250", "251:999": "251 à 999", "1000:": "1000 et pl
 
 async def get_ues_cols():
     """Return a list of `nom` and `siren` cols for the max number of UES columns."""
-    max_num_ues = await db.declaration.fetchval(
-        "SELECT "
-        "jsonb_array_length(data->'informationsEntreprise'->'entreprisesUES') AS length "
-        "FROM declaration WHERE data->'informationsEntreprise' ? 'entreprisesUES' "
-        "ORDER BY length DESC LIMIT 1;"
-    )
+    try:
+        max_num_ues = await db.declaration.fetchval(
+            "SELECT "
+            "jsonb_array_length(data->'informationsEntreprise'->'entreprisesUES') AS length "
+            "FROM declaration WHERE data->'informationsEntreprise' ? 'entreprisesUES' "
+            "ORDER BY length DESC LIMIT 1;"
+        )
+    except db.NoData:
+        max_num_ues = 0
     # # The entreprise that made the declaration is counted in the number of UES,
     # # but its nom/siren is given elsewhere.
     # max_num_ues -= 1
@@ -61,7 +64,7 @@ async def get_headers_columns():
         [
             ("source", "/source"),
             ("URL_declaration", "URL_declaration"),  # Built from /data/id, see below
-            ("Date_reponse", "/déclaration/date_déclaration"),
+            ("Date_reponse", "/déclaration/date"),
             ("Email_declarant", "/déclarant/email"),
             ("Nom", "/déclarant/nom"),
             ("Prenom", "/déclarant/prénom"),
@@ -73,20 +76,22 @@ async def get_headers_columns():
             ("Commune", "/entreprise/commune"),
             ("Annee_indicateurs", "/déclaration/année_indicateurs"),
             ("Structure", "Structure"),
-            ("Tranche_effectif", "/effectif/tranche"),
+            ("Tranche_effectif", "/entreprise/effectif/tranche"),
             ("Date_debut_periode", "/déclaration/période_référence/0"),
             ("Date_fin_periode", "/déclaration/période_référence/1"),
-            ("Nb_salaries", "/effectif/total"),
+            ("Nb_salaries", "/entreprise/effectif/total"),
             ("Nom_Entreprise", "/entreprise/raison_sociale"),
             ("SIREN", "/entreprise/siren"),
             ("Code_NAF", "/entreprise/code_naf"),
             ("Nom_UES", "/entreprise/ues/raison_sociale"),
+            # Inclure entreprise déclarante
             ("Nb_ets_UES", "nombre_ues"),
         ]
         + await get_ues_cols()
         + [
-            ("Date_publication", "/déclaration/date_publication"),
-            ("Site_internet_publication", "/déclaration/lien_publication"),
+            ("Date_publication", "/déclaration/publication/date"),
+            ("Site_internet_publication", "/déclaration/publication/url"),
+            ("Modalités_publication", "/déclaration/publication/modalités"),
             ("Indic1_non_calculable", "Indic1_non_calculable"),
             (
                 "Indic1_motif_non_calculable",
@@ -97,6 +102,7 @@ async def get_headers_columns():
                 "/indicateurs/rémunérations/motif_non_calculable",
             ),
             ("Indic1_modalite_calc_csp", "Indic1_modalite_calc_csp"),
+            # Virer les booléens
             ("Indic1_modalite_calc_coef_branche", "Indic1_modalite_calc_coef_branche"),
             ("Indic1_modalite_calc_coef_autre", "Indic1_modalite_calc_coef_autre"),
             ("Indic1_date_consult_CSE", "/déclaration/date_consultation_cse"),
@@ -104,83 +110,68 @@ async def get_headers_columns():
         ]
         + [
             (
-                f"Indic1_{CSP}_{AGES[tranche_age]}",
-                f"/indicateurs/rémunérations/niveaux/{index_csp}/tranches/{tranche_age}",
-            )
-            for (index_csp, CSP) in enumerate(["Ouv", "Emp", "TAM", "IC"])
-            for tranche_age in [":29", "30:39", "40:49", "50:"]
-        ]
-        + [
-            (
-                f"Indic1_Niv{index_coef}_{AGES[tranche_age]}",
-                f"/indicateurs/rémunérations/niveaux/{index_coef}/tranches/{tranche_age}",
+                f"Indic1_Niv{index_coef}",
+                f"/indicateurs/rémunérations/catégories/{index_coef}",
             )
             for index_coef in range(num_coefficient)
-            for tranche_age in [":29", "30:39", "40:49", "50:"]
         ]
         + [
             ("Indic1_resultat", "/indicateurs/rémunérations/résultat"),
             (
                 "Indic1_population_favorable",
-                "/indicateurs/rémunérations/en_faveur_de",
+                "/indicateurs/rémunérations/population_favorable",
             ),
             ("Indic2_non_calculable", "Indic2_non_calculable"),
             (
                 "Indic2_motif_non_calculable",
-                "/indicateurs/augmentations/non_calculable",
-            ),
-            (
-                "Indic2_precision_autre_motif",
-                "/indicateurs/augmentations/motif_non_calculable",
+                "/indicateurs/augmentations_hors_promotions/non_calculable",
             ),
         ]
         + [
             (
                 f"Indic2_{CSP}",
-                f"/indicateurs/augmentations/niveaux/{index_csp}",
+                f"/indicateurs/augmentations_hors_promotions/catégories/{index_csp}",
             )
             for (index_csp, CSP) in enumerate(["Ouv", "Emp", "TAM", "IC"])
         ]
         + [
-            ("Indic2_resultat", "/indicateurs/augmentations/résultat"),
-            ("Indic2_population_favorable", "/indicateurs/augmentations/en_faveur_de"),
+            ("Indic2_resultat", "/indicateurs/augmentations_hors_promotions/résultat"),
+            (
+                "Indic2_population_favorable",
+                "/indicateurs/augmentations_hors_promotions/population_favorable",
+            ),
             ("Indic3_non_calculable", "Indic3_non_calculable"),
             ("Indic3_motif_non_calculable", "/indicateurs/promotions/non_calculable"),
-            (
-                "Indic3_precision_autre_motif",
-                "/indicateurs/promotions/motif_non_calculable",
-            ),
         ]
         + [
             (
                 f"Indic3_{CSP}",
-                f"/indicateurs/promotions/niveaux/{index_csp}",
+                f"/indicateurs/promotions/catégories/{index_csp}",
             )
             for (index_csp, CSP) in enumerate(["Ouv", "Emp", "TAM", "IC"])
         ]
         + [
             ("Indic3_resultat", "/indicateurs/promotions/résultat"),
-            ("Indic3_population_favorable", "/indicateurs/promotions/en_faveur_de"),
-            ("Indic2et3_non_calculable", "/indicateurDeuxTrois/nonCalculable"),
+            (
+                "Indic3_population_favorable",
+                "/indicateurs/promotions/population_favorable",
+            ),
+            ("Indic2et3_non_calculable", "Indic2et3_non_calculable"),
             (
                 "Indic2et3_motif_non_calculable",
-                "/indicateurDeuxTrois/motifNonCalculable",
-            ),
-            (
-                "Indic2et3_precision_autre_motif",
-                "/indicateurDeuxTrois/motifNonCalculablePrecision",
+                "/indicateurs/augmentations/non_calculable",
             ),
             (
                 "Indic2et3_resultat_pourcent",
-                "/indicateurDeuxTrois/resultatFinalEcart",
+                "/indicateurs/augmentations/résultat",
             ),
             (
                 "Indic2et3_resultat_nb_sal",
-                "/indicateurDeuxTrois/resultatFinalNombreSalaries",
+                "/indicateurs/augmentations/résultat_nombre_salariés",
             ),
             (
                 "Indic2et3_population_favorable",
-                "/indicateurDeuxTrois/sexeSurRepresente",
+                "/indicateurs/augmentations/population_favorable",
             ),
             ("Indic4_non_calculable", "Indic4_non_calculable"),
             (
@@ -195,13 +186,19 @@ async def get_headers_columns():
             ("Indic5_resultat", "/indicateurs/hautes_rémunérations/résultat"),
             (
                 "Indic5_sexe_sur_represente",
-                "/indicateurs/hautes_rémunérations/en_faveur_de",
+                "/indicateurs/hautes_rémunérations/population_favorable",
             ),
             ("Indicateur_1", "/indicateurs/rémunérations/note"),
-            ("Indicateur_2", "/indicateurs/augmentations/note"),
-            ("Indicateur_2et3", "/indicateurDeuxTrois/note"),
-            ("Indicateur_2et3_PourCent", "/indicateurDeuxTrois/noteEcart"),
-            ("Indicateur_2et3_ParSal", "/indicateurDeuxTrois/noteNombreSalaries"),
+            ("Indicateur_2", "/indicateurs/augmentations_hors_promotions/note"),
+            ("Indicateur_2et3", "/indicateurs/augmentations/note"),
+            (
+                "Indicateur_2et3_PourCent",
+                "/indicateurs/augmentations/points_en_pourcentage",
+            ),
+            (
+                "Indicateur_2et3_ParSal",
+                "/indicateurs/augmentations/points_nombre_salariés",
+            ),
             ("Indicateur_3", "/indicateurs/promotions/note"),
             ("Indicateur_4", "/indicateurs/congés_maternité/note"),
             ("Indicateur_5", "/indicateurs/hautes_rémunérations/note"),
@@ -247,8 +244,18 @@ def prepare_record(data):
         from_legacy(data)
 
     # Before flattening.
-    indic1_nv_niveaux = len(data["indicateurs"]["rémunérations"]["niveaux"]) or None
+    indic1_nv_niveaux = len(data["indicateurs"]["rémunérations"]["catégories"]) or None
     nombre_ues = len(data["entreprise"].get("ues", {}).get("entreprises", []))
+    for idx, category in enumerate(data["indicateurs"]["rémunérations"]["catégories"]):
+        tranches = category.get("tranches", {})
+        data[f"indicateurs/rémunérations/catégories/{idx}"] = ";".join(
+            [
+                str(round(tranches.get(":29") or 0, 1)),
+                str(round(tranches.get("30:39") or 0, 1)),
+                str(round(tranches.get("40:49") or 0, 1)),
+                str(round(tranches.get("50:") or 0, 1)),
+            ]
+        )
 
     data = flatten(data)
     source = data.get("/source")
@@ -259,12 +266,12 @@ def prepare_record(data):
         url = f"'https://index-egapro.travail.gouv.fr/simulateur/{data['/id']}"
     data["URL_declaration"] = url
     data["Structure"] = (
-        "Entreprise"
-        if data["/entreprise/structure"] == "simple"
-        else "Unité Economique et Sociale (UES)"
+        "Unité Economique et Sociale (UES)" if nombre_ues else "Entreprise"
     )
     data["nombre_ues"] = nombre_ues or None
-    data["/effectif/tranche"] = EFFECTIF[data["/effectif/tranche"]]
+    data["/entreprise/effectif/tranche"] = EFFECTIF[
+        data["/entreprise/effectif/tranche"]
+    ]
 
     # Indicateur 1
     indic1_mode = data.get("/indicateurs/rémunérations/mode")
@@ -278,10 +285,15 @@ def prepare_record(data):
 
     # Indicateur 2
     data["Indic2_non_calculable"] = (
-        True if data.get("/indicateurs/augmentations/non_calculable") else False
+        True
+        if data.get("/indicateurs/augmentations_hors_promotions/non_calculable")
+        else False
     )
     data["Indic3_non_calculable"] = (
         True if data.get("/indicateurs/promotions/non_calculable") else False
+    )
+    data["Indic2et3_non_calculable"] = (
+        True if data.get("/indicateurs/augmentations/non_calculable") else False
     )
     data["Indic4_non_calculable"] = (
         True if data.get("/indicateurs/congés_maternité/non_calculable") else False
