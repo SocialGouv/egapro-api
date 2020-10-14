@@ -6,20 +6,20 @@ from egapro.models import Data
 def test_data_validated():
     data = Data()
     assert not data.validated
-    data = Data({"declaration": {"formValidated": None}})
+    data = Data({"status": None})
     assert not data.validated
-    data = Data({"declaration": {"formValidated": "Invalid"}})
+    data = Data({"status": "pending"})
     assert not data.validated
-    data = Data({"declaration": {"formValidated": "Valid"}})
+    data = Data({"status": "valid"})
     assert data.validated
 
 
 def test_data_year():
     data = Data()
     assert data.year is None
-    data = Data({"informations": {"anneeDeclaration": 2020}})
+    data = Data({"déclaration": {"année_indicateurs": 2020}})
     assert data.year == 2020
-    data = Data({"informations": {"finPeriodeReference": "01/02/2019"}})
+    data = Data({"déclaration": {"période_référence": ["01/01/2019", "31/12/2019"]}})
     assert data.year == 2019
 
 

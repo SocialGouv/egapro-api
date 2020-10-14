@@ -49,8 +49,8 @@ async def public_data(path: Path):
         data = models.Data(record["data"])
         ues = ",".join(
             [
-                f"{company['nom']} ({company['siren']})"
-                for company in data.path("informationsEntreprise.entreprisesUES") or []
+                f"{company['raison_sociale']} ({company['siren']})"
+                for company in data.path("entreprise.ues.entreprises") or []
             ]
         )
         rows.append(

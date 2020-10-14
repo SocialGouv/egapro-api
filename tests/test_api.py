@@ -2,14 +2,33 @@ import json
 
 import pytest
 
-from egapro import db, config
+from egapro import db
 
 pytestmark = pytest.mark.asyncio
+
+# Minimal body to send post requests
+BODY = {
+    "id": "1234",
+    "status": "valid",
+    "déclaration": {
+        "année_indicateurs": 2019,
+        "période_référence": ["2019-01-01", "2019-12-31"],
+    },
+    "déclarant": {"email": "foo@bar.org", "prénom": "Foo", "nom": "Bar"},
+    "entreprise": {
+        "raison_sociale": "FooBar",
+        "siren": "514027945",
+        "région": "12",
+        "département": "12",
+        "adresse": "12, rue des adresses",
+        "commune": "Y",
+    },
+}
 
 
 async def test_cannot_put_declaration_without_token(client):
     client.logout()
-    resp = await client.put("/declaration/514027945/2019", body={"foo": "bar"})
+    resp = await client.put("/declaration/514027945/2019", body=BODY)
     assert resp.status == 401
 
 
@@ -35,27 +54,14 @@ async def test_request_token(client, monkeypatch):
     assert calls == 1
 
 
-async def test_declaration_should_contain_declarant_email_if_token_not_active(client):
-    config.REQUIRE_TOKEN = False
-    resp = await client.put("/declaration/514027945/2019", body={"foo": "bar"})
-    assert resp.status == 422
-    resp = await client.put(
-        "/declaration/514027945/2019",
-        body={"data": {"informationsDeclarant": {"email": "foo@bar.org"}}},
-    )
-    assert resp.status == 204
-    assert await db.declaration.owner("514027945", "2019") == "foo@bar.org"
-    config.REQUIRE_TOKEN = True
-
-
 async def test_invalid_siren_should_raise(client):
-    resp = await client.put("/declaration/111111111/2019", body={"foo": "bar"})
+    resp = await client.put("/declaration/111111111/2019", body=BODY)
     assert resp.status == 422
     assert json.loads(resp.body) == {"error": "Numéro SIREN invalide: 111111111"}
 
 
 async def test_invalid_year_should_raise(client):
-    resp = await client.put("/declaration/514027945/2017", body={"foo": "bar"})
+    resp = await client.put("/declaration/514027945/2017", body=BODY)
     assert resp.status == 422
     assert json.loads(resp.body) == {
         "error": "Il est possible de déclarer seulement pour les années 2018, 2019"
@@ -63,23 +69,19 @@ async def test_invalid_year_should_raise(client):
 
 
 async def test_basic_declaration_should_save_data(client):
-    resp = await client.put("/declaration/514027945/2019", body={"foo": "bar"})
+    resp = await client.put("/declaration/514027945/2019", body=BODY)
     assert resp.status == 204
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 200
     data = json.loads(resp.body)
     assert "last_modified" in data
     del data["last_modified"]
-    assert data == {
-        "data": {"foo": "bar"},
-        "siren": "514027945",
-        "year": 2019,
-    }
+    assert data == {"data": BODY, "siren": "514027945", "year": 2019}
 
 
 async def test_owner_email_should_be_lower_cased(client):
     client.login("FoO@BAZ.baR")
-    resp = await client.put("/declaration/514027945/2019", body={"foo": "bar"})
+    resp = await client.put("/declaration/514027945/2019", body=BODY)
     assert resp.status == 204
     assert await db.declaration.owner("514027945", 2019) == "foo@baz.bar"
 
@@ -89,24 +91,24 @@ async def test_patch_declaration(client, declaration):
         siren="12345678",
         year=2018,
         owner="foo@bar.org",
-        informationsEntreprise={"nomEntreprise": "Roma"},
+        entreprise={"raison_sociale": "Roma"},
     )
     resp = await client.patch(
         "/declaration/12345678/2018",
         body={
-            "informationsEntreprise": {"nomEntreprise": "Roma"},
-            "declaration": {"formValidated": "Invalid"},
+            "entreprise": {"raison_sociale": "Roma"},
+            "déclaration": {"formValidated": "Invalid"},
         },
     )
     assert resp.status == 204
     declaration = await db.declaration.get("12345678", 2018)
-    assert declaration["data"]["informationsEntreprise"]["nomEntreprise"] == "Roma"
-    assert declaration["data"]["declaration"] == {"formValidated": "Invalid"}
+    assert declaration["data"]["entreprise"]["raison_sociale"] == "Roma"
+    assert declaration["data"]["déclaration"] == {"formValidated": "Invalid"}
 
 
 async def test_basic_declaration_should_remove_data_namespace_if_present(client):
-    await client.put("/declaration/514027945/2019", body={"data": {"foo": "bar"}})
-    assert (await db.declaration.get("514027945", "2019"))["data"] == {"foo": "bar"}
+    await client.put("/declaration/514027945/2019", body={"data": BODY})
+    assert (await db.declaration.get("514027945", "2019"))["data"] == BODY
 
 
 @pytest.mark.xfail
@@ -132,18 +134,22 @@ async def test_cannot_put_not_owned_declaration(client, monkeypatch):
 
 async def test_owner_check_is_lower_case(client):
     client.login("FOo@baR.com")
-    await client.put("/declaration/514027945/2019", body={"some": "key"})
+    await client.put("/declaration/514027945/2019", body=BODY)
     client.login("FOo@BAR.COM")
-    resp = await client.patch("/declaration/514027945/2019", {"other": "value"})
+    resp = await client.patch("/declaration/514027945/2019", {"indicateurs": {}})
     assert resp.status == 204
     record = await db.declaration.get("514027945", 2019)
-    assert record["data"] == {"other": "value", "some": "key"}
+    data = BODY.copy()
+    data["indicateurs"] = {}
+    assert record["data"] == data
 
 
 async def test_declaring_twice_should_not_duplicate(client, app):
-    resp = await client.put("/declaration/514027945/2019", body={"foo": "bar"})
+    resp = await client.put("/declaration/514027945/2019", body=BODY)
     assert resp.status == 204
-    resp = await client.put("/declaration/514027945/2019", body={"foo": "baz"})
+    data = BODY.copy()
+    data["indicateurs"] = {}
+    resp = await client.put("/declaration/514027945/2019", body=data)
     assert resp.status == 204
     async with db.declaration.pool.acquire() as conn:
         rows = await conn.fetch(
@@ -152,13 +158,13 @@ async def test_declaring_twice_should_not_duplicate(client, app):
             2019,
         )
     assert len(rows) == 1
-    assert rows[0]["data"] == {"foo": "baz"}
+    assert rows[0]["data"] == data
 
 
 async def test_confirmed_declaration_should_send_email(client, monkeypatch):
     calls = 0
-    id = "12345678-1234-5678-9012-123456789012"
-    company = "TotalRecall"
+    id = "1234"
+    company = "FooBar"
 
     def mock_send(to, subject, txt, html):
         assert to == "foo@bar.org"
@@ -169,24 +175,18 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch):
         nonlocal calls
         calls += 1
 
+    body = BODY.copy()
+    del body["status"]
     monkeypatch.setattr("egapro.emails.send", mock_send)
-    resp = await client.put("/declaration/514027945/2019", body={"foo": False})
+    resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     assert not calls
-    resp = await client.put(
-        "/declaration/514027945/2019", body={"declaration": {"formValidated": "None"}}
-    )
+    body["status"] = "pending"
+    resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     assert not calls
-    resp = await client.put(
-        "/declaration/514027945/2019",
-        body={
-            "id": id,
-            "declaration": {"formValidated": "Valid"},
-            "informations": {"anneeDeclaration": 2019},
-            "informationsEntreprise": {"nomEntreprise": company},
-        },
-    )
+    body["status"] = "valid"
+    resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     assert calls == 1
 
@@ -198,14 +198,12 @@ async def test_confirmed_declaration_should_raise_if_missing_id(client, monkeypa
         nonlocal calls
         calls += 1
 
+    body = BODY.copy()
+    del body["id"]
     monkeypatch.setattr("egapro.emails.send", mock_send)
     resp = await client.put(
         "/declaration/514027945/2019",
-        body={
-            "declaration": {"formValidated": "Valid"},
-            "informations": {"anneeDeclaration": 2019},
-            "informationsEntreprise": {"nomEntreprise": "NomNom"},
-        },
+        body=body,
     )
     assert resp.status == 400
     body = json.loads(resp.body)
@@ -219,7 +217,7 @@ async def test_with_unknown_siren_or_year(client):
 
 
 async def test_start_new_simulation(client):
-    resp = await client.post("/simulation", body={"foo": "bar"})
+    resp = await client.post("/simulation", body=BODY)
     assert resp.status == 200
     data = json.loads(resp.body)
     assert "id" in data
@@ -271,7 +269,7 @@ async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
     assert not calls
     resp = await client.post(
         "/simulation",
-        body={"data": {"informationsDeclarant": {"email": "foo@bar.org"}}},
+        body={"data": {"déclarant": {"email": "foo@bar.org"}}},
     )
     assert resp.status == 200
     data = json.loads(resp.body)
@@ -283,10 +281,10 @@ async def test_put_simulation_should_redirect_to_declaration_if_validated(client
         "/simulation/12345678-1234-5678-9012-123456789012",
         body={
             "data": {
-                "informationsDeclarant": {"email": "foo@bar.org"},
-                "declaration": {"formValidated": "Valid"},
-                "informationsEntreprise": {"siren": "12345678"},
-                "informations": {"anneeDeclaration": 2019},
+                "déclarant": {"email": "foo@bar.org"},
+                "status": "valid",
+                "entreprise": {"siren": "12345678"},
+                "déclaration": {"année_indicateurs": 2019},
             },
         },
     )
@@ -299,10 +297,10 @@ async def test_put_simulation_should_redirect_to_declaration_if_validated(client
 async def test_get_simulation_should_redirect_to_declaration_if_validated(client):
     uid = await db.simulation.create(
         {
-            "informationsDeclarant": {"email": "foo@bar.org"},
-            "declaration": {"formValidated": "Valid"},
-            "informationsEntreprise": {"siren": "12345678"},
-            "informations": {"anneeDeclaration": 2019},
+            "déclarant": {"email": "foo@bar.org"},
+            "status": "valid",
+            "entreprise": {"siren": "12345678"},
+            "déclaration": {"année_indicateurs": 2019},
         }
     )
     resp = await client.get(f"/simulation/{uid}")
@@ -349,7 +347,7 @@ async def test_send_code_endpoint(client, monkeypatch):
     monkeypatch.setattr("egapro.emails.send", mock_send)
 
     # Invalid UUID
-    resp = await client.post("/simulation/unknown/send-code", body={"foo": "bar"})
+    resp = await client.post("/simulation/unknown/send-code", body=BODY)
     assert resp.status == 400
     assert json.loads(resp.body) == {
         "error": 'Invalid data: invalid input syntax for type uuid: "unknown"'
@@ -359,7 +357,7 @@ async def test_send_code_endpoint(client, monkeypatch):
     # Not found UUID
     resp = await client.post(
         "/simulation/12345678-1234-5678-9012-123456789012/send-code",
-        body={"foo": "bar"},
+        body=BODY,
     )
     assert resp.status == 404
     assert not calls
@@ -367,14 +365,14 @@ async def test_send_code_endpoint(client, monkeypatch):
     # Create simulation
     uid = await db.simulation.create(
         {
-            "declaration": {"formValidated": "Valid"},
-            "informationsEntreprise": {"siren": "12345678"},
-            "informations": {"anneeDeclaration": 2019},
+            "déclaration": {"formValidated": "Valid"},
+            "entreprise": {"siren": "12345678"},
+            "informations": {"année_indicateurs": 2019},
         }
     )
 
     # Missing email
-    resp = await client.post(f"/simulation/{uid}/send-code", body={"foo": "bar"})
+    resp = await client.post(f"/simulation/{uid}/send-code", body=BODY)
     assert resp.status == 400
     assert json.loads(resp.body) == {"error": "Missing `email` key"}
     assert not calls
@@ -394,28 +392,12 @@ async def test_search_endpoint(client):
         2019,
         "foo@bar.org",
         {
-            "declaration": {"noteIndex": 95},
+            "déclaration": {"index": 95, "année_indicateurs": 2019},
             "id": "12345678-1234-5678-9012-123456789013",
-            "informations": {
-                "anneeDeclaration": "2019",
-                "trancheEffectifs": "1000 et plus"
+            "entreprise": {
+                "raison_sociale": "Bio c Bon",
+                "effectif": {"tranche": "1000:"},
             },
-            "informationsEntreprise": {"nomEntreprise": "Bio c Bon"},
-        },
-    )
-    await db.declaration.put(
-        "12345672",
-        2018,
-        "foo@bar.org",
-        {
-            "declaration": {"noteIndex": 93},
-            "id": "12345678-1234-5678-9012-123456789012",
-            "informations": {
-                "anneeDeclaration": "2018",
-                "trancheEffectifs": "Plus de 250"
-            },
-            "informationsEntreprise": {"nomEntreprise": "Biocoop"},
-            "effectif": {"nombreSalariesTotal": 1000},
         },
     )
     # Only public data should be returned: https://github.com/SocialGouv/egapro-api/pull/14
@@ -424,28 +406,12 @@ async def test_search_endpoint(client):
         2019,
         "foo@bar.org",
         {
-            "declaration": {"noteIndex": 95},
+            "déclaration": {"index": 95, "année_indicateurs": 2019},
             "id": "12345678-1234-5678-9012-123456789015",
-            "informations": {
-                "anneeDeclaration": "2019",
-                "trancheEffectifs": "Plus de 250"
+            "entreprise": {
+                "raison_sociale": "Bio c Bon moins de 1000",
+                "effectif": {"tranche": "251:999"},
             },
-            "informationsEntreprise": {"nomEntreprise": "Bio c Bon moins de 1000"},
-        },
-    )
-    await db.declaration.put(
-        "12345674",
-        2018,
-        "foo@bar.org",
-        {
-            "declaration": {"noteIndex": 93},
-            "id": "12345678-1234-5678-9012-123456789014",
-            "informations": {
-                "anneeDeclaration": "2018",
-                "trancheEffectifs": "Plus de 250"
-            },
-            "informationsEntreprise": {"nomEntreprise": "Biocoop moins de 1000"},
-            "effectif": {"nombreSalariesTotal": 999},
         },
     )
     resp = await client.get("/search?q=bio")
@@ -455,17 +421,11 @@ async def test_search_endpoint(client):
             {
                 "declaration": {"noteIndex": 95},
                 "id": "12345678-1234-5678-9012-123456789013",
-                "informations": {"anneeDeclaration": "2019"},
+                "informations": {"anneeDeclaration": 2019},
                 "informationsEntreprise": {"nomEntreprise": "Bio c Bon"},
             },
-            {
-                "declaration": {"noteIndex": 93},
-                "id": "12345678-1234-5678-9012-123456789012",
-                "informations": {"anneeDeclaration": "2018"},
-                "informationsEntreprise": {"nomEntreprise": "Biocoop"},
-            },
         ],
-        "total": 2,
+        "total": 1,
     }
     resp = await client.get("/search?q=bio&limit=1")
     assert resp.status == 200
@@ -485,18 +445,52 @@ async def test_config_endpoint(client):
 
 
 async def test_declare_with_flat_data(client):
+    flat_body = {
+        "id": "1234",
+        "status": "valid",
+        "déclaration.année_indicateurs": 2019,
+        "déclaration.période_référence": ["2019-01-01", "2019-12-31"],
+        "déclarant.email": "foo@bar.org",
+        "déclarant.prénom": "Foo",
+        "déclarant.nom": "Bar",
+        "entreprise.raison_sociale": "FooBar",
+        "entreprise.siren": "514027945",
+        "entreprise.région": "12",
+        "entreprise.département": "12",
+        "entreprise.adresse": "12, rue des adresses",
+        "entreprise.commune": "Y",
+    }
     resp = await client.put(
         "/declaration/514027945/2019",
-        body={"foo.baz": "bar"},
+        body=flat_body,
         headers={"Accept": "application/vnd.egapro.v1.flat+json"},
     )
     assert resp.status == 204
     declaration = await db.declaration.get("514027945", 2019)
-    assert declaration["data"] == {"foo": {"baz": "bar"}}
+    assert declaration["data"] == BODY
     resp = await client.get(
         "/declaration/514027945/2019",
         headers={"Accept": "application/vnd.egapro.v1.flat+json"},
     )
     assert resp.status == 200
     data = json.loads(resp.body)
-    assert data["data"] == {"foo.baz": "bar"}
+    assert data["data"] == flat_body
+
+
+async def test_invalid_declaration_data_should_raise_on_put(client):
+    resp = await client.put(
+        "/declaration/514027945/2019",
+        body={"foo": "bar"},
+    )
+    assert resp.status == 422
+    assert json.loads(resp.body) == {"error": "False schema does not allow '\"foo\"'"}
+
+
+async def test_invalid_declaration_data_should_raise_on_patch(client):
+    await client.put("/declaration/514027945/2019", body=BODY)
+    resp = await client.patch(
+        "/declaration/514027945/2019",
+        body={"foo": "bar"},
+    )
+    assert resp.status == 422
+    assert json.loads(resp.body) == {"error": "False schema does not allow '\"foo\"'"}

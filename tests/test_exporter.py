@@ -75,28 +75,27 @@ async def test_export_public_data(declaration):
     await declaration(
         company="Mirabar",
         siren="87654321",
-        informations={"trancheEffectifs": "1000 et plus"},
+        entreprise={"effectif": {"tranche": "1000:"}},
     )
     await declaration(
         company="FooBar",
         siren="87654322",
         year=2018,
-        informations={"trancheEffectifs": "Plus de 250"},
-        effectif={"nombreSalariesTotal": 1000},
+        entreprise={"effectif": {"tranche": "1000:", "total": 1000}},
     )
     # Small entreprise, should not be exported.
     await declaration(
         company="MiniBar",
         siren="87654323",
-        informations={"trancheEffectifs": "Plus de 250"},
+        entreprise={"effectif": {"tranche": "251:999"}},
     )
     out = io.StringIO()
     await exporter.public_data(out)
     out.seek(0)
     assert out.read() == (
         "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
-        "Mirabar;87654321;2020;26;;;;Auvergne-Rhône-Alpes;Drôme\r\n"
-        "FooBar;87654322;2018;26;;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+        "Mirabar;87654321;2020;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+        "FooBar;87654322;2018;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
     )
 
 
@@ -104,15 +103,16 @@ async def test_export_ues_public_data(declaration):
     await declaration(
         company="Mirabar",
         siren="87654321",
-        informationsEntreprise={
-            "nomUES": "MiraFoo",
-            "structure": "Unité Economique et Sociale (UES)",
-            "entreprisesUES": [
-                {"nom": "MiraBaz", "siren": "315710251"},
-                {"nom": "MiraPouet", "siren": "315710251"},
-            ],
-        },
-        informations={"trancheEffectifs": "1000 et plus"},
+        entreprise={
+            "ues": {
+                "raison_sociale": "MiraFoo",
+                "entreprises": [
+                    {"raison_sociale": "MiraBaz", "siren": "315710251"},
+                    {"raison_sociale": "MiraPouet", "siren": "315710251"},
+                ],
+            },
+            "effectif": {"tranche": "1000:"}
+        }
     )
     out = io.StringIO()
     await exporter.public_data(out)
