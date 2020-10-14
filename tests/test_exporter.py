@@ -31,8 +31,13 @@ async def test_dgt_dump_should_compute_declaration_url():
         "foo@bar.com",
         {
             "id": "12345678-1234-5678-9012-123456789012",
-            "informationsEntreprise": {"nombreEntreprises": 0},
-            "indicateurUn": {"nombreCoefficients": 0},
+            "entreprise": {"effectif": {"tranche": "50:250"}},
+            "indicateurs": {
+                "rémunérations": {
+                    "catégories": [{"nom": "xxx", "tranches": {":29": 0.7}}]
+                }
+            },
+            "déclaration": {"date": "28/02/2020 10:41"},
         },
     )
     workbook = await dgt.as_xlsx(debug=True)
@@ -52,8 +57,9 @@ async def test_dgt_dump_should_compute_declaration_url_for_solen_data():
         {
             "source": "solen-2019",
             "id": "123456781234-123456789012",
-            "informationsEntreprise": {"nombreEntreprises": 0},
-            "indicateurUn": {"nombreCoefficients": 0},
+            "entreprise": {"effectif": {"tranche": "50:250"}},
+            "indicateurs": {"rémunérations": {"catégories": []}},
+            "déclaration": {"date": "28/02/2020 10:41"},
         },
     )
     workbook = await dgt.as_xlsx(debug=True)

@@ -1,14 +1,19 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 TRANCHES = {"50 à 250": "50:250", "251 à 999": "251:999", "1000 et plus": "1000:"}
+MOTIFS_NON_CALCULABLE = {
+    "egvinf40pcet": "egvi40pcet",
+    "absretcm": "absrcm",
+    "absaugpdtcong": "absaugpdtcm",
+}
 
 
 def parse_datetime(v):
-    return datetime.strptime(v, "%d/%m/%Y %H:%M").isoformat() + "Z"
+    return datetime.strptime(v, "%d/%m/%Y %H:%M").replace(tzinfo=timezone.utc)
 
 
 def parse_date(v):
-    return datetime.strptime(v, "%d/%m/%Y").date().isoformat()
+    return datetime.strptime(v, "%d/%m/%Y").date()
 
 
 def from_legacy(data):
@@ -17,13 +22,11 @@ def from_legacy(data):
 
     data["entreprise"] = data.pop("informationsEntreprise", {})
     entreprise = data["entreprise"]
-    entreprise["structure"] = (
-        "simple" if entreprise["structure"] == "Entreprise" else "ues"
-    )
     clean_legacy(entreprise)
+    nom_ues = entreprise.pop("nomUES", entreprise.get("raison_sociale", ""))
     if "entreprisesUES" in entreprise:
         entreprise["ues"] = {
-            "raison_sociale": entreprise.pop("nomUES", ""),
+            "raison_sociale": nom_ues,
             "entreprises": [
                 {"raison_sociale": e.get("nom"), "siren": e["siren"]}
                 for e in entreprise.pop("entreprisesUES")
@@ -32,8 +35,8 @@ def from_legacy(data):
 
     data["indicateurs"] = {
         "rémunérations": data.pop("indicateurUn", {}),
-        "augmentations": data.pop("indicateurDeux", {}),
-        # "deux_trois": data.pop("indicateurDeuxTrois", {}),
+        "augmentations_hors_promotions": data.pop("indicateurDeux", {}),
+        "augmentations": data.pop("indicateurDeuxTrois", {}),
         "promotions": data.pop("indicateurTrois", {}),
         "congés_maternité": data.pop("indicateurQuatre", {}),
         "hautes_rémunérations": data.pop("indicateurCinq", {}),
@@ -50,89 +53,85 @@ def from_legacy(data):
         value = data["déclaration"].pop("mesuresCorrection")
         if value not in (None, ""):
             data["déclaration"]["mesures_correctives"] = value
+    publication = {}
+    if data["déclaration"].get("datePublication"):
+        publication["date"] = parse_date(data["déclaration"]["datePublication"])
+    modalites = data["déclaration"].get("lienPublication")
+    if modalites and modalites.lower().startswith(("http", "www")):
+        publication["url"] = modalites
+    elif modalites:
+        publication["modalités"] = modalites
+    data["déclaration"]["publication"] = publication
     clean_legacy(data["déclaration"])
-    data["déclaration"]["date_déclaration"] = parse_datetime(
-        data["déclaration"]["date_déclaration"]
-    )
-    if data["déclaration"].get("date_publication"):
-        data["déclaration"]["date_publication"] = parse_date(
-            data["déclaration"]["date_publication"]
-        )
+    data["déclaration"]["date"] = parse_datetime(data["déclaration"]["date"])
 
-    clean_legacy(data["effectif"])
-    if "total" not in data["effectif"]:
+    effectif = data["effectif"]
+    clean_legacy(effectif)
+    if "total" not in effectif:
         total = 0
-        for category in data["effectif"].pop("nombreSalaries", []):
+        for category in effectif.pop("nombreSalaries", []):
             for tranche in category["tranchesAges"]:
                 total += tranche["nombreSalariesFemmes"]
                 total += tranche["nombreSalariesHommes"]
-        data["effectif"]["total"] = total
+        effectif["total"] = total
     tranche = data["informations"]["trancheEffectifs"]
     if tranche == "Plus de 250":
-        if data["effectif"]["total"] >= 1000:
+        if effectif["total"] >= 1000:
             tranche = "1000:"
         else:
             tranche = "251:999"
     else:
         tranche = TRANCHES[tranche]
-    data["effectif"]["tranche"] = tranche
+    effectif["tranche"] = tranche
+    entreprise["effectif"] = effectif
+    del data["effectif"]
 
     # Un
     un = data["indicateurs"]["rémunérations"]
-    un["mode"] = un["autre"] and "autre" or un["coef"] and "coef" or un["csp"] and "csp"
+    un["mode"] = un["autre"] and "autre" or un["coef"] and "coef" or un["csp"] and "csp" or None
     if un["mode"] is None:
         un["mode"] = "coef" if "coefficient" in un and un["coefficient"] else "csp"
-    niveaux = []
+    categories = []
     # TODO coefficient
     key = "remunerationAnnuelle" if un["mode"] == "csp" else "coefficient"
     for idx, category in enumerate(un.get(key, [])):
         if "tranchesAges" not in category:
             continue
-        niveaux.append(
+        categories.append(
             {
                 "nom": category.get("nom", f"tranche {idx}"),
                 "tranches": {
-                    ":29": category["tranchesAges"][0].get(
-                        "ecartTauxRemuneration", None
-                    ),
+                    ":29": category["tranchesAges"][0].get("ecartTauxRemuneration", 0),
                     "30:39": category["tranchesAges"][1].get(
-                        "ecartTauxRemuneration", None
+                        "ecartTauxRemuneration", 0
                     ),
                     "40:49": category["tranchesAges"][2].get(
-                        "ecartTauxRemuneration", None
+                        "ecartTauxRemuneration", 0
                     ),
-                    "50:": category["tranchesAges"][3].get(
-                        "ecartTauxRemuneration", None
-                    ),
+                    "50:": category["tranchesAges"][3].get("ecartTauxRemuneration", 0),
                 },
             }
         )
-    un["niveaux"] = niveaux
+    un["catégories"] = categories
     clean_legacy(un)
 
     # Deux
-    deux = data["indicateurs"]["augmentations"]
+    deux = data["indicateurs"]["augmentations_hors_promotions"]
     if not deux.get("motifNonCalculable"):
-        deux["niveaux"] = [
-            c.get("ecartTauxAugmentation", None)
-            for c in deux.get("tauxAugmentation", [])
+        deux["catégories"] = [
+            c.get("ecartTauxAugmentation", 0) for c in deux.get("tauxAugmentation", [])
         ]
     clean_legacy(deux)
 
     # # DeuxTrois
-    # deux_trois = data["indicateurs"]["deux_trois"]
-    # clean_legacy(deux_trois)
-    # TODO
-    try:
-        del data["indicateurDeuxTrois"]
-    except KeyError:
-        pass
+    deux_trois = data["indicateurs"]["augmentations"]
+    clean_legacy(deux_trois)
 
     # Trois
     trois = data["indicateurs"]["promotions"]
     if not trois.get("motifNonCalculable"):
-        trois["niveaux"] = [
-            c.get("ecartTauxPromotion", None) for c in trois.get("tauxPromotion", [])
+        trois["catégories"] = [
+            c.get("ecartTauxPromotion", 0) for c in trois.get("tauxPromotion", [])
         ]
     clean_legacy(trois)
 
@@ -150,27 +149,16 @@ def from_legacy(data):
 def clean_legacy(legacy):
     mapping = {
         "motifNonCalculable": "non_calculable",
-        "motifNonCalculablePrecision": "motif_non_calculable",
         "noteFinale": "note",
         "noteIndex": "index",
         "resultatFinal": "résultat",
-        "sexeSurRepresente": "en_faveur_de",
-        # TODO understand and rename those fields
-        "nombreSalarieesAugmentees": "salariees_augmentees",
-        "nombreSalarieesPeriodeAugmentation": "salariees_augmentees_periode",
-        "nombreSalariesFemmes": "salaries_femmes",
-        "nombreSalariesHommes": "salaries_hommes",
-        "nombreAugmentationPromotionFemmes": "augmentation_femmes",
-        "nombreAugmentationPromotionHommes": "augmentation_hommes",
-        "periodeDeclaration": "periode_declaration",
-        "resultatFinalEcart": "ecart_final",
-        "resultatFinalNombreSalaries": "nombre_salaries",
-        "noteEcart": "note_ecart",
-        "noteNombreSalaries": "note_nombre_salarie",
+        "sexeSurRepresente": "population_favorable",
+        "resultatFinalEcart": "résultat",
+        "resultatFinalNombreSalaries": "résultat_nombre_salariés",
+        "noteNombreSalaries": "note",
+        "noteEcart": "points_en_pourcentage",
         "dateConsultationCSE": "date_consultation_cse",
-        "dateDeclaration": "date_déclaration",
-        "datePublication": "date_publication",
-        "lienPublication": "lien_publication",
+        "dateDeclaration": "date",
         "totalPoint": "total_points",
         "totalPointCalculable": "total_points_calculables",
         "nombreSalariesTotal": "total",
@@ -184,6 +172,8 @@ def clean_legacy(legacy):
     }
     for old, new in mapping.items():
         value = legacy.pop(old, None)
+        if new == "non_calculable":
+            value = MOTIFS_NON_CALCULABLE.get(value, value)
         if value not in (None, ""):
             legacy[new] = value
     to_delete = [
@@ -207,6 +197,17 @@ def clean_legacy(legacy):
         "nombreSalaries",
         "nombreEntreprises",
         "acceptationCGU",
+        "datePublication",
+        "lienPublication",
+        "structure",
+        "motifNonCalculablePrecision",
+        "nombreAugmentationPromotionFemmes",
+        "nombreAugmentationPromotionHommes",
+        "periodeDeclaration",
+        "nombreSalarieesAugmentees",
+        "nombreSalarieesPeriodeAugmentation",
+        "nombreSalariesFemmes",
+        "nombreSalariesHommes",
     ]
     for k in to_delete:
         try:
