@@ -1,13 +1,21 @@
+import sys
 from collections import namedtuple
 from dataclasses import dataclass
 from pathlib import Path
 
+from jsonschema_rs import JSONSchema
 import ujson as json
 
 
 def init():
     path = Path(__file__).parent / "raw.yml"
-    globals()["SCHEMA"] = Schema(path.read_text()).raw
+    schema = Schema(path.read_text()).raw
+    globals()["SCHEMA"] = schema
+    try:
+        globals()["JSON_SCHEMA"] = JSONSchema(schema)
+    except ValueError as err:
+        print(json.dumps(schema))
+        sys.exit(err)
 
 
 def extrapolate(definition):
