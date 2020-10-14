@@ -1,4 +1,16 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+
+import json
+
+
+def default_json(v):
+    if isinstance(v, (datetime, date)):
+        return v.isoformat()
+    return str(v)
+
+
+def json_dumps(v):
+    return json.dumps(v, default=default_json)
 
 
 def utcnow():
@@ -16,21 +28,33 @@ def prepare_query(query):
     return query
 
 
-def flatten(b, prefix="", delim="/", val=None):
-    "See https://stackoverflow.com/a/57228641/330911"
+def flatten(b, prefix="", delim=".", val=None, flatten_lists=False):
+    # See https://stackoverflow.com/a/57228641/330911
     if val is None:
         val = {}
     if isinstance(b, dict):
+        if prefix:
+            prefix = prefix + delim
         for j in b.keys():
-            flatten(b[j], prefix + delim + j, delim, val)
-    elif isinstance(b, list):
+            flatten(b[j], prefix + j, delim, val)
+    elif flatten_lists and isinstance(b, list):
         get = b
         for j in range(len(get)):
-            key = str(j)
-            if isinstance(get[j], dict):
-                if "key" in get[j]:
-                    key = get[j]["key"]
-            flatten(get[j], prefix + delim + key, delim, val)
+            flatten(get[j], prefix + delim + str(j), delim, val)
     else:
         val[prefix] = b
     return val
+
+
+def unflatten(d, delim="."):
+    # From https://stackoverflow.com/a/6037657
+    result = dict()
+    for key, value in d.items():
+        parts = key.split(delim)
+        d = result
+        for part in parts[:-1]:
+            if part not in d:
+                d[part] = dict()
+            d = d[part]
+        d[parts[-1]] = value
+    return result

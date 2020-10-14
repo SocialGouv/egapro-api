@@ -1,12 +1,15 @@
+import sys
+
 from functools import wraps
 
+import ujson as json
 from roll import Roll, HttpError
 from roll import Request as BaseRequest
 from asyncpg.exceptions import DataError
 from roll.extensions import cors, options, traceback
 from stdnum.fr.siren import is_valid as siren_is_valid
 
-from . import config, constants, db, emails, models, tokens, schema
+from . import config, constants, db, emails, models, tokens, schema, utils
 from .loggers import logger
 
 
@@ -75,7 +78,30 @@ def ensure_owner(view):
     return wrapper
 
 
+def flatten(view):
+    @wraps(view)
+    async def wrapper(request, response, *args, **kwargs):
+        to_flatten = "application/vnd.egapro.v1.flat" in request.headers.get(
+            "ACCEPT", ""
+        )
+        print(to_flatten, request.headers)
+        if to_flatten and request._body:
+            request._json = utils.unflatten(request.json)
+            print(request._json)
+        ret = await view(request, response, *args, **kwargs)
+        if to_flatten and response.body:
+            # TODO act before jsonifying the dict.
+            body = json.loads(response.body)
+            if "data" in body:
+                body["data"] = utils.flatten(body["data"])
+            response.body = json.dumps(body)
+        return ret
+
+    return wrapper
+
+
 @app.route("/declaration/{siren}/{year}", methods=["PUT"])
+@flatten
 @tokens.require
 @ensure_owner
 async def declare(request, response, siren, year):
@@ -107,6 +133,7 @@ async def declare(request, response, siren, year):
 
 
 @app.route("/declaration/{siren}/{year}", methods=["PATCH"])
+@flatten
 @tokens.require
 @ensure_owner
 async def patch_declaration(request, response, siren, year):
@@ -124,6 +151,7 @@ async def patch_declaration(request, response, siren, year):
 
 
 @app.route("/declaration/{siren}/{year}", methods=["GET"])
+@flatten
 @tokens.require
 @ensure_owner
 async def get_declaration(request, response, siren, year):
@@ -258,4 +286,7 @@ async def on_shutdown():
 
 async def init():
     config.init()
-    await db.init()
+    try:
+        await db.init()
+    except RuntimeError as err:
+        sys.exit(err)
