@@ -63,7 +63,7 @@ async def public_data(path: Path):
                 data.ues,
                 ues,
                 constants.REGIONS[data.region],
-                data.departement,
+                constants.DEPARTEMENTS[data.departement],
             ]
         )
     writer.writerows(rows)

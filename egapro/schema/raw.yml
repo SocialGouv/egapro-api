@@ -30,7 +30,7 @@ status: valid|pending
   +raison_sociale: string
   +siren: string
   +région: python:egapro.schema.utils.regions
-  +département: string
+  +département: python:egapro.schema.utils.departements
   adresse: string
   commune: string
   # TODO regex ?
