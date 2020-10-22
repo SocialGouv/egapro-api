@@ -10,6 +10,10 @@ MOTIFS_NON_CALCULABLE = {
 }
 REVERSED_REGIONS = {v: k for k, v in constants.REGIONS.items()}
 REVERSED_REGIONS.update({"Ile-de-France": "11", "Grand Est": "44"})
+REVERSED_DEPARTEMENTS = {v: k for k, v in constants.DEPARTEMENTS.items()}
+REVERSED_DEPARTEMENTS.update(
+    {"Côtes-d'armor": "22", "Val-d'oise": "95", "Côte-d'or": "21"}
+)
 
 
 def parse_datetime(v):
@@ -29,6 +33,10 @@ def from_legacy(data):
     clean_legacy(entreprise)
     if "région" in entreprise:
         entreprise["région"] = REVERSED_REGIONS.get(entreprise.get("région"))
+    if "département" in entreprise:
+        entreprise["département"] = REVERSED_DEPARTEMENTS.get(
+            entreprise.get("département")
+        )
     nom_ues = entreprise.pop("nomUES", entreprise.get("raison_sociale", ""))
     if "entreprisesUES" in entreprise:
         entreprise["ues"] = {

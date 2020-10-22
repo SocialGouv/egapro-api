@@ -61,7 +61,7 @@ def declaration():
         year=2020,
         owner="foo@bar.com",
         company="Total Recall",
-        departement="Drôme",
+        departement="26",
         region="84",
         grade=26,
         uid=str(uuid.uuid1()),
