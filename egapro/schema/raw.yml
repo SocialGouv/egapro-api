@@ -29,7 +29,7 @@ status: valid|pending
 +entreprise:
   +raison_sociale: string
   +siren: string
-  +région: string
+  +région: python:egapro.schema.utils.regions
   +département: string
   adresse: string
   commune: string

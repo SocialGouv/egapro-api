@@ -1,11 +1,15 @@
 from datetime import datetime, timezone
 
+from egapro import constants
+
 TRANCHES = {"50 à 250": "50:250", "251 à 999": "251:999", "1000 et plus": "1000:"}
 MOTIFS_NON_CALCULABLE = {
     "egvinf40pcet": "egvi40pcet",
     "absretcm": "absrcm",
     "absaugpdtcong": "absaugpdtcm",
 }
+REVERSED_REGIONS = {v: k for k, v in constants.REGIONS.items()}
+REVERSED_REGIONS.update({"Ile-de-France": "11", "Grand Est": "44"})
 
 
 def parse_datetime(v):
@@ -23,6 +27,8 @@ def from_legacy(data):
     data["entreprise"] = data.pop("informationsEntreprise", {})
     entreprise = data["entreprise"]
     clean_legacy(entreprise)
+    if "région" in entreprise:
+        entreprise["région"] = REVERSED_REGIONS.get(entreprise.get("région"))
     nom_ues = entreprise.pop("nomUES", entreprise.get("raison_sociale", ""))
     if "entreprisesUES" in entreprise:
         entreprise["ues"] = {
@@ -88,7 +94,9 @@ def from_legacy(data):
 
     # Un
     un = data["indicateurs"]["rémunérations"]
-    un["mode"] = un["autre"] and "autre" or un["coef"] and "coef" or un["csp"] and "csp" or None
+    un["mode"] = (
+        un["autre"] and "autre" or un["coef"] and "coef" or un["csp"] and "csp" or None
+    )
     if un["mode"] is None:
         un["mode"] = "coef" if "coefficient" in un and un["coefficient"] else "csp"
     categories = []

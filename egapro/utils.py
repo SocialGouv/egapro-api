@@ -1,4 +1,5 @@
 from datetime import date, datetime, timezone
+from importlib import import_module
 
 import json
 
@@ -58,3 +59,17 @@ def unflatten(d, delim="."):
             d = d[part]
         d[parts[-1]] = value
     return result
+
+
+def import_by_path(path):
+    """
+    Import variables, functions or class by their path. Should be of the form:
+    path.to.module.func
+    """
+    if not isinstance(path, str):
+        return path
+    module_path, *name = path.rsplit('.', 1)
+    func = import_module(module_path)
+    if name:
+        func = getattr(func, name[0])
+    return func
