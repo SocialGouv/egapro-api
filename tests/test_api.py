@@ -18,7 +18,7 @@ BODY = {
     "entreprise": {
         "raison_sociale": "FooBar",
         "siren": "514027945",
-        "région": "12",
+        "région": "76",
         "département": "12",
         "adresse": "12, rue des adresses",
         "commune": "Y",
@@ -87,23 +87,25 @@ async def test_owner_email_should_be_lower_cased(client):
 
 
 async def test_patch_declaration(client, declaration):
-    await declaration(
+    data = await declaration(
         siren="12345678",
         year=2018,
         owner="foo@bar.org",
-        entreprise={"raison_sociale": "Roma"},
+        entreprise={"raison_sociale": "Milano"},
     )
+    modified = data["entreprise"]
+    modified["raison_sociale"] = "Roma"
     resp = await client.patch(
         "/declaration/12345678/2018",
         body={
-            "entreprise": {"raison_sociale": "Roma"},
-            "déclaration": {"formValidated": "Invalid"},
+            "entreprise": modified,
+            "status": "pending",
         },
     )
     assert resp.status == 204
     declaration = await db.declaration.get("12345678", 2018)
     assert declaration["data"]["entreprise"]["raison_sociale"] == "Roma"
-    assert declaration["data"]["déclaration"] == {"formValidated": "Invalid"}
+    assert declaration["data"]["status"] == "pending"
 
 
 async def test_basic_declaration_should_remove_data_namespace_if_present(client):
@@ -440,6 +442,7 @@ async def test_config_endpoint(client):
         "EFFECTIFS",
         "DEPARTEMENTS",
         "REGIONS",
+        "REGIONS_TO_DEPARTEMENTS",
     ]
     assert json.loads(resp.body)["YEARS"] == [2018, 2019]
 
@@ -455,7 +458,7 @@ async def test_declare_with_flat_data(client):
         "déclarant.nom": "Bar",
         "entreprise.raison_sociale": "FooBar",
         "entreprise.siren": "514027945",
-        "entreprise.région": "12",
+        "entreprise.région": "76",
         "entreprise.département": "12",
         "entreprise.adresse": "12, rue des adresses",
         "entreprise.commune": "Y",

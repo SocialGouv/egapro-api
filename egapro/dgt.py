@@ -6,7 +6,7 @@ from collections import defaultdict
 from openpyxl import Workbook, load_workbook
 from progressist import ProgressBar
 
-from egapro import db
+from egapro import constants, db
 from egapro.solen import ExcelData, RowProcessor
 from egapro.utils import flatten
 from egapro.schema.legacy import from_legacy
@@ -244,18 +244,26 @@ def prepare_record(data):
         from_legacy(data)
 
     # Before flattening.
-    indic1_nv_niveaux = len(data["indicateurs"]["rémunérations"]["catégories"]) or None
-    nombre_ues = len(data["entreprise"].get("ues", {}).get("entreprises", []))
-    for idx, category in enumerate(data["indicateurs"]["rémunérations"]["catégories"]):
-        tranches = category.get("tranches", {})
-        data[f"indicateurs.rémunérations.catégories.{idx}"] = ";".join(
-            [
-                str(round(tranches.get(":29") or 0, 1)),
-                str(round(tranches.get("30:39") or 0, 1)),
-                str(round(tranches.get("40:49") or 0, 1)),
-                str(round(tranches.get("50:") or 0, 1)),
-            ]
+    try:
+        indic1_nv_niveaux = (
+            len(data["indicateurs"]["rémunérations"]["catégories"]) or None
         )
+    except KeyError:
+        indic1_nv_niveaux = None
+    nombre_ues = len(data["entreprise"].get("ues", {}).get("entreprises", []))
+    if "catégories" in data["indicateurs"]["rémunérations"]:
+        for idx, category in enumerate(
+            data["indicateurs"]["rémunérations"]["catégories"]
+        ):
+            tranches = category.get("tranches", {})
+            data[f"indicateurs.rémunérations.catégories.{idx}"] = ";".join(
+                [
+                    str(round(tranches.get(":29") or 0, 1)),
+                    str(round(tranches.get("30:39") or 0, 1)),
+                    str(round(tranches.get("40:49") or 0, 1)),
+                    str(round(tranches.get("50:") or 0, 1)),
+                ]
+            )
 
     data = flatten(data)
     source = data.get("source")
@@ -269,9 +277,8 @@ def prepare_record(data):
         "Unité Economique et Sociale (UES)" if nombre_ues else "Entreprise"
     )
     data["nombre_ues"] = nombre_ues or None
-    data["entreprise.effectif.tranche"] = EFFECTIF[
-        data["entreprise.effectif.tranche"]
-    ]
+    data["entreprise.effectif.tranche"] = EFFECTIF[data["entreprise.effectif.tranche"]]
+    data["entreprise.région"] = constants.REGIONS[data["entreprise.région"]]
 
     # Indicateur 1
     indic1_mode = data.get("indicateurs.rémunérations.mode")

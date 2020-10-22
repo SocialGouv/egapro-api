@@ -269,6 +269,7 @@ async def get_config(request, response):
         "EFFECTIFS": constants.EFFECTIFS,
         "DEPARTEMENTS": constants.DEPARTEMENTS,
         "REGIONS": constants.REGIONS,
+        "REGIONS_TO_DEPARTEMENTS": constants.REGIONS_TO_DEPARTEMENTS,
     }
 
 

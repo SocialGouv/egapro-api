@@ -24,21 +24,9 @@ async def test_dump():
     assert json.loads(path.read_text()) == [{"foo": "baré"}, {"foo": "bazé"}]
 
 
-async def test_dgt_dump_should_compute_declaration_url():
-    await db.declaration.put(
-        "12345678",
-        2020,
-        "foo@bar.com",
-        {
-            "id": "12345678-1234-5678-9012-123456789012",
-            "entreprise": {"effectif": {"tranche": "50:250"}},
-            "indicateurs": {
-                "rémunérations": {
-                    "catégories": [{"nom": "xxx", "tranches": {":29": 0.7}}]
-                }
-            },
-            "déclaration": {"date": "28/02/2020 10:41"},
-        },
+async def test_dgt_dump_should_compute_declaration_url(declaration):
+    await declaration(
+        siren="12345678", year=2020, uid="12345678-1234-5678-9012-123456789012"
     )
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
@@ -49,18 +37,12 @@ async def test_dgt_dump_should_compute_declaration_url():
     )
 
 
-async def test_dgt_dump_should_compute_declaration_url_for_solen_data():
-    await db.declaration.put(
-        "12345678",
-        2020,
-        "foo@bar.com",
-        {
-            "source": "solen-2019",
-            "id": "123456781234-123456789012",
-            "entreprise": {"effectif": {"tranche": "50:250"}},
-            "indicateurs": {"rémunérations": {"catégories": []}},
-            "déclaration": {"date": "28/02/2020 10:41"},
-        },
+async def test_dgt_dump_should_compute_declaration_url_for_solen_data(declaration):
+    await declaration(
+        siren="12345678",
+        year=2020,
+        uid="123456781234-123456789012",
+        source="solen-2019",
     )
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
@@ -111,8 +93,8 @@ async def test_export_ues_public_data(declaration):
                     {"raison_sociale": "MiraPouet", "siren": "315710251"},
                 ],
             },
-            "effectif": {"tranche": "1000:"}
-        }
+            "effectif": {"tranche": "1000:"},
+        },
     )
     out = io.StringIO()
     await exporter.public_data(out)

@@ -6,7 +6,7 @@ from pathlib import Path
 import minicli
 import ujson as json
 
-from egapro import db, models, sql
+from egapro import constants, db, models, sql
 
 
 @minicli.cli
@@ -62,7 +62,7 @@ async def public_data(path: Path):
                 data.structure,
                 data.ues,
                 ues,
-                data.region,
+                constants.REGIONS[data.region],
                 data.departement,
             ]
         )
