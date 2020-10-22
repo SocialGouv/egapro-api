@@ -6,6 +6,8 @@ from pathlib import Path
 from jsonschema_rs import JSONSchema, ValidationError
 import ujson as json
 
+from egapro.utils import import_by_path
+
 SCHEMA = None
 JSON_SCHEMA = None
 
@@ -22,7 +24,6 @@ def init():
 
 
 def validate(data):
-    print(data)
     try:
         JSON_SCHEMA.validate(data)
     except ValidationError as err:
@@ -34,6 +35,12 @@ def extrapolate(definition):
         return {"type": "string", "format": definition}
     if definition in ("integer", "string", "boolean", "number"):
         return {"type": definition}
+    if definition.startswith("python:"):
+        path = definition[7:]
+        definition = import_by_path(path)
+        if callable(definition):
+            definition = definition()
+        return definition
     if definition.count(":") == 1:
         out = {"type": "integer"}
         min_ = max_ = None

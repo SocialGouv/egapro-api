@@ -62,28 +62,37 @@ def declaration():
         owner="foo@bar.com",
         company="Total Recall",
         departement="Drôme",
-        region="Auvergne-Rhône-Alpes",
+        region="84",
         grade=26,
+        uid=str(uuid.uuid1()),
         **data,
     ):
-        uid = str(uuid.uuid1())
         data.setdefault("entreprise", {})
         data.setdefault("déclaration", {})
+        data.setdefault("déclarant", {})
+        data.setdefault("indicateurs", {})
         data.setdefault("id", uid)
         data["entreprise"].setdefault("raison_sociale", company)
         data["entreprise"].setdefault("département", departement)
         data["entreprise"].setdefault("région", region)
         data["entreprise"].setdefault("siren", siren)
+        data["entreprise"].setdefault("effectif", {"tranche": "50:250", "total": 149})
         data["déclaration"].setdefault("année_indicateurs", year)
         data["déclaration"].setdefault("index", grade)
+        data["déclaration"].setdefault(
+            "période_référence", ["2019-01-01", "2019-12-31"]
+        )
+        data["déclarant"].setdefault("email", owner)
+        data["déclarant"].setdefault("prénom", "Martin")
+        data["déclarant"].setdefault("nom", "Martine")
+        data["indicateurs"].setdefault("rémunérations", {"mode": "csp"})
         await db.declaration.put(siren, year, owner, data)
-        return uid
+        return data
 
     return factory
 
 
 class Client(BaseClient):
-
     def login(self, email):
         token = tokens.create(email)
         self.default_headers["API-Key"] = token.decode()
