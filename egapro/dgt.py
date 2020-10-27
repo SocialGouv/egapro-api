@@ -102,6 +102,10 @@ async def get_headers_columns():
                 "indicateurs.rémunérations.motif_non_calculable",
             ),
             ("Indic1_modalite_calc", "indicateurs.rémunérations.mode"),
+            ("Indic1_Ouv", "Indic1_Ouv"),
+            ("Indic1_Emp", "Indic1_Emp"),
+            ("Indic1_TAM", "Indic1_TAM"),
+            ("Indic1_IC", "Indic1_IC"),
         ]
         + [
             (
@@ -240,25 +244,11 @@ def prepare_record(data):
 
     # Before flattening.
     try:
-        indic1_nv_niveaux = (
-            len(data["indicateurs"]["rémunérations"]["catégories"]) or None
-        )
+        indic1_categories = data["indicateurs"]["rémunérations"]["catégories"]
     except KeyError:
-        indic1_nv_niveaux = None
+        indic1_categories = []
+    indic1_nv_niveaux = len(indic1_categories) or None
     nombre_ues = len(data["entreprise"].get("ues", {}).get("entreprises", []))
-    if "catégories" in data["indicateurs"]["rémunérations"]:
-        for idx, category in enumerate(
-            data["indicateurs"]["rémunérations"]["catégories"]
-        ):
-            tranches = category.get("tranches", {})
-            data[f"indicateurs.rémunérations.catégories.{idx}"] = ";".join(
-                [
-                    str(round(tranches.get(":29") or 0, 1)),
-                    str(round(tranches.get("30:39") or 0, 1)),
-                    str(round(tranches.get("40:49") or 0, 1)),
-                    str(round(tranches.get("50:") or 0, 1)),
-                ]
-            )
 
     data = flatten(data, flatten_lists=True)
     source = data.get("source")
@@ -278,9 +268,24 @@ def prepare_record(data):
     # Indicateur 1
     indic1_mode = data.get("indicateurs.rémunérations.mode")
     data["Indic1_nb_coef_niv"] = indic1_nv_niveaux if indic1_mode != "csp" else None
-    data["Indic1_non_calculable"] = (
-        "1" if data.get("indicateurs.rémunérations.non_calculable") else "0"
-    )
+    indic1_calculable = not data.get("indicateurs.rémunérations.non_calculable")
+    data["Indic1_non_calculable"] = "0" if indic1_calculable else "1"
+    if indic1_calculable:
+        # DGT want data to be in different columns whether its csp or any coef.
+        csp_names = ["Ouv", "Emp", "TAM", "IC"]
+        for idx, category in enumerate(indic1_categories):
+            tranches = category.get("tranches", {})
+            key = f"indicateurs.rémunérations.catégories.{idx}"
+            if indic1_mode == "csp":
+                key = f"Indic1_{csp_names[idx]}"
+            data[key] = ";".join(
+                [
+                    str(round(tranches.get(":29") or 0, 1)),
+                    str(round(tranches.get("30:39") or 0, 1)),
+                    str(round(tranches.get("40:49") or 0, 1)),
+                    str(round(tranches.get("50:") or 0, 1)),
+                ]
+            )
 
     # Indicateur 2
     data["Indic2_non_calculable"] = (
