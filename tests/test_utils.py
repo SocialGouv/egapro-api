@@ -65,22 +65,42 @@ def test_compute_conges_maternites_note(input, output):
 
 
 def test_compute_augmentations_note():
-    data = models.Data({
+    data = models.Data(
+        {
             "indicateurs": {
                 "augmentations": {"résultat": 5, "résultat_nombre_salariés": 6}
             }
-        })
+        }
+    )
     utils.compute_notes(data)
     assert data["indicateurs"]["augmentations"]["note"] == 25
     assert data["indicateurs"]["augmentations"]["note_nombre_salariés"] == 15
     assert data["indicateurs"]["augmentations"]["note_en_pourcentage"] == 25
 
-    data = models.Data({
+    data = models.Data(
+        {
             "indicateurs": {
                 "augmentations": {"résultat": 5.05, "résultat_nombre_salariés": 2}
             }
-        })
+        }
+    )
     utils.compute_notes(data)
     assert data["indicateurs"]["augmentations"]["note"] == 35
     assert data["indicateurs"]["augmentations"]["note_nombre_salariés"] == 35
     assert data["indicateurs"]["augmentations"]["note_en_pourcentage"] == 15
+
+
+def test_flatten():
+    assert utils.flatten({"x": {"a": "b", "c": [1, 2, 3]}}) == {
+        "x.a": "b",
+        "x.c": [1, 2, 3],
+    }
+
+
+def test_flatten_should_flatten_lists():
+    assert utils.flatten({"x": {"a": "b", "c": [1, 2, 3]}}, flatten_lists=True) == {
+        "x.a": "b",
+        "x.c.0": 1,
+        "x.c.1": 2,
+        "x.c.2": 3,
+    }

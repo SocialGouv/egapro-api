@@ -37,11 +37,11 @@ def flatten(b, prefix="", delim=".", val=None, flatten_lists=False):
         if prefix:
             prefix = prefix + delim
         for j in b.keys():
-            flatten(b[j], prefix + j, delim, val)
+            flatten(b[j], prefix + j, delim, val, flatten_lists)
     elif flatten_lists and isinstance(b, list):
         get = b
         for j in range(len(get)):
-            flatten(get[j], prefix + delim + str(j), delim, val)
+            flatten(get[j], prefix + delim + str(j), delim, val, flatten_lists)
     else:
         val[prefix] = b
     return val
