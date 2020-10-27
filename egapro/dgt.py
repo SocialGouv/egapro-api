@@ -101,12 +101,7 @@ async def get_headers_columns():
                 "Indic1_precision_autre_motif",
                 "indicateurs.rémunérations.motif_non_calculable",
             ),
-            ("Indic1_modalite_calc_csp", "Indic1_modalite_calc_csp"),
-            # Virer les booléens
-            ("Indic1_modalite_calc_coef_branche", "Indic1_modalite_calc_coef_branche"),
-            ("Indic1_modalite_calc_coef_autre", "Indic1_modalite_calc_coef_autre"),
-            ("Indic1_date_consult_CSE", "déclaration.date_consultation_cse"),
-            ("Indic1_nb_coef_niv", "Indic1_nb_coef_niv"),
+            ("Indic1_modalite_calc", "indicateurs.rémunérations.mode"),
         ]
         + [
             (
@@ -286,9 +281,6 @@ def prepare_record(data):
     data["Indic1_non_calculable"] = (
         "1" if data.get("indicateurs.rémunérations.non_calculable") else "0"
     )
-    data["Indic1_modalite_calc_csp"] = indic1_mode == "csp" and True
-    data["Indic1_modalite_calc_coef_branche"] = indic1_mode == "coef" and True
-    data["Indic1_modalite_calc_coef_autre"] = indic1_mode == "autre" and True
 
     # Indicateur 2
     data["Indic2_non_calculable"] = (
