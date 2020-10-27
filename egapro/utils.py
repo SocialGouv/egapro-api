@@ -108,8 +108,40 @@ REMUNERATIONS_THRESHOLDS = {
     20.05: 0,
 }
 
+AUGMENTATIONS_HP_THRESHOLDS = {
+    0.00: 20,
+    2.05: 10,
+    5.05: 5,
+    10.05: 0,
+}
 
-def compute_remunerations_note(resultat):
+AUGMENTATIONS_THRESHOLDS = {
+    0.00: 35,
+    2.05: 25,
+    5.05: 15,
+    10.05: 0,
+}
+
+PROMOTIONS_THRESHOLDS = {
+    0.00: 15,
+    2.05: 10,
+    5.05: 5,
+    10.05: 0,
+}
+
+CONGES_MATERNITE_THRESHOLDS = {
+    0.0: 0,
+    100.0: 15,
+}
+
+HAUTES_REMUNERATIONS_THRESHOLDS = {
+    0: 0,
+    2: 5,
+    4: 10,
+}
+
+
+def compute_note(resultat, thresholds):
     if resultat is None:
         return None
     try:
@@ -117,7 +149,7 @@ def compute_remunerations_note(resultat):
     except ValueError:
         return None
     previous = 0
-    for threshold, note in REMUNERATIONS_THRESHOLDS.items():
+    for threshold, note in thresholds.items():
         if resultat >= threshold:
             previous = note
             continue
@@ -127,6 +159,62 @@ def compute_remunerations_note(resultat):
 def compute_notes(data):
     if "indicateurs" not in data:
         return
-    note = compute_remunerations_note(data.path("indicateurs.rémunérations.résultat"))
+    # indicateurs 1
+    note = compute_note(
+        data.path("indicateurs.rémunérations.résultat"), REMUNERATIONS_THRESHOLDS
+    )
     if note is not None:
         data["indicateurs"]["rémunérations"]["note"] = note
+
+    # indicateurs 2
+    note = compute_note(
+        data.path("indicateurs.augmentations_hors_promotions.résultat"),
+        AUGMENTATIONS_HP_THRESHOLDS,
+    )
+    if note is not None:
+        data["indicateurs"]["augmentations_hors_promotions"]["note"] = note
+
+    # indicateurs 2et3
+    # in percent
+    percent = compute_note(
+        data.path("indicateurs.augmentations.résultat"), AUGMENTATIONS_THRESHOLDS
+    )
+    # résultat_nombre_salariés: number
+    # points_en_pourcentage: number
+    # points_nombre_salariés: number
+
+    if percent is not None:
+        data["indicateurs"]["augmentations"]["note_en_pourcentage"] = percent
+    # in absolute
+    absolute = compute_note(
+        data.path("indicateurs.augmentations.résultat_nombre_salariés"),
+        AUGMENTATIONS_THRESHOLDS,
+    )
+    if absolute is not None:
+        data["indicateurs"]["augmentations"]["note_nombre_salariés"] = absolute
+    if absolute is not None or percent is not None:
+        absolute = absolute or 0
+        percent = percent or 0
+        data["indicateurs"]["augmentations"]["note"] = max(absolute, percent)
+
+    # indicateurs 3
+    note = compute_note(
+        data.path("indicateurs.promotions.résultat"), PROMOTIONS_THRESHOLDS
+    )
+    if note is not None:
+        data["indicateurs"]["promotions"]["note"] = note
+
+    # indicateurs 4
+    note = compute_note(
+        data.path("indicateurs.congés_maternité.résultat"), CONGES_MATERNITE_THRESHOLDS
+    )
+    if note is not None:
+        data["indicateurs"]["congés_maternité"]["note"] = note
+
+    # indicateurs 5
+    note = compute_note(
+        data.path("indicateurs.hautes_rémunérations.résultat"),
+        HAUTES_REMUNERATIONS_THRESHOLDS,
+    )
+    if note is not None:
+        data["indicateurs"]["hautes_rémunérations"]["note"] = note

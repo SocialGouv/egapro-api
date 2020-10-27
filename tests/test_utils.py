@@ -1,6 +1,6 @@
 import pytest
 
-from egapro import utils
+from egapro import utils, models
 
 
 @pytest.mark.parametrize(
@@ -47,4 +47,40 @@ def test_official_round(input, output):
     ],
 )
 def test_compute_remuneration_note(input, output):
-    assert utils.compute_remunerations_note(input) == output
+    assert utils.compute_note(input, utils.REMUNERATIONS_THRESHOLDS) == output
+
+
+@pytest.mark.parametrize(
+    "input,output",
+    [
+        (0, 0),
+        (1, 0),
+        (33, 0),
+        (99, 0),
+        (100, 15),
+    ],
+)
+def test_compute_conges_maternites_note(input, output):
+    assert utils.compute_note(input, utils.CONGES_MATERNITE_THRESHOLDS) == output
+
+
+def test_compute_augmentations_note():
+    data = models.Data({
+            "indicateurs": {
+                "augmentations": {"résultat": 5, "résultat_nombre_salariés": 6}
+            }
+        })
+    utils.compute_notes(data)
+    assert data["indicateurs"]["augmentations"]["note"] == 25
+    assert data["indicateurs"]["augmentations"]["note_nombre_salariés"] == 15
+    assert data["indicateurs"]["augmentations"]["note_en_pourcentage"] == 25
+
+    data = models.Data({
+            "indicateurs": {
+                "augmentations": {"résultat": 5.05, "résultat_nombre_salariés": 2}
+            }
+        })
+    utils.compute_notes(data)
+    assert data["indicateurs"]["augmentations"]["note"] == 35
+    assert data["indicateurs"]["augmentations"]["note_nombre_salariés"] == 35
+    assert data["indicateurs"]["augmentations"]["note_en_pourcentage"] == 15
