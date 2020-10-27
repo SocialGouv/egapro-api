@@ -193,11 +193,11 @@ async def get_headers_columns():
             ("Indicateur_2et3", "indicateurs.augmentations.note"),
             (
                 "Indicateur_2et3_PourCent",
-                "indicateurs.augmentations.points_en_pourcentage",
+                "indicateurs.augmentations.note_en_pourcentage",
             ),
             (
                 "Indicateur_2et3_ParSal",
-                "indicateurs.augmentations.points_nombre_salariés",
+                "indicateurs.augmentations.note_nombre_salariés",
             ),
             ("Indicateur_3", "indicateurs.promotions.note"),
             ("Indicateur_4", "indicateurs.congés_maternité.note"),

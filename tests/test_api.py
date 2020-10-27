@@ -501,11 +501,33 @@ async def test_invalid_declaration_data_should_raise_on_patch(client, body):
 
 
 async def test_put_declaration_should_compute_notes(client, body):
-    body["indicateurs"] = {"rémunérations": {"mode": "csp", "résultat": 5.28}}
+    body["indicateurs"] = {
+        "rémunérations": {"mode": "csp", "résultat": 5.28},
+        "augmentations_hors_promotions": {"résultat": 5.03},
+        "augmentations": {"résultat": 4.73, "résultat_nombre_salariés": 5.5},
+        "promotions": {"résultat": 2.03},
+        "congés_maternité": {"résultat": 88},
+        "hautes_rémunérations": {"résultat": 3},
+    }
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     declaration = await db.declaration.get("514027945", 2019)
     assert declaration["data"]["indicateurs"]["rémunérations"]["note"] == 34
+    assert (
+        declaration["data"]["indicateurs"]["augmentations_hors_promotions"]["note"]
+        == 10
+    )
+    assert (
+        declaration["data"]["indicateurs"]["augmentations"]["note_nombre_salariés"]
+        == 15
+    )
+    assert (
+        declaration["data"]["indicateurs"]["augmentations"]["note_en_pourcentage"] == 25
+    )
+    assert declaration["data"]["indicateurs"]["augmentations"]["note"] == 25
+    assert declaration["data"]["indicateurs"]["promotions"]["note"] == 15
+    assert declaration["data"]["indicateurs"]["congés_maternité"]["note"] == 0
+    assert declaration["data"]["indicateurs"]["hautes_rémunérations"]["note"] == 5
 
 
 async def test_patch_declaration_should_compute_notes(client, declaration):
