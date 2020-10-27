@@ -6,29 +6,32 @@ from egapro import db
 
 pytestmark = pytest.mark.asyncio
 
+
 # Minimal body to send post requests
-BODY = {
-    "id": "1234",
-    "status": "valid",
-    "déclaration": {
-        "année_indicateurs": 2019,
-        "période_référence": ["2019-01-01", "2019-12-31"],
-    },
-    "déclarant": {"email": "foo@bar.org", "prénom": "Foo", "nom": "Bar"},
-    "entreprise": {
-        "raison_sociale": "FooBar",
-        "siren": "514027945",
-        "région": "76",
-        "département": "12",
-        "adresse": "12, rue des adresses",
-        "commune": "Y",
-    },
-}
+@pytest.fixture
+def body():
+    return {
+        "id": "1234",
+        "status": "valid",
+        "déclaration": {
+            "année_indicateurs": 2019,
+            "période_référence": ["2019-01-01", "2019-12-31"],
+        },
+        "déclarant": {"email": "foo@bar.org", "prénom": "Foo", "nom": "Bar"},
+        "entreprise": {
+            "raison_sociale": "FooBar",
+            "siren": "514027945",
+            "région": "76",
+            "département": "12",
+            "adresse": "12, rue des adresses",
+            "commune": "Y",
+        },
+    }
 
 
-async def test_cannot_put_declaration_without_token(client):
+async def test_cannot_put_declaration_without_token(client, body):
     client.logout()
-    resp = await client.put("/declaration/514027945/2019", body=BODY)
+    resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 401
 
 
@@ -54,34 +57,34 @@ async def test_request_token(client, monkeypatch):
     assert calls == 1
 
 
-async def test_invalid_siren_should_raise(client):
-    resp = await client.put("/declaration/111111111/2019", body=BODY)
+async def test_invalid_siren_should_raise(client, body):
+    resp = await client.put("/declaration/111111111/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {"error": "Numéro SIREN invalide: 111111111"}
 
 
-async def test_invalid_year_should_raise(client):
-    resp = await client.put("/declaration/514027945/2017", body=BODY)
+async def test_invalid_year_should_raise(client, body):
+    resp = await client.put("/declaration/514027945/2017", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
         "error": "Il est possible de déclarer seulement pour les années 2018, 2019"
     }
 
 
-async def test_basic_declaration_should_save_data(client):
-    resp = await client.put("/declaration/514027945/2019", body=BODY)
+async def test_basic_declaration_should_save_data(client, body):
+    resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 200
     data = json.loads(resp.body)
     assert "last_modified" in data
     del data["last_modified"]
-    assert data == {"data": BODY, "siren": "514027945", "year": 2019}
+    assert data == {"data": body, "siren": "514027945", "year": 2019}
 
 
-async def test_owner_email_should_be_lower_cased(client):
+async def test_owner_email_should_be_lower_cased(client, body):
     client.login("FoO@BAZ.baR")
-    resp = await client.put("/declaration/514027945/2019", body=BODY)
+    resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     assert await db.declaration.owner("514027945", 2019) == "foo@baz.bar"
 
@@ -108,9 +111,9 @@ async def test_patch_declaration(client, declaration):
     assert declaration["data"]["status"] == "pending"
 
 
-async def test_basic_declaration_should_remove_data_namespace_if_present(client):
-    await client.put("/declaration/514027945/2019", body={"data": BODY})
-    assert (await db.declaration.get("514027945", "2019"))["data"] == BODY
+async def test_basic_declaration_should_remove_data_namespace_if_present(client, body):
+    await client.put("/declaration/514027945/2019", body={"data": body})
+    assert (await db.declaration.get("514027945", "2019"))["data"] == body
 
 
 @pytest.mark.xfail
@@ -134,24 +137,23 @@ async def test_cannot_put_not_owned_declaration(client, monkeypatch):
     assert resp.status == 403
 
 
-async def test_owner_check_is_lower_case(client):
+async def test_owner_check_is_lower_case(client, body):
     client.login("FOo@baR.com")
-    await client.put("/declaration/514027945/2019", body=BODY)
+    await client.put("/declaration/514027945/2019", body=body)
     client.login("FOo@BAR.COM")
     resp = await client.patch("/declaration/514027945/2019", {"indicateurs": {}})
     assert resp.status == 204
     record = await db.declaration.get("514027945", 2019)
-    data = BODY.copy()
-    data["indicateurs"] = {}
-    assert record["data"] == data
+    body["déclarant"]["email"] = "foo@bar.com"
+    body["indicateurs"] = {}
+    assert record["data"] == body
 
 
-async def test_declaring_twice_should_not_duplicate(client, app):
-    resp = await client.put("/declaration/514027945/2019", body=BODY)
+async def test_declaring_twice_should_not_duplicate(client, app, body):
+    resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
-    data = BODY.copy()
-    data["indicateurs"] = {}
-    resp = await client.put("/declaration/514027945/2019", body=data)
+    body["indicateurs"] = {}
+    resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     async with db.declaration.pool.acquire() as conn:
         rows = await conn.fetch(
@@ -160,10 +162,10 @@ async def test_declaring_twice_should_not_duplicate(client, app):
             2019,
         )
     assert len(rows) == 1
-    assert rows[0]["data"] == data
+    assert rows[0]["data"] == body
 
 
-async def test_confirmed_declaration_should_send_email(client, monkeypatch):
+async def test_confirmed_declaration_should_send_email(client, monkeypatch, body):
     calls = 0
     id = "1234"
     company = "FooBar"
@@ -177,7 +179,6 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch):
         nonlocal calls
         calls += 1
 
-    body = BODY.copy()
     del body["status"]
     monkeypatch.setattr("egapro.emails.send", mock_send)
     resp = await client.put("/declaration/514027945/2019", body=body)
@@ -193,14 +194,15 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch):
     assert calls == 1
 
 
-async def test_confirmed_declaration_should_raise_if_missing_id(client, monkeypatch):
+async def test_confirmed_declaration_should_raise_if_missing_id(
+    client, monkeypatch, body
+):
     calls = 0
 
     def mock_send(to, subject, txt, html):
         nonlocal calls
         calls += 1
 
-    body = BODY.copy()
     del body["id"]
     monkeypatch.setattr("egapro.emails.send", mock_send)
     resp = await client.put(
@@ -218,8 +220,8 @@ async def test_with_unknown_siren_or_year(client):
     assert resp.status == 404
 
 
-async def test_start_new_simulation(client):
-    resp = await client.post("/simulation", body=BODY)
+async def test_start_new_simulation(client, body):
+    resp = await client.post("/simulation", body=body)
     assert resp.status == 200
     data = json.loads(resp.body)
     assert "id" in data
@@ -332,7 +334,7 @@ async def test_stats_endpoint(client):
     assert json.loads(resp.body) == {"1000 et plus": 2, "251 à 999": 1, "50 à 250": 3}
 
 
-async def test_send_code_endpoint(client, monkeypatch):
+async def test_send_code_endpoint(client, monkeypatch, body):
     calls = 0
     email_body = ""
     recipient = None
@@ -349,7 +351,7 @@ async def test_send_code_endpoint(client, monkeypatch):
     monkeypatch.setattr("egapro.emails.send", mock_send)
 
     # Invalid UUID
-    resp = await client.post("/simulation/unknown/send-code", body=BODY)
+    resp = await client.post("/simulation/unknown/send-code", body=body)
     assert resp.status == 400
     assert json.loads(resp.body) == {
         "error": 'Invalid data: invalid input syntax for type uuid: "unknown"'
@@ -359,7 +361,7 @@ async def test_send_code_endpoint(client, monkeypatch):
     # Not found UUID
     resp = await client.post(
         "/simulation/12345678-1234-5678-9012-123456789012/send-code",
-        body=BODY,
+        body=body,
     )
     assert resp.status == 404
     assert not calls
@@ -374,7 +376,7 @@ async def test_send_code_endpoint(client, monkeypatch):
     )
 
     # Missing email
-    resp = await client.post(f"/simulation/{uid}/send-code", body=BODY)
+    resp = await client.post(f"/simulation/{uid}/send-code", body=body)
     assert resp.status == 400
     assert json.loads(resp.body) == {"error": "Missing `email` key"}
     assert not calls
@@ -447,7 +449,7 @@ async def test_config_endpoint(client):
     assert json.loads(resp.body)["YEARS"] == [2018, 2019]
 
 
-async def test_declare_with_flat_data(client):
+async def test_declare_with_flat_data(client, body):
     flat_body = {
         "id": "1234",
         "status": "valid",
@@ -470,7 +472,7 @@ async def test_declare_with_flat_data(client):
     )
     assert resp.status == 204
     declaration = await db.declaration.get("514027945", 2019)
-    assert declaration["data"] == BODY
+    assert declaration["data"] == body
     resp = await client.get(
         "/declaration/514027945/2019",
         headers={"Accept": "application/vnd.egapro.v1.flat+json"},
@@ -489,8 +491,8 @@ async def test_invalid_declaration_data_should_raise_on_put(client):
     assert json.loads(resp.body) == {"error": "False schema does not allow '\"foo\"'"}
 
 
-async def test_invalid_declaration_data_should_raise_on_patch(client):
-    await client.put("/declaration/514027945/2019", body=BODY)
+async def test_invalid_declaration_data_should_raise_on_patch(client, body):
+    await client.put("/declaration/514027945/2019", body=body)
     resp = await client.patch(
         "/declaration/514027945/2019",
         body={"foo": "bar"},
@@ -499,8 +501,7 @@ async def test_invalid_declaration_data_should_raise_on_patch(client):
     assert json.loads(resp.body) == {"error": "False schema does not allow '\"foo\"'"}
 
 
-async def test_put_declaration_should_compute_notes(client):
-    body = BODY.copy()
+async def test_put_declaration_should_compute_notes(client, body):
     body["indicateurs"] = {"rémunérations": {"mode": "csp", "résultat": 5.28}}
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204

@@ -14,17 +14,23 @@ from .loggers import logger
 
 
 class Request(BaseRequest):
+    def __init__(self, *args, **kwargs):
+        self._data = None
+        super().__init__(*args, **kwargs)
+
     @property
     def data(self):
-        data = self.json
-        if "data" in data:
-            data = data["data"]
-        # Legacy identifier, be defensive and try hard to find it.
-        if "id" not in data:
-            id_ = self.json.get("id")
-            if id_:
-                data["id"] = id_
-        return models.Data(data)
+        if self._data is None:
+            data = self.json
+            if "data" in data:
+                data = data["data"]
+            # Legacy identifier, be defensive and try hard to find it.
+            if "id" not in data:
+                id_ = self.json.get("id")
+                if id_:
+                    data["id"] = id_
+            self._data = models.Data(data)
+        return self._data
 
 
 class App(Roll):
@@ -75,6 +81,9 @@ def ensure_owner(view):
                 # TODO should we obfuscate the existence of the resource?
                 if request.method not in ("GET", "OPTIONS"):
                     raise HttpError(403, "Sorry, no")
+        if request._body and "déclarant" in request.data:
+            # Make sure we set the email used for token as owner.
+            request.data["déclarant"]["email"] = declarant
         return await view(request, response, siren, year, *args, **kwargs)
 
     return wrapper
