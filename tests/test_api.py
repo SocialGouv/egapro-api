@@ -497,3 +497,23 @@ async def test_invalid_declaration_data_should_raise_on_patch(client):
     )
     assert resp.status == 422
     assert json.loads(resp.body) == {"error": "False schema does not allow '\"foo\"'"}
+
+
+async def test_put_declaration_should_compute_notes(client):
+    body = BODY.copy()
+    body["indicateurs"] = {"rémunérations": {"mode": "csp", "résultat": 5.28}}
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    declaration = await db.declaration.get("514027945", 2019)
+    assert declaration["data"]["indicateurs"]["rémunérations"]["note"] == 34
+
+
+async def test_patch_declaration_should_compute_notes(client, declaration):
+    await declaration(siren="514027945", year=2018, owner="foo@bar.org")
+    resp = await client.patch(
+        "/declaration/514027945/2018",
+        body={"indicateurs": {"rémunérations": {"mode": "csp", "résultat": 18.75}}},
+    )
+    assert resp.status == 204
+    data = (await db.declaration.get("514027945", 2018))["data"]
+    assert data["indicateurs"]["rémunérations"]["note"] == 5

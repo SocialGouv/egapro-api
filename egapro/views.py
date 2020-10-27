@@ -108,6 +108,7 @@ def flatten(view):
 async def declare(request, response, siren, year):
     data = request.data
     schema.validate(data.raw)
+    utils.compute_notes(data)
     declarant = request["email"]
     try:
         current = await db.declaration.get(siren, year)
@@ -145,6 +146,7 @@ async def patch_declaration(request, response, siren, year):
     current.update(request.data.raw)
     schema.validate(current)
     data = models.Data(current)
+    utils.compute_notes(data)
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:
