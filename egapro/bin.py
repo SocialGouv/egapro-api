@@ -206,7 +206,7 @@ async def migrate_effectif(source: Path):
 
 
 @minicli.cli
-async def validate():
+async def validate(pdb=False):
     from egapro.schema import JSON_SCHEMA
     from egapro.schema.legacy import from_legacy
     from jsonschema_rs import ValidationError
@@ -217,8 +217,9 @@ async def validate():
         except ValidationError as err:
             print(f"\n\nERROR WITH {row['siren']}/{row['year']}\n")
             print(err)
-            breakpoint()
-            break
+            if pdb:
+                breakpoint()
+                break
         sys.stdout.write(".")
 
 
