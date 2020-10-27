@@ -68,8 +68,65 @@ def import_by_path(path):
     """
     if not isinstance(path, str):
         return path
-    module_path, *name = path.rsplit('.', 1)
+    module_path, *name = path.rsplit(".", 1)
     func = import_module(module_path)
     if name:
         func = getattr(func, name[0])
     return func
+
+
+def official_round(i):
+    """The threshold is x.05, instead of x.5.
+
+    So for example, 0.01 should be rounded to 0, while 0.1 should be rounded to 1.
+    """
+    return round(float(i) + 0.5 - 0.049)
+
+
+REMUNERATIONS_THRESHOLDS = {
+    0.00: 40,
+    0.05: 39,
+    1.05: 38,
+    2.05: 37,
+    3.05: 36,
+    4.05: 35,
+    5.05: 34,
+    6.05: 33,
+    7.05: 31,
+    8.05: 29,
+    9.05: 27,
+    10.05: 25,
+    11.05: 23,
+    12.05: 21,
+    13.05: 19,
+    14.05: 17,
+    15.05: 14,
+    16.05: 11,
+    17.05: 8,
+    18.05: 5,
+    19.05: 2,
+    20.05: 0,
+}
+
+
+def compute_remunerations_note(resultat):
+    if resultat is None:
+        return None
+    try:
+        resultat = round(float(resultat), 2)
+    except ValueError:
+        return None
+    previous = 0
+    for threshold, note in REMUNERATIONS_THRESHOLDS.items():
+        if resultat >= threshold:
+            previous = note
+            continue
+    return previous
+
+
+def compute_notes(data):
+    if "indicateurs" not in data:
+        return
+    note = compute_remunerations_note(data.path("indicateurs.rémunérations.résultat"))
+    if note is not None:
+        data["indicateurs"]["rémunérations"]["note"] = note
