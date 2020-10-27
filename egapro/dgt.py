@@ -260,7 +260,7 @@ def prepare_record(data):
                 ]
             )
 
-    data = flatten(data)
+    data = flatten(data, flatten_lists=True)
     source = data.get("source")
     if source in ("solen-2019", "solen-2020"):
         url = f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={data['id']}"
