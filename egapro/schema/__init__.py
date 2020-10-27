@@ -35,6 +35,8 @@ def extrapolate(definition):
         return {"type": "string", "format": definition}
     if definition in ("integer", "string", "boolean", "number"):
         return {"type": definition}
+    if definition == "percent":
+        return {"type": "number", "minimum": 0, "maximum": 100}
     if definition.startswith("python:"):
         path = definition[7:]
         definition = import_by_path(path)
