@@ -17,20 +17,20 @@ status: valid|pending
   +année_indicateurs: "2018:2019"
   +période_référence: [date, date] # Période de référence considérée pour le calcul des indicateurs
   date_consultation_CSE: string # Uniquement pour les modalités de calcul par niveau ou coefficient hiérarchique en application de la classification de branche ou d'une autre méthode de cotation des postes
-  total_points: integer # Nombre total de points obtenus
-  total_points_calculables: integer # Nombre total de points pouvant être obtenus
+  points: integer # Nombre total de points obtenus
+  points_calculables: integer # Nombre total de points pouvant être obtenus
   mesures_correctives: mmo|me|mne # Mesures de corrections prévues à l'article D. 1142-5 / Trois items : Mesures mises en œuvre (mmo), Mesures envisagées (me), Mesures non envisagées (mne)"
   index: integer # Résultat final sur 100 points
-+déclarant:
-  +prénom: string
-  +nom: string
+déclarant:
+  prénom: string
+  nom: string
   téléphone: string
-  +email: email
+  email: email
 +entreprise:
-  +raison_sociale: string
+  raison_sociale: string
   +siren: string
-  +région: python:egapro.schema.utils.regions
-  +département: python:egapro.schema.utils.departements
+  région: python:egapro.schema.utils.regions
+  département: python:egapro.schema.utils.departements
   adresse: string
   commune: string
   # TODO regex ?
