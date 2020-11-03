@@ -280,10 +280,10 @@ def prepare_record(data):
                 key = f"Indic1_{csp_names[idx]}"
             data[key] = ";".join(
                 [
-                    str(round(tranches.get(":29") or 0, 1)),
-                    str(round(tranches.get("30:39") or 0, 1)),
-                    str(round(tranches.get("40:49") or 0, 1)),
-                    str(round(tranches.get("50:") or 0, 1)),
+                    str(round(tranches.get(":29") or 0, 1) or ""),
+                    str(round(tranches.get("30:39") or 0, 1) or ""),
+                    str(round(tranches.get("40:49") or 0, 1) or ""),
+                    str(round(tranches.get("50:") or 0, 1) or ""),
                 ]
             )
 
