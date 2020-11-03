@@ -11,7 +11,7 @@ import ujson as json
 from egapro import config, db, exporter, models
 from egapro.solen import *  # noqa: expose to minicli
 from egapro.exporter import dump  # noqa: expose to minicli
-from egapro.utils import json_dumps
+from egapro.utils import json_dumps, compute_notes
 from egapro import dgt
 
 
@@ -123,7 +123,7 @@ def compare_xlsx(old: Path, new: Path, max_rows: int = None, ignore=[]):
         new_row = new[url]
 
         if old_row == new_row:
-            sys.stdout.write('.')
+            sys.stdout.write(".")
             continue  # Rows are equal.
         to_break = False
 
@@ -198,6 +198,7 @@ async def validate(pdb=False):
     from egapro.schema import JSON_SCHEMA
     from egapro.schema.legacy import from_legacy
     from jsonschema_rs import ValidationError
+
     for row in await db.declaration.all():
         data = from_legacy(row["data"])
         try:
@@ -209,6 +210,52 @@ async def validate(pdb=False):
                 breakpoint()
                 break
         sys.stdout.write(".")
+
+
+@minicli.cli
+async def compare_index(pdb=False, verbose=False):
+    from egapro.schema.legacy import from_legacy
+
+    records = await db.declaration.all()
+    for record in records:
+        legacy = {
+            "index": record["data"]["declaration"].get("noteIndex"),
+            "points": record["data"]["declaration"].get("totalPoint"),
+            "max": record["data"]["declaration"].get("totalPointCalculable"),
+            "indic1": record["data"]["indicateurUn"].get("noteFinale"),
+            "indic2": record["data"].get("indicateurDeux", {}).get("noteFinale"),
+            "indic2et3": record["data"]
+            .get("indicateurDeuxTrois", {})
+            .get("noteFinale"),
+            "indic3": record["data"].get("indicateurTrois", {}).get("noteFinale"),
+            "indic4": record["data"]["indicateurQuatre"].get("noteFinale"),
+            "indic5": record["data"]["indicateurCinq"].get("noteFinale"),
+        }
+        data = models.Data(from_legacy(record["data"]))
+        compute_notes(data)
+        current = {
+            "index": record["data"]["déclaration"].get("index"),
+            "points": record["data"]["déclaration"].get("points"),
+            "max": record["data"]["déclaration"].get("points_calculables"),
+            "indic1": record["data"]["indicateurs"]["rémunérations"].get("note"),
+            "indic2": record["data"]["indicateurs"][
+                "augmentations_hors_promotions"
+            ].get("note"),
+            "indic2et3": record["data"]["indicateurs"]["augmentations"].get("note"),
+            "indic3": record["data"]["indicateurs"]["promotions"].get("note"),
+            "indic4": record["data"]["indicateurs"]["congés_maternité"].get("note"),
+            "indic5": record["data"]["indicateurs"]["hautes_rémunérations"].get("note"),
+        }
+        if not legacy == current:
+            sys.stdout.write("x")
+            if verbose:
+                print(data.siren, data.year)
+                print(legacy)
+                print(current)
+            if pdb:
+                breakpoint()
+        else:
+            sys.stdout.write(".")
 
 
 @minicli.wrap

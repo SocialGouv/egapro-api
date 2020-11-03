@@ -133,7 +133,7 @@ def from_legacy(data):
 
     # Deux
     deux = data["indicateurs"]["augmentations_hors_promotions"]
-    if not deux.get("motifNonCalculable"):
+    if not deux.get("nonCalculable"):
         deux["catégories"] = [
             c.get("ecartTauxAugmentation", 0) for c in deux.get("tauxAugmentation", [])
         ]
@@ -145,7 +145,7 @@ def from_legacy(data):
 
     # Trois
     trois = data["indicateurs"]["promotions"]
-    if not trois.get("motifNonCalculable"):
+    if not trois.get("nonCalculable"):
         trois["catégories"] = [
             c.get("ecartTauxPromotion", 0) for c in trois.get("tauxPromotion", [])
         ]
@@ -158,11 +158,21 @@ def from_legacy(data):
     # Cinq
     cinq = data["indicateurs"]["hautes_rémunérations"]
     clean_legacy(cinq)
+    # if 5 < cinq["résultat"] < 10:
+    #     cinq["résultat"] = 10 - cinq["résultat"]
+    #     cinq["population_favorable"] = (
+    #         "femmes" if cinq["population_favorable"] == "hommes" else "hommes"
+    #     )
     del data["informations"]
     return data
 
 
 def clean_legacy(legacy):
+    if not legacy.get("nonCalculable"):
+        try:
+            del legacy["motifNonCalculable"]
+        except KeyError:
+            pass
     mapping = {
         "motifNonCalculable": "non_calculable",
         "noteFinale": "note",
@@ -175,8 +185,8 @@ def clean_legacy(legacy):
         "noteEcart": "note_en_pourcentage",
         "dateConsultationCSE": "date_consultation_cse",
         "dateDeclaration": "date",
-        "totalPoint": "total_points",
-        "totalPointCalculable": "total_points_calculables",
+        "totalPoint": "points",
+        "totalPointCalculable": "points_calculables",
         "nombreSalariesTotal": "total",
         "codeNaf": "code_naf",
         "codePostal": "code_postal",

@@ -1,3 +1,4 @@
+import math
 from datetime import date, datetime, timezone
 from importlib import import_module
 
@@ -138,6 +139,7 @@ HAUTES_REMUNERATIONS_THRESHOLDS = {
     0: 0,
     2: 5,
     4: 10,
+    6: 0,  # Align on old schema for now, any value > 5 means 0
 }
 
 
@@ -159,57 +161,92 @@ def compute_note(resultat, thresholds):
 def compute_notes(data):
     if "indicateurs" not in data:
         return
+    points = 0
+    maximum = 0
+    population_favorable = None
     # indicateurs 1
-    note = compute_note(
-        data.path("indicateurs.rémunérations.résultat"), REMUNERATIONS_THRESHOLDS
-    )
-    if note is not None:
-        data["indicateurs"]["rémunérations"]["note"] = note
+    if not data.path("indicateurs.rémunérations.non_calculable"):
+        result = data.path("indicateurs.rémunérations.résultat")
+        note = compute_note(result, REMUNERATIONS_THRESHOLDS)
+        if note is not None:
+            if note != 40:
+                # note=40 would mean equality
+                population_favorable = data.path(
+                    "indicateurs.rémunérations.population_favorable"
+                )
+            maximum += 40
+            data["indicateurs"]["rémunérations"]["note"] = note
+            points += note
 
     # indicateurs 2
-    note = compute_note(
-        data.path("indicateurs.augmentations_hors_promotions.résultat"),
-        AUGMENTATIONS_HP_THRESHOLDS,
-    )
-    if note is not None:
-        data["indicateurs"]["augmentations_hors_promotions"]["note"] = note
+    if not data.path("indicateurs.augmentations_hors_promotions.non_calculable"):
+        note = compute_note(
+            data.path("indicateurs.augmentations_hors_promotions.résultat"),
+            AUGMENTATIONS_HP_THRESHOLDS,
+        )
+        if note is not None:
+            maximum += 20
+            indic_favorable = data.path(
+                "indicateurs.augmentations_hors_promotions.population_favorable"
+            )
+            if population_favorable and population_favorable != indic_favorable:
+                # Cf https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000037964765/ Annexe 5.2
+                note = 20
+            data["indicateurs"]["augmentations_hors_promotions"]["note"] = note
+            points += note
 
     # indicateurs 2et3
-    # in percent
-    percent = compute_note(
-        data.path("indicateurs.augmentations.résultat"), AUGMENTATIONS_THRESHOLDS
-    )
-    # résultat_nombre_salariés: number
-    # points_en_pourcentage: number
-    # points_nombre_salariés: number
+    if not data.path("indicateurs.augmentations.non_calculable"):
+        # in percent
+        percent = compute_note(
+            data.path("indicateurs.augmentations.résultat"), AUGMENTATIONS_THRESHOLDS
+        )
 
-    if percent is not None:
-        data["indicateurs"]["augmentations"]["note_en_pourcentage"] = percent
-    # in absolute
-    absolute = compute_note(
-        data.path("indicateurs.augmentations.résultat_nombre_salariés"),
-        AUGMENTATIONS_THRESHOLDS,
-    )
-    if absolute is not None:
-        data["indicateurs"]["augmentations"]["note_nombre_salariés"] = absolute
-    if absolute is not None or percent is not None:
-        absolute = absolute or 0
-        percent = percent or 0
-        data["indicateurs"]["augmentations"]["note"] = max(absolute, percent)
+        if percent is not None:
+            data["indicateurs"]["augmentations"]["note_en_pourcentage"] = percent
+        # in absolute
+        absolute = compute_note(
+            data.path("indicateurs.augmentations.résultat_nombre_salariés"),
+            AUGMENTATIONS_THRESHOLDS,
+        )
+        if absolute is not None:
+            data["indicateurs"]["augmentations"]["note_nombre_salariés"] = absolute
+        if absolute is not None or percent is not None:
+            absolute = absolute or 0
+            percent = percent or 0
+            note = max(absolute, percent)
+            maximum += 35
+            indic_favorable = data.path(
+                "indicateurs.augmentations.population_favorable"
+            )
+            if population_favorable and population_favorable != indic_favorable:
+                # Cf https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000037964765/ Annexe 5.2
+                note = 35
+            data["indicateurs"]["augmentations"]["note"] = note
+            points += note
 
     # indicateurs 3
-    note = compute_note(
-        data.path("indicateurs.promotions.résultat"), PROMOTIONS_THRESHOLDS
-    )
-    if note is not None:
-        data["indicateurs"]["promotions"]["note"] = note
+    if not data.path("indicateurs.promotions.non_calculable"):
+        note = compute_note(
+            data.path("indicateurs.promotions.résultat"), PROMOTIONS_THRESHOLDS
+        )
+        if note is not None:
+            maximum += 15
+            indic_favorable = data.path("indicateurs.promotions.population_favorable")
+            if population_favorable and population_favorable != indic_favorable:
+                # Cf https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000037964765/ Annexe 5.2
+                note = 15
+            data["indicateurs"]["promotions"]["note"] = note
+            points += note
 
     # indicateurs 4
-    note = compute_note(
-        data.path("indicateurs.congés_maternité.résultat"), CONGES_MATERNITE_THRESHOLDS
-    )
-    if note is not None:
-        data["indicateurs"]["congés_maternité"]["note"] = note
+    if not data.path("indicateurs.congés_maternité.non_calculable"):
+        result = data.path("indicateurs.congés_maternité.résultat")
+        if result is not None:
+            note = 15 if result == 100 else 0
+            maximum += 15
+            data["indicateurs"]["congés_maternité"]["note"] = note
+            points += note
 
     # indicateurs 5
     note = compute_note(
@@ -217,4 +254,15 @@ def compute_notes(data):
         HAUTES_REMUNERATIONS_THRESHOLDS,
     )
     if note is not None:
+        maximum += 10
         data["indicateurs"]["hautes_rémunérations"]["note"] = note
+        points += note
+
+    # Global counts
+    if data.validated:
+        data["déclaration"]["points"] = points
+        data["déclaration"]["points_calculables"] = maximum
+        if maximum >= 75:
+            # Make sure to round up halway
+            # cf https://stackoverflow.com/a/33019698/
+            data["déclaration"]["index"] = math.floor((points / maximum * 100) + 0.5)

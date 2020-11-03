@@ -144,9 +144,8 @@ async def test_owner_check_is_lower_case(client, body):
     resp = await client.patch("/declaration/514027945/2019", {"indicateurs": {}})
     assert resp.status == 204
     record = await db.declaration.get("514027945", 2019)
-    body["déclarant"]["email"] = "foo@bar.com"
-    body["indicateurs"] = {}
-    assert record["data"] == body
+    assert record["data"]["déclarant"]["email"] == "foo@bar.com"
+    assert record["data"]["indicateurs"] == {}
 
 
 async def test_declaring_twice_should_not_duplicate(client, app, body):
@@ -162,7 +161,6 @@ async def test_declaring_twice_should_not_duplicate(client, app, body):
             2019,
         )
     assert len(rows) == 1
-    assert rows[0]["data"] == body
 
 
 async def test_confirmed_declaration_should_send_email(client, monkeypatch, body):
@@ -512,23 +510,18 @@ async def test_put_declaration_should_compute_notes(client, body):
     }
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
-    declaration = await db.declaration.get("514027945", 2019)
-    assert declaration["data"]["indicateurs"]["rémunérations"]["note"] == 34
-    assert (
-        declaration["data"]["indicateurs"]["augmentations_hors_promotions"]["note"]
-        == 10
-    )
-    assert (
-        declaration["data"]["indicateurs"]["augmentations"]["note_nombre_salariés"]
-        == 15
-    )
-    assert (
-        declaration["data"]["indicateurs"]["augmentations"]["note_en_pourcentage"] == 25
-    )
-    assert declaration["data"]["indicateurs"]["augmentations"]["note"] == 25
-    assert declaration["data"]["indicateurs"]["promotions"]["note"] == 15
-    assert declaration["data"]["indicateurs"]["congés_maternité"]["note"] == 0
-    assert declaration["data"]["indicateurs"]["hautes_rémunérations"]["note"] == 5
+    data = (await db.declaration.get("514027945", 2019))["data"]
+    assert data["indicateurs"]["rémunérations"]["note"] == 34
+    assert data["indicateurs"]["augmentations_hors_promotions"]["note"] == 10
+    assert data["indicateurs"]["augmentations"]["note_nombre_salariés"] == 15
+    assert data["indicateurs"]["augmentations"]["note_en_pourcentage"] == 25
+    assert data["indicateurs"]["augmentations"]["note"] == 25
+    assert data["indicateurs"]["promotions"]["note"] == 15
+    assert data["indicateurs"]["congés_maternité"]["note"] == 0
+    assert data["indicateurs"]["hautes_rémunérations"]["note"] == 5
+    assert data["déclaration"]["points"] == 89
+    assert data["déclaration"]["points_calculables"] == 135
+    assert data["déclaration"]["index"] == 66
 
 
 async def test_patch_declaration_should_compute_notes(client, declaration):
