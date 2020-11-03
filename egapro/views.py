@@ -246,7 +246,7 @@ async def send_token(request, response):
     host = request.origin or f"https://{request.host}"
     if not host.endswith("/"):
         host += "/"
-    link = f"{host}?token={token.decode()}"
+    link = f"{host}declaration/?token={token.decode()}"
     print(link)
     body = emails.ACCESS_GRANTED.format(link=link)
     emails.send(email, "Déclarer sur Egapro", body)
