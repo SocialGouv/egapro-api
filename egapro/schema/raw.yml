@@ -48,7 +48,7 @@ indicateurs:
   rémunérations:  # Indicateur 1 relatif à l'écart de rémunération entre les femmes et les hommes
     +mode: csp|coef|autre
     non_calculable: egvi40pcet|am # Vide ou egvi40pcet: Effectif des groupes valides inférieur à 40% de l'effectif total
-    résultat: percent # Résultat final en % après application du seuil de pertinence à chaque catégorie
+    résultat: number # Résultat final en % après application du seuil de pertinence à chaque catégorie
     population_favorable: femmes|hommes|egalite
     note: integer # Nombre de points obtenus à l'indicateur 1 relatif à l'écart de rémunération entre les femmes et les hommes
     catégories:
@@ -60,19 +60,19 @@ indicateurs:
           "50:": number
   augmentations_hors_promotions:  # Indicateur 2 relatif à l'écart de taux d'augmentations individuelles (hors promotion) entre les femmes et les homme
     non_calculable: egvi40pcet|absaugi|am # Trois items : Effectif des groupes valides inférieur à 40% de l'effectif total (egvi40pcet) ou Absence d'augmentations individuelles (absaugi)
-    résultat: percent
+    résultat: number
     population_favorable: femmes|hommes|egalite
     note: integer
     catégories: [number, number, number, number]
   promotions: # Indicateur 3 relatif à l'écart de taux de promotions entre les femmes et les hommes
     non_calculable: egvi40pcet|absprom|am
-    résultat: percent
+    résultat: number
     population_favorable: femmes|hommes|egalite
     note: integer
     catégories: [number, number, number, number]
   augmentations:  # Indicateur 2et3 relatif à l'écart de taux d'augmentations individuelles entre les femmes et les homme pour les entreprises de 250 salariés ou moins
     non_calculable: egvi40pcet|absaugi|etsno5f5h|am # Trois items : Effectif des groupes valides inférieur à 40% de l'effectif total (egvi40pcet) ou Absence d'augmentations individuelles (absaugi)
-    résultat: percent
+    résultat: number
     note: integer
     résultat_nombre_salariés: number
     note_en_pourcentage: number
@@ -80,7 +80,7 @@ indicateurs:
     population_favorable: femmes|hommes|egalite
   congés_maternité: # Indicateur 4 relatif au pourcentage de salariées ayant bénéficié d'une augmentation dans l'année suivant leur retour de congé de maternité
     non_calculable: absrcm|absaugpdtcm|am
-    résultat: percent
+    résultat: number
     note: integer
   hautes_rémunérations:  # Indicateur 5 relatif au nombre de salariés du sexe sous-représenté parmi les 10 salariés ayant perçu les plus hautes rémunérations
     résultat: integer  # Nombre de 0 à 5 du sexe sous représenté parmi les 10 plus hautes rémunérations
