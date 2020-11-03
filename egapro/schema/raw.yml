@@ -35,7 +35,7 @@ déclarant:
   commune: string
   # TODO regex ?
   code_postal: string
-  code_naf: string
+  code_naf: python:egapro.schema.utils.naf
   effectif:
     total: number # Nombre de salariés pris en compte pour le calcul des indicateurs sur la période de référence
     tranche: "50:250|251:999|1000:" # Tranche d'effectifs de la structure

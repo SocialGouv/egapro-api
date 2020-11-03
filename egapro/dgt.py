@@ -3,6 +3,7 @@
 import time
 from collections import defaultdict
 
+from naf import DB as NAF
 from openpyxl import Workbook, load_workbook
 from progressist import ProgressBar
 
@@ -82,7 +83,7 @@ async def get_headers_columns():
             ("Nb_salaries", "entreprise.effectif.total"),
             ("Nom_Entreprise", "entreprise.raison_sociale"),
             ("SIREN", "entreprise.siren"),
-            ("Code_NAF", "entreprise.code_naf"),
+            ("Code_NAF", "code_naf"),
             ("Nom_UES", "entreprise.ues.raison_sociale"),
             # Inclure entreprise déclarante
             ("Nb_ets_UES", "nombre_ues"),
@@ -264,6 +265,9 @@ def prepare_record(data):
     data["nombre_ues"] = nombre_ues or None
     data["entreprise.effectif.tranche"] = EFFECTIF[data["entreprise.effectif.tranche"]]
     data["entreprise.région"] = constants.REGIONS[data["entreprise.région"]]
+    code_naf = data.get("entreprise.code_naf")
+    if code_naf:
+        data["code_naf"] = f"{code_naf} - {NAF[code_naf]}"
 
     # Indicateur 1
     indic1_mode = data.get("indicateurs.rémunérations.mode")
