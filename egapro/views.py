@@ -243,7 +243,7 @@ async def send_token(request, response):
     if not email:
         raise HttpError(400, "Missing email key")
     token = tokens.create(email)
-    host = request.referrer or request.origin or f"https://{request.host}"
+    host = request.origin or f"https://{request.host}"
     if not host.endswith("/"):
         host += "/"
     link = f"{host}?token={token.decode()}"
