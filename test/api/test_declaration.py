@@ -21,6 +21,7 @@ def body():
         "entreprise": {
             "raison_sociale": "FooBar",
             "siren": "514027945",
+            "code_naf": "47.25Z",
             "région": "76",
             "département": "12",
             "adresse": "12, rue des adresses",
@@ -217,6 +218,7 @@ async def test_declare_with_flat_data(client, body):
         "entreprise.département": "12",
         "entreprise.adresse": "12, rue des adresses",
         "entreprise.commune": "Y",
+        "entreprise.code_naf": "47.25Z",
     }
     resp = await client.put(
         "/declaration/514027945/2019",

@@ -31,6 +31,8 @@ def from_legacy(data):
     data["entreprise"] = data.pop("informationsEntreprise", {})
     entreprise = data["entreprise"]
     clean_legacy(entreprise)
+    if entreprise.get("code_naf"):
+        entreprise["code_naf"] = entreprise["code_naf"][:6]
     if "région" in entreprise:
         entreprise["région"] = REVERSED_REGIONS.get(entreprise.get("région"))
     if "département" in entreprise:

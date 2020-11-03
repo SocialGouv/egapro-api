@@ -24,6 +24,22 @@ async def test_dump():
     assert json.loads(path.read_text()) == [{"foo": "baré"}, {"foo": "bazé"}]
 
 
+async def test_dgt_dump_should_compute_naf(declaration):
+    await declaration(
+        siren="12345678",
+        year=2020,
+        uid="12345678-1234-5678-9012-123456789012",
+        entreprise={"code_naf": "47.25Z"},
+    )
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook.active
+    assert sheet["U1"].value == "Code_NAF"
+    assert (
+        sheet["U2"].value
+        == "47.25Z - Commerce de détail de boissons en magasin spécialisé"
+    )
+
+
 async def test_dgt_dump_should_compute_declaration_url(declaration):
     await declaration(
         siren="12345678", year=2020, uid="12345678-1234-5678-9012-123456789012"
