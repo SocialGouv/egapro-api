@@ -1,5 +1,6 @@
 import io
 import json
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -17,11 +18,30 @@ async def init_db():
 
 
 async def test_dump():
-    await db.declaration.put("12345678", 2020, "foo@bar.com", {"foo": "baré"})
-    await db.declaration.put("87654321", 2020, "foo@baz.com", {"foo": "bazé"})
+    await db.declaration.put(
+        "12345678",
+        2020,
+        "foo@bar.com",
+        {"déclaration": {"date": datetime(2020, 10, 24, 10, 11, 12)}},
+    )
+    await db.declaration.put(
+        "87654321",
+        2020,
+        "foo@baz.com",
+        {"déclaration": {"date": datetime(2020, 10, 24, 10, 11, 13)}},
+    )
+    await db.declaration.put(
+        "87654331",
+        2020,
+        "foo@baz.com",
+        {"déclaration": {"date": None}},
+    )
     path = Path("/tmp/test_dump_egapro.json")
     await exporter.dump(path)
-    assert json.loads(path.read_text()) == [{"foo": "baré"}, {"foo": "bazé"}]
+    assert json.loads(path.read_text()) == [
+        {"déclaration": {"date": 1603534272}},
+        {"déclaration": {"date": 1603534273}},
+    ]
 
 
 async def test_dgt_dump_should_compute_naf(declaration):
