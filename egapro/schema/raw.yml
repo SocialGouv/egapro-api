@@ -7,7 +7,6 @@
 # $id: https://index-egapro.travail.gouv.fr/schema.json
 id: string
 source: string
-status: valid|pending
 +déclaration:
   date: date-time # Date de validation et de transmission des résultats au service Egapro
   publication:

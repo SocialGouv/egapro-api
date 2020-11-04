@@ -80,9 +80,8 @@ async def test_put_simulation_should_redirect_to_declaration_if_validated(client
         body={
             "data": {
                 "déclarant": {"email": "foo@bar.org"},
-                "status": "valid",
                 "entreprise": {"siren": "12345678"},
-                "déclaration": {"année_indicateurs": 2019},
+                "déclaration": {"année_indicateurs": 2019, "date": "2020-11-04"},
             },
         },
     )
@@ -96,9 +95,8 @@ async def test_get_simulation_should_redirect_to_declaration_if_validated(client
     uid = await db.simulation.create(
         {
             "déclarant": {"email": "foo@bar.org"},
-            "status": "valid",
             "entreprise": {"siren": "12345678"},
-            "déclaration": {"année_indicateurs": 2019},
+            "déclaration": {"année_indicateurs": 2019, "date": "2020-11-04"},
         }
     )
     resp = await client.get(f"/simulation/{uid}")

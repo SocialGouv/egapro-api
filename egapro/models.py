@@ -28,7 +28,7 @@ class Data(dict):
 
     @property
     def validated(self):
-        return self.path("status") == "valid"
+        return bool(self.path("déclaration.date"))
 
     @property
     def year(self):
