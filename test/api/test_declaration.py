@@ -74,29 +74,6 @@ async def test_owner_email_should_be_lower_cased(client, body):
     assert await db.declaration.owner("514027945", 2019) == "foo@baz.bar"
 
 
-@pytest.mark.xfail(reason="PATCH is to be removed")
-async def test_patch_declaration(client, declaration):
-    data = await declaration(
-        siren="12345678",
-        year=2018,
-        owner="foo@bar.org",
-        entreprise={"raison_sociale": "Milano"},
-    )
-    modified = data["entreprise"]
-    modified["raison_sociale"] = "Roma"
-    resp = await client.patch(
-        "/declaration/12345678/2018",
-        body={
-            "entreprise": modified,
-            "status": "pending",
-        },
-    )
-    assert resp.status == 204
-    declaration = await db.declaration.get("12345678", 2018)
-    assert declaration["data"]["entreprise"]["raison_sociale"] == "Roma"
-    assert declaration["data"]["status"] == "pending"
-
-
 async def test_basic_declaration_should_remove_data_namespace_if_present(client, body):
     await client.put("/declaration/514027945/2019", body={"data": body})
     assert (await db.declaration.get("514027945", "2019"))["data"] == body
@@ -127,11 +104,12 @@ async def test_owner_check_is_lower_case(client, body):
     client.login("FOo@baR.com")
     await client.put("/declaration/514027945/2019", body=body)
     client.login("FOo@BAR.COM")
-    resp = await client.patch("/declaration/514027945/2019", {"indicateurs": {}})
+    body["entreprise"]["raison_sociale"] = "newnew"
+    resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     record = await db.declaration.get("514027945", 2019)
     assert record["data"]["déclarant"]["email"] == "foo@bar.com"
-    assert record["data"]["indicateurs"] == {}
+    assert record["data"]["entreprise"]["raison_sociale"] == "newnew"
 
 
 async def test_declaring_twice_should_not_duplicate(client, app, body):
@@ -243,16 +221,6 @@ async def test_invalid_declaration_data_should_raise_on_put(client):
     assert json.loads(resp.body) == {"error": "False schema does not allow '\"foo\"'"}
 
 
-async def test_invalid_declaration_data_should_raise_on_patch(client, body):
-    await client.put("/declaration/514027945/2019", body=body)
-    resp = await client.patch(
-        "/declaration/514027945/2019",
-        body={"foo": "bar"},
-    )
-    assert resp.status == 422
-    assert json.loads(resp.body) == {"error": "False schema does not allow '\"foo\"'"}
-
-
 async def test_put_declaration_should_compute_notes(client, body):
     body["indicateurs"] = {
         "rémunérations": {"mode": "csp", "résultat": 5.28},
@@ -276,14 +244,3 @@ async def test_put_declaration_should_compute_notes(client, body):
     assert data["déclaration"]["points"] == 89
     assert data["déclaration"]["points_calculables"] == 135
     assert data["déclaration"]["index"] == 66
-
-
-async def test_patch_declaration_should_compute_notes(client, declaration):
-    await declaration(siren="514027945", year=2018, owner="foo@bar.org")
-    resp = await client.patch(
-        "/declaration/514027945/2018",
-        body={"indicateurs": {"rémunérations": {"mode": "csp", "résultat": 18.75}}},
-    )
-    assert resp.status == 204
-    data = (await db.declaration.get("514027945", 2018))["data"]
-    assert data["indicateurs"]["rémunérations"]["note"] == 5

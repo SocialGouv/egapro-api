@@ -144,26 +144,6 @@ async def declare(request, response, siren, year):
             emails.success.send(declarant, **data)
 
 
-@app.route("/declaration/{siren}/{year}", methods=["PATCH"])
-@flatten
-@tokens.require
-@ensure_owner
-async def patch_declaration(request, response, siren, year):
-    declarant = request["email"]
-    declaration = await db.declaration.get(siren, year)
-    current = declaration["data"]
-    current.update(request.data.raw)
-    schema.validate(current)
-    data = models.Data(current)
-    utils.compute_notes(data)
-    await db.declaration.put(siren, year, declarant, data)
-    response.status = 204
-    if data.validated:
-        if not data.id:
-            raise HttpError(400, "Missing id")
-        emails.success.send(declarant, **data)
-
-
 @app.route("/declaration/{siren}/{year}", methods=["GET"])
 @flatten
 @tokens.require
