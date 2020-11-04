@@ -27,8 +27,8 @@ async def test_get_simulation(client):
     resp = await client.get(f"/simulation/{uid}")
     assert resp.status == 200
     data = json.loads(resp.body)
-    assert "last_modified" in data
-    del data["last_modified"]
+    assert "modified_at" in data
+    del data["modified_at"]
     assert data == {
         "data": {"foo": "bar"},
         "id": uid,
@@ -42,8 +42,8 @@ async def test_basic_simulation_should_save_data(client):
     )
     assert resp.status == 200
     data = json.loads(resp.body)
-    assert "last_modified" in data
-    del data["last_modified"]
+    assert "modified_at" in data
+    del data["modified_at"]
     assert data == {
         "data": {"foo": "bar"},
         "id": "12345678-1234-5678-9012-123456789012",
