@@ -897,7 +897,7 @@ class App:
             year = record["data"].year
             siren = record["data"].siren
             owner = record["data"].email
-            last_modified = record["data"].path("déclaration.date")
+            modified_at = record["data"].path("déclaration.date")
             if not owner:
                 failed.append(record)
                 continue
@@ -906,12 +906,12 @@ class App:
             except db.NoData:
                 current = None
             else:
-                current = declaration["last_modified"]
+                current = declaration["modified_at"]
             # Allow to compare aware datetimes.
-            last_modified = last_modified.replace(tzinfo=timezone.utc)
-            if not current or last_modified > current:
+            modified_at = modified_at.replace(tzinfo=timezone.utc)
+            if not current or modified_at > current:
                 await db.declaration.put(
-                    siren, year, owner, record["data"], last_modified
+                    siren, year, owner, record["data"], modified_at
                 )
         print("Failed rows:")
         print(failed)

@@ -17,6 +17,7 @@ def pytest_configure(config):
         await db.init()
         async with db.declaration.pool.acquire() as conn:
             await conn.execute("DROP TABLE IF EXISTS declaration")
+            await conn.execute("DROP TABLE IF EXISTS simulation")
         await db.init()
 
     loop = asyncio.get_event_loop()

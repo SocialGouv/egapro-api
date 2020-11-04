@@ -49,7 +49,7 @@ class table:
 
 
 class declaration(table):
-    fields = ["siren", "year", "data", "last_modified"]
+    fields = ["siren", "year", "data", "modified_at"]
 
     @classmethod
     async def all(cls):
@@ -63,17 +63,17 @@ class declaration(table):
         )
 
     @classmethod
-    async def put(cls, siren, year, owner, data, last_modified=None):
-        # Allow to force last_modified, eg. during migrations.
-        if last_modified is None:
-            last_modified = utils.utcnow()
+    async def put(cls, siren, year, owner, data, modified_at=None):
+        # Allow to force modified_at, eg. during migrations.
+        if modified_at is None:
+            modified_at = utils.utcnow()
         ft = data.get("entreprise", {}).get("raison_sociale")
         async with cls.pool.acquire() as conn:
             await conn.execute(
                 sql.insert_declaration,
                 siren,
                 int(year),
-                last_modified,
+                modified_at,
                 owner,
                 data,
                 ft,
@@ -129,23 +129,23 @@ class declaration(table):
 
 
 class simulation(table):
-    fields = ["id", "data", "last_modified"]
+    fields = ["id", "data", "modified_at"]
 
     @classmethod
     async def get(cls, uuid):
         return await cls.fetchrow("SELECT * FROM simulation WHERE id=$1", uuid)
 
     @classmethod
-    async def put(cls, uuid, data, last_modified=None):
-        # Allow to force last_modified, eg. during migrations.
-        if last_modified is None:
-            last_modified = utils.utcnow()
+    async def put(cls, uuid, data, modified_at=None):
+        # Allow to force modified_at, eg. during migrations.
+        if modified_at is None:
+            modified_at = utils.utcnow()
         async with cls.pool.acquire() as conn:
             await conn.execute(
-                "INSERT INTO simulation (id, last_modified, data) VALUES ($1, $2, $3) "
-                "ON CONFLICT (id) DO UPDATE SET last_modified = $2, data = $3",
+                "INSERT INTO simulation (id, modified_at, data) VALUES ($1, $2, $3) "
+                "ON CONFLICT (id) DO UPDATE SET modified_at = $2, data = $3",
                 uuid,
-                last_modified,
+                modified_at,
                 data,
             )
 

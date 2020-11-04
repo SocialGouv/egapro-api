@@ -30,7 +30,7 @@ async def migrate_legacy(siren=[], year: int = None):
             uuid = row["id"]
             data["data"]["id"] = uuid
             data = models.Data(data["data"])
-            last_modified = row["last_modified"]
+            modified_at = row["modified_at"]
             if siren and str(data.siren) not in siren:
                 continue
             if year and data.year != year:
@@ -41,26 +41,26 @@ async def migrate_legacy(siren=[], year: int = None):
                 except db.NoData:
                     current = None
                 else:
-                    current = existing["last_modified"]
-                # Use dateDeclaration as last_modified for declaration, so we can decide
+                    current = existing["modified_at"]
+                # Use dateDeclaration as modified_at for declaration, so we can decide
                 # which to import between this or the same declaration from solen.
-                old_last_modified = last_modified.replace(tzinfo=timezone.utc)
-                last_modified = datetime.strptime(
+                old_modified_at = modified_at.replace(tzinfo=timezone.utc)
+                modified_at = datetime.strptime(
                     data.path("declaration.dateDeclaration"),
                     "%d/%m/%Y %H:%M",
                 )
                 # Allow to compare aware datetimes.
-                last_modified = last_modified.replace(tzinfo=timezone.utc)
+                modified_at = modified_at.replace(tzinfo=timezone.utc)
                 if (
                     not current
-                    or last_modified > current
-                    or current == old_last_modified
+                    or modified_at > current
+                    or current == old_modified_at
                 ):
                     await db.declaration.put(
-                        data.siren, data.year, data.email, data, last_modified
+                        data.siren, data.year, data.email, data, modified_at
                     )
             # Always import in simulation, so the redirect from OLD URLs can work.
-            await db.simulation.put(uuid, data, last_modified)
+            await db.simulation.put(uuid, data, modified_at)
             done += 1
     print(f"Imported {done} rows")
 

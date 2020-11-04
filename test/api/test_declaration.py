@@ -62,8 +62,8 @@ async def test_basic_declaration_should_save_data(client, body):
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 200
     data = json.loads(resp.body)
-    assert "last_modified" in data
-    del data["last_modified"]
+    assert "modified_at" in data
+    del data["modified_at"]
     assert data == {"data": body, "siren": "514027945", "year": 2019}
 
 

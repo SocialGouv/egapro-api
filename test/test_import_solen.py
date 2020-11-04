@@ -22,7 +22,7 @@ async def test_basic_solen_import():
     data = models.Data(declaration["data"])
     assert data.siren == "783247548"
     assert data["source"] == "solen-2018"
-    assert declaration["last_modified"] == datetime(
+    assert declaration["modified_at"] == datetime(
         2020, 6, 2, 15, 20, tzinfo=timezone.utc
     )
     assert data.path("entreprise.effectif.total") == 76
