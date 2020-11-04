@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from egapro import db
@@ -42,8 +44,15 @@ async def test_simulation_get():
 
 async def test_declaration_all():
     # Given
-    await db.declaration.put("12345678", 2020, "foo@bar.com", {"foo": "baré"})
-    await db.declaration.put("87654321", 2020, "foo@baz.com", {"foo": "bazé"})
+    await db.declaration.put(
+        "12345678", 2020, "foo@bar.com", {"déclaration": {"date": datetime.now()}}
+    )
+    await db.declaration.put(
+        "87654321", 2020, "foo@baz.com", {"déclaration": {"date": datetime.now()}}
+    )
+    await db.declaration.put(
+        "87654331", 2020, "foo@baz.com", {"déclaration": {"date": None}}
+    )
 
     records = await db.declaration.all()
     assert len(records) == 2

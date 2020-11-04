@@ -1,6 +1,7 @@
 import asyncio
 import os
 import uuid
+from datetime import datetime
 
 import pytest
 from roll.testing import Client as BaseClient
@@ -80,6 +81,7 @@ def declaration():
         data["entreprise"].setdefault("effectif", {"tranche": "50:250", "total": 149})
         data["déclaration"].setdefault("année_indicateurs", year)
         data["déclaration"].setdefault("index", grade)
+        data["déclaration"].setdefault("date", datetime(2020, 11, 4, 10, 37, 6))
         data["déclaration"].setdefault(
             "période_référence", ["2019-01-01", "2019-12-31"]
         )

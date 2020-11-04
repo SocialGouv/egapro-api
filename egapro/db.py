@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 import asyncpg
 from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
@@ -54,7 +55,9 @@ class declaration(table):
     @classmethod
     async def all(cls):
         # TODO ORDER BY ?
-        return await cls.fetch("SELECT * FROM declaration")
+        return await cls.fetch(
+            "SELECT * FROM declaration WHERE declared_at IS NOT NULL"
+        )
 
     @classmethod
     async def get(cls, siren, year):
@@ -68,12 +71,16 @@ class declaration(table):
         if modified_at is None:
             modified_at = utils.utcnow()
         ft = data.get("entreprise", {}).get("raison_sociale")
+        declared_at = data.get("déclaration", {}).get("date")
+        if isinstance(declared_at, str):
+            declared_at = datetime.fromisoformat(declared_at)
         async with cls.pool.acquire() as conn:
             await conn.execute(
                 sql.insert_declaration,
                 siren,
                 int(year),
                 modified_at,
+                declared_at,
                 owner,
                 data,
                 ft,
