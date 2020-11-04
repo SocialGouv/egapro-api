@@ -6,11 +6,9 @@ from egapro.models import Data
 def test_data_validated():
     data = Data()
     assert not data.validated
-    data = Data({"status": None})
+    data = Data({"déclaration": {"date": None}})
     assert not data.validated
-    data = Data({"status": "pending"})
-    assert not data.validated
-    data = Data({"status": "valid"})
+    data = Data({"déclaration": {"date": "2020-11-04"}})
     assert data.validated
 
 

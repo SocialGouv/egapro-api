@@ -12,8 +12,8 @@ pytestmark = pytest.mark.asyncio
 def body():
     return {
         "id": "1234",
-        "status": "valid",
         "déclaration": {
+            "date": "2020-11-04T10:37:06+00:00",
             "année_indicateurs": 2019,
             "période_référence": ["2019-01-01", "2019-12-31"],
         },
@@ -74,6 +74,7 @@ async def test_owner_email_should_be_lower_cased(client, body):
     assert await db.declaration.owner("514027945", 2019) == "foo@baz.bar"
 
 
+@pytest.mark.xfail(reason="PATCH is to be removed")
 async def test_patch_declaration(client, declaration):
     data = await declaration(
         siren="12345678",
@@ -162,16 +163,12 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch, body
         nonlocal calls
         calls += 1
 
-    del body["status"]
+    declared_at = body["déclaration"].pop("date")
     monkeypatch.setattr("egapro.emails.send", mock_send)
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     assert not calls
-    body["status"] = "pending"
-    resp = await client.put("/declaration/514027945/2019", body=body)
-    assert resp.status == 204
-    assert not calls
-    body["status"] = "valid"
+    body["déclaration"]["date"] = declared_at
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     assert calls == 1
@@ -206,7 +203,7 @@ async def test_with_unknown_siren_or_year(client):
 async def test_declare_with_flat_data(client, body):
     flat_body = {
         "id": "1234",
-        "status": "valid",
+        "déclaration.date": "2020-11-04T10:37:06+00:00",
         "déclaration.année_indicateurs": 2019,
         "déclaration.période_référence": ["2019-01-01", "2019-12-31"],
         "déclarant.email": "foo@bar.org",
