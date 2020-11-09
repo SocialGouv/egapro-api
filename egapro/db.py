@@ -102,15 +102,6 @@ class declaration(table):
         )
 
     @classmethod
-    async def declared(cls, siren, year, at):
-        await cls.execute(
-            "UPDATE declaration SET declared_at=$1 WHERE siren=$2 AND year=$3",
-            siren,
-            int(year),
-            at,
-        )
-
-    @classmethod
     async def search(cls, query, limit=10):
         async with cls.pool.acquire() as conn:
             rows = await conn.fetch(
@@ -202,6 +193,11 @@ async def init():
         await conn.execute(sql.create_ftdict)
         await conn.execute(sql.create_declaration_table)
         await conn.execute(sql.create_simulation_table)
+
+
+async def create_indexes():
+    async with table.pool.acquire() as conn:
+        await conn.execute(sql.create_indexes)
 
 
 async def create():

@@ -4,15 +4,14 @@ from pathlib import Path
 
 import asyncpg
 import minicli
-from openpyxl import load_workbook
 import progressist
 import ujson as json
+from openpyxl import load_workbook
 
-from egapro import config, db, exporter, models
-from egapro.solen import *  # noqa: expose to minicli
+from egapro import config, db, dgt, exporter, models, schema
 from egapro.exporter import dump  # noqa: expose to minicli
-from egapro.utils import json_dumps, compute_notes
-from egapro import dgt
+from egapro.solen import *  # noqa: expose to minicli
+from egapro.utils import compute_notes, json_dumps
 
 
 @minicli.cli
@@ -51,11 +50,7 @@ async def migrate_legacy(siren=[], year: int = None):
                 )
                 # Allow to compare aware datetimes.
                 modified_at = modified_at.replace(tzinfo=timezone.utc)
-                if (
-                    not current
-                    or modified_at > current
-                    or current == old_modified_at
-                ):
+                if not current or modified_at > current or current == old_modified_at:
                     await db.declaration.put(
                         data.siren, data.year, data.email, data, modified_at
                     )
@@ -174,6 +169,12 @@ async def create_db():
 
 
 @minicli.cli
+async def create_indexes():
+    """Create DB indexes."""
+    await db.create_indexes()
+
+
+@minicli.cli
 async def reindex():
     """Reindex Full Text search."""
     await db.declaration.reindex()
@@ -207,9 +208,10 @@ async def migrate_effectif(source: Path):
 
 @minicli.cli
 async def validate(pdb=False):
+    from jsonschema_rs import ValidationError
+
     from egapro.schema import JSON_SCHEMA
     from egapro.schema.legacy import from_legacy
-    from jsonschema_rs import ValidationError
 
     for row in await db.declaration.all():
         data = from_legacy(row["data"])
@@ -268,6 +270,59 @@ async def compare_index(pdb=False, verbose=False):
                 breakpoint()
         else:
             sys.stdout.write(".")
+
+
+@minicli.cli
+async def migrate_schema(no_schema=False):
+    from egapro.schema.legacy import from_legacy
+
+    if not no_schema:
+        async with db.table.pool.acquire() as conn:
+            await conn.execute(
+                """
+                ALTER TABLE declaration RENAME COLUMN last_modified TO modified_at;
+                ALTER TABLE simulation RENAME COLUMN last_modified TO modified_at;
+                ALTER TABLE declaration ADD COLUMN declared_at TIMESTAMP WITH TIME ZONE;
+                ALTER TABLE declaration RENAME COLUMN data TO legacy;
+                ALTER TABLE declaration ADD COLUMN data JSONB;
+                """,
+            )
+    records = await db.declaration.fetch("SELECT * FROM declaration")
+    bar = progressist.ProgressBar(prefix="Migrating…", total=len(records), throttle=100)
+    for record in bar.iter(records):
+        data = from_legacy(record["legacy"])
+        declared_at = data["déclaration"]["date"]
+        declaration = data["déclaration"]
+        declaration["période_référence"][0] = declaration["période_référence"][
+            0
+        ].isoformat()
+        declaration["période_référence"][1] = declaration["période_référence"][
+            1
+        ].isoformat()
+        declaration["date"] = declaration["date"].isoformat()
+        if "date_consultation_cse" in declaration:
+            declaration["date_consultation_cse"] = declaration[
+                "date_consultation_cse"
+            ].isoformat()
+        if "date" in declaration["publication"]:
+            declaration["publication"]["date"] = declaration["publication"][
+                "date"
+            ].isoformat()
+        try:
+            schema.validate(data)
+        except ValueError as err:
+            print(err)
+            data = None
+        except Exception:
+            print(record)
+        async with db.declaration.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE declaration SET data=$1, declared_at=$2 WHERE siren=$3 AND year=$4",
+                data,
+                declared_at,
+                record["siren"],
+                record["year"],
+            )
 
 
 @minicli.wrap
