@@ -57,15 +57,12 @@ def from_legacy(data):
         "congés_maternité": data.pop("indicateurQuatre", {}),
         "hautes_rémunérations": data.pop("indicateurCinq", {}),
     }
-    declaration = data["déclaration"] = data.pop("declaration")
-    declaration["année_indicateurs"] = data["informations"].pop("anneeDeclaration")
+    declaration = data["déclaration"] = data.pop("declaration", {})
+    informations = data.pop("informations", {})
+    declaration["année_indicateurs"] = informations.pop("anneeDeclaration", None)
     declaration["période_référence"] = [
-        parse_date(data["informations"]["debutPeriodeReference"]),
-        parse_date(data["informations"]["finPeriodeReference"]),
-    ]
-    declaration["période_référence"] = [
-        parse_date(data["informations"]["debutPeriodeReference"]),
-        parse_date(data["informations"]["finPeriodeReference"]),
+        parse_date(informations.get("debutPeriodeReference")),
+        parse_date(informations.get("finPeriodeReference")),
     ]
     if "mesuresCorrection" in declaration:
         value = declaration.pop("mesuresCorrection")
@@ -81,13 +78,13 @@ def from_legacy(data):
         publication["modalités"] = modalites
     declaration["publication"] = publication
     clean_legacy(declaration)
-    declaration["date"] = parse_datetime(declaration["date"])
+    declaration["date"] = parse_datetime(declaration.get("date"))
     if "date_consultation_cse" in declaration:
         declaration["date_consultation_cse"] = parse_date(
             declaration["date_consultation_cse"]
         )
 
-    effectif = data["effectif"]
+    effectif = data.pop("effectif", {})
     clean_legacy(effectif)
     if "total" not in effectif:
         total = 0
@@ -96,25 +93,30 @@ def from_legacy(data):
                 total += tranche["nombreSalariesFemmes"]
                 total += tranche["nombreSalariesHommes"]
         effectif["total"] = total
-    tranche = data["informations"]["trancheEffectifs"]
+    tranche = informations.get("trancheEffectifs")
     if tranche == "Plus de 250":
         if effectif["total"] >= 1000:
             tranche = "1000:"
         else:
             tranche = "251:999"
     else:
-        tranche = TRANCHES[tranche]
+        tranche = TRANCHES.get(tranche)
     effectif["tranche"] = tranche
     entreprise["effectif"] = effectif
-    del data["effectif"]
 
     # Un
     un = data["indicateurs"]["rémunérations"]
     un["mode"] = (
-        un["autre"] and "autre" or un["coef"] and "coef" or un["csp"] and "csp" or None
+        un.get("autre")
+        and "autre"
+        or un.get("coef")
+        and "coef"
+        or un.get("csp")
+        and "csp"
+        or None
     )
     if un["mode"] is None:
-        un["mode"] = "coef" if "coefficient" in un and un["coefficient"] else "csp"
+        un["mode"] = "coef" if "coefficient" in un and un.get("coefficient") else "csp"
     categories = []
     # TODO coefficient
     key = "remunerationAnnuelle" if un["mode"] == "csp" else "coefficient"
@@ -171,7 +173,6 @@ def from_legacy(data):
     #     cinq["population_favorable"] = (
     #         "femmes" if cinq["population_favorable"] == "hommes" else "hommes"
     #     )
-    del data["informations"]
     return data
 
 

@@ -56,6 +56,21 @@ async def test_invalid_year_should_raise(client, body):
     }
 
 
+async def test_put_declaration_with_empty_body(client, body):
+    resp = await client.put("/declaration/514027945/2019", body="")
+    assert resp.status == 400
+
+
+async def test_put_declaration_with_invalid_json(client, body):
+    resp = await client.put("/declaration/514027945/2019", body="<foo>bar</foo>")
+    assert resp.status == 400
+
+
+async def test_put_declaration_with_empty_json(client, body):
+    resp = await client.put("/declaration/514027945/2019", body="{}")
+    assert resp.status == 422
+
+
 async def test_basic_declaration_should_save_data(client, body):
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
@@ -244,3 +259,365 @@ async def test_put_declaration_should_compute_notes(client, body):
     assert data["déclaration"]["points"] == 89
     assert data["déclaration"]["points_calculables"] == 135
     assert data["déclaration"]["index"] == 66
+
+
+async def test_declare_with_legacy_schema(client, body):
+    legacy = {
+        "id": "5e41ad88-5dcc-491d-908a-93d5d2fae344",
+        "effectif": {
+            "formValidated": "Valid",
+            "nombreSalaries": [
+                {
+                    "tranchesAges": [
+                        {
+                            "trancheAge": 0,
+                            "nombreSalariesFemmes": 0,
+                            "nombreSalariesHommes": 0,
+                        },
+                        {
+                            "trancheAge": 1,
+                            "nombreSalariesFemmes": 0,
+                            "nombreSalariesHommes": 0,
+                        },
+                        {
+                            "trancheAge": 2,
+                            "nombreSalariesFemmes": 0,
+                            "nombreSalariesHommes": 0,
+                        },
+                        {
+                            "trancheAge": 3,
+                            "nombreSalariesFemmes": 0,
+                            "nombreSalariesHommes": 0,
+                        },
+                    ],
+                    "categorieSocioPro": 0,
+                },
+                {
+                    "tranchesAges": [
+                        {
+                            "trancheAge": 0,
+                            "nombreSalariesFemmes": 23,
+                            "nombreSalariesHommes": 7,
+                        },
+                        {
+                            "trancheAge": 1,
+                            "nombreSalariesFemmes": 20,
+                            "nombreSalariesHommes": 11,
+                        },
+                        {
+                            "trancheAge": 2,
+                            "nombreSalariesFemmes": 25,
+                            "nombreSalariesHommes": 13,
+                        },
+                        {
+                            "trancheAge": 3,
+                            "nombreSalariesFemmes": 17,
+                            "nombreSalariesHommes": 5,
+                        },
+                    ],
+                    "categorieSocioPro": 1,
+                },
+                {
+                    "tranchesAges": [
+                        {
+                            "trancheAge": 0,
+                            "nombreSalariesFemmes": 0,
+                            "nombreSalariesHommes": 2,
+                        },
+                        {
+                            "trancheAge": 1,
+                            "nombreSalariesFemmes": 3,
+                            "nombreSalariesHommes": 3,
+                        },
+                        {
+                            "trancheAge": 2,
+                            "nombreSalariesFemmes": 2,
+                            "nombreSalariesHommes": 2,
+                        },
+                        {
+                            "trancheAge": 3,
+                            "nombreSalariesFemmes": 0,
+                            "nombreSalariesHommes": 1,
+                        },
+                    ],
+                    "categorieSocioPro": 2,
+                },
+                {
+                    "tranchesAges": [
+                        {
+                            "trancheAge": 0,
+                            "nombreSalariesFemmes": 0,
+                            "nombreSalariesHommes": 0,
+                        },
+                        {
+                            "trancheAge": 1,
+                            "nombreSalariesFemmes": 0,
+                            "nombreSalariesHommes": 0,
+                        },
+                        {
+                            "trancheAge": 2,
+                            "nombreSalariesFemmes": 0,
+                            "nombreSalariesHommes": 1,
+                        },
+                        {
+                            "trancheAge": 3,
+                            "nombreSalariesFemmes": 0,
+                            "nombreSalariesHommes": 0,
+                        },
+                    ],
+                    "categorieSocioPro": 3,
+                },
+            ],
+            "nombreSalariesTotal": 135,
+        },
+        "declaration": {
+            "noteIndex": 94,
+            "totalPoint": 94,
+            "formValidated": "Valid",
+            "dateDeclaration": "14/02/2020 16:02",
+            "datePublication": "14/02/2020",
+            "lienPublication": "La note globale est portée à la connaissance des collaborateurs sur le panneau d'affichage qui leur est dédié.",
+            "mesuresCorrection": "",
+            "dateConsultationCSE": "",
+            "totalPointCalculable": 100,
+        },
+        "indicateurUn": {
+            "csp": True,
+            "coef": False,
+            "autre": False,
+            "noteFinale": 39,
+            "coefficient": [],
+            "formValidated": "Valid",
+            "resultatFinal": 0.1433,
+            "sexeSurRepresente": "hommes",
+            "motifNonCalculable": "",
+            "remunerationAnnuelle": [
+                {
+                    "tranchesAges": [
+                        {"trancheAge": 0},
+                        {"trancheAge": 1},
+                        {"trancheAge": 2},
+                        {"trancheAge": 3},
+                    ],
+                    "categorieSocioPro": 0,
+                },
+                {
+                    "tranchesAges": [
+                        {
+                            "trancheAge": 0,
+                            "remunerationAnnuelleBrutFemmes": 21302,
+                            "remunerationAnnuelleBrutHommes": 21916,
+                        },
+                        {
+                            "trancheAge": 1,
+                            "remunerationAnnuelleBrutFemmes": 21328,
+                            "remunerationAnnuelleBrutHommes": 22169,
+                        },
+                        {
+                            "trancheAge": 2,
+                            "remunerationAnnuelleBrutFemmes": 21228,
+                            "remunerationAnnuelleBrutHommes": 22182,
+                        },
+                        {
+                            "trancheAge": 3,
+                            "remunerationAnnuelleBrutFemmes": 21242,
+                            "remunerationAnnuelleBrutHommes": 22297,
+                        },
+                    ],
+                    "categorieSocioPro": 1,
+                },
+                {
+                    "tranchesAges": [
+                        {"trancheAge": 0},
+                        {
+                            "trancheAge": 1,
+                            "remunerationAnnuelleBrutFemmes": 26466,
+                            "remunerationAnnuelleBrutHommes": 28778,
+                        },
+                        {"trancheAge": 2},
+                        {"trancheAge": 3},
+                    ],
+                    "categorieSocioPro": 2,
+                },
+                {
+                    "tranchesAges": [
+                        {"trancheAge": 0},
+                        {"trancheAge": 1},
+                        {"trancheAge": 2},
+                        {"trancheAge": 3},
+                    ],
+                    "categorieSocioPro": 3,
+                },
+            ],
+            "motifNonCalculablePrecision": "",
+            "coefficientGroupFormValidated": "None",
+            "coefficientEffectifFormValidated": "None",
+        },
+        "informations": {
+            "formValidated": "Valid",
+            "nomEntreprise": "SAS PERDRIX",
+            "anneeDeclaration": 2019,
+            "trancheEffectifs": "50 à 250",
+            "finPeriodeReference": "31/12/2019",
+            "debutPeriodeReference": "01/01/2019",
+        },
+        "indicateurCinq": {
+            "noteFinale": 5,
+            "formValidated": "Valid",
+            "resultatFinal": 3,
+            "sexeSurRepresente": "hommes",
+            "nombreSalariesFemmes": 3,
+            "nombreSalariesHommes": 7,
+        },
+        "indicateurDeux": {
+            "formValidated": "None",
+            "tauxAugmentation": [
+                {"categorieSocioPro": 0},
+                {"categorieSocioPro": 1},
+                {"categorieSocioPro": 2},
+                {"categorieSocioPro": 3},
+            ],
+            "mesuresCorrection": False,
+            "motifNonCalculable": "",
+            "presenceAugmentation": True,
+            "motifNonCalculablePrecision": "",
+        },
+        "indicateurTrois": {
+            "formValidated": "None",
+            "tauxPromotion": [
+                {"categorieSocioPro": 0},
+                {"categorieSocioPro": 1},
+                {"categorieSocioPro": 2},
+                {"categorieSocioPro": 3},
+            ],
+            "mesuresCorrection": False,
+            "presencePromotion": True,
+            "motifNonCalculable": "",
+            "motifNonCalculablePrecision": "",
+        },
+        "indicateurQuatre": {
+            "noteFinale": 15,
+            "formValidated": "Valid",
+            "resultatFinal": 100,
+            "presenceCongeMat": True,
+            "motifNonCalculable": "",
+            "nombreSalarieesAugmentees": 1,
+            "motifNonCalculablePrecision": "",
+            "nombreSalarieesPeriodeAugmentation": 1,
+        },
+        "indicateurDeuxTrois": {
+            "noteFinale": 35,
+            "formValidated": "Valid",
+            "mesuresCorrection": False,
+            "sexeSurRepresente": "hommes",
+            "motifNonCalculable": "",
+            "periodeDeclaration": "unePeriodeReference",
+            "resultatFinalEcart": 2.2222,
+            "motifNonCalculablePrecision": "",
+            "resultatFinalNombreSalaries": 1,
+            "presenceAugmentationPromotion": True,
+            "nombreAugmentationPromotionFemmes": 8,
+            "nombreAugmentationPromotionHommes": 5,
+        },
+        "informationsDeclarant": {
+            "nom": "FOOBAR",
+            "tel": "0238295999",
+            "email": "foobar@foobar.fr",
+            "prenom": "CAROLINE",
+            "formValidated": "Valid",
+            "acceptationCGU": True,
+        },
+        "informationsEntreprise": {
+            "siren": "514027945",
+            "nomUES": "",
+            "region": "Centre-Val de Loire",
+            "adresse": "4 RUE DE SAVOIE",
+            "codeNaf": "47.11F - Hypermarchés",
+            "commune": "SAINTE MERE SUR LOIR",
+            "structure": "Entreprise",
+            "codePostal": "45100",
+            "departement": "Loiret",
+            "formValidated": "Valid",
+            "nomEntreprise": "SAS PERDRIX",
+            "entreprisesUES": [],
+        },
+    }
+
+    resp = await client.put("/declaration/514027945/2019", body=legacy)
+    assert resp.status == 204
+    declaration = await db.declaration.get("514027945", 2019)
+    assert declaration["data"] == {
+        "id": "5e41ad88-5dcc-491d-908a-93d5d2fae344",
+        "déclarant": {
+            "nom": "FOOBAR",
+            "email": "foo@bar.org",
+            "prénom": "CAROLINE",
+            "téléphone": "0238295999",
+        },
+        "entreprise": {
+            "ues": {"entreprises": [], "raison_sociale": ""},
+            "siren": "514027945",
+            "adresse": "4 RUE DE SAVOIE",
+            "commune": "SAINTE MERE SUR LOIR",
+            "région": "24",
+            "code_naf": "47.11F",
+            "effectif": {"total": 135, "tranche": "50:250"},
+            "code_postal": "45100",
+            "département": "45",
+            "raison_sociale": "SAS PERDRIX",
+        },
+        "indicateurs": {
+            "promotions": {"catégories": [0, 0, 0, 0]},
+            "augmentations": {
+                "note": 35,
+                "résultat": 2.2222,
+                "note_en_pourcentage": 25,
+                "note_nombre_salariés": 35,
+                "population_favorable": "hommes",
+                "résultat_nombre_salariés": 1,
+            },
+            "rémunérations": {
+                "mode": "csp",
+                "note": 39,
+                "résultat": 0.1433,
+                "catégories": [
+                    {
+                        "nom": "tranche 0",
+                        "tranches": {"50:": 0, ":29": 0, "30:39": 0, "40:49": 0},
+                    },
+                    {
+                        "nom": "tranche 1",
+                        "tranches": {"50:": 0, ":29": 0, "30:39": 0, "40:49": 0},
+                    },
+                    {
+                        "nom": "tranche 2",
+                        "tranches": {"50:": 0, ":29": 0, "30:39": 0, "40:49": 0},
+                    },
+                    {
+                        "nom": "tranche 3",
+                        "tranches": {"50:": 0, ":29": 0, "30:39": 0, "40:49": 0},
+                    },
+                ],
+                "population_favorable": "hommes",
+            },
+            "congés_maternité": {"note": 15, "résultat": 100},
+            "hautes_rémunérations": {
+                "note": 5,
+                "résultat": 3,
+                "population_favorable": "hommes",
+            },
+            "augmentations_hors_promotions": {"catégories": [0, 0, 0, 0]},
+        },
+        "déclaration": {
+            "date": "2020-02-14T16:02:00+00:00",
+            "index": 94,
+            "points": 94,
+            "publication": {
+                "date": "2020-02-14",
+                "modalités": "La note globale est portée à la connaissance des collaborateurs sur le panneau d'affichage qui leur est dédié.",
+            },
+            "année_indicateurs": 2019,
+            "points_calculables": 100,
+            "période_référence": ["2019-01-01", "2019-12-31"],
+        },
+    }
