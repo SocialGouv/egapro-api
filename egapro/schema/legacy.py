@@ -57,29 +57,35 @@ def from_legacy(data):
         "congés_maternité": data.pop("indicateurQuatre", {}),
         "hautes_rémunérations": data.pop("indicateurCinq", {}),
     }
-    data["déclaration"] = data.pop("declaration")
-    data["déclaration"]["année_indicateurs"] = data["informations"].pop(
-        "anneeDeclaration"
-    )
-    data["déclaration"]["période_référence"] = [
+    declaration = data["déclaration"] = data.pop("declaration")
+    declaration["année_indicateurs"] = data["informations"].pop("anneeDeclaration")
+    declaration["période_référence"] = [
         parse_date(data["informations"]["debutPeriodeReference"]),
         parse_date(data["informations"]["finPeriodeReference"]),
     ]
-    if "mesuresCorrection" in data["déclaration"]:
-        value = data["déclaration"].pop("mesuresCorrection")
+    declaration["période_référence"] = [
+        parse_date(data["informations"]["debutPeriodeReference"]),
+        parse_date(data["informations"]["finPeriodeReference"]),
+    ]
+    if "mesuresCorrection" in declaration:
+        value = declaration.pop("mesuresCorrection")
         if value not in (None, ""):
-            data["déclaration"]["mesures_correctives"] = value
+            declaration["mesures_correctives"] = value
     publication = {}
-    if data["déclaration"].get("datePublication"):
-        publication["date"] = parse_date(data["déclaration"]["datePublication"])
-    modalites = data["déclaration"].get("lienPublication")
+    if declaration.get("datePublication"):
+        publication["date"] = parse_date(declaration["datePublication"])
+    modalites = declaration.get("lienPublication")
     if modalites and modalites.lower().startswith(("http", "www")):
         publication["url"] = modalites
     elif modalites:
         publication["modalités"] = modalites
-    data["déclaration"]["publication"] = publication
-    clean_legacy(data["déclaration"])
-    data["déclaration"]["date"] = parse_datetime(data["déclaration"]["date"])
+    declaration["publication"] = publication
+    clean_legacy(declaration)
+    declaration["date"] = parse_datetime(declaration["date"])
+    if "date_consultation_cse" in declaration:
+        declaration["date_consultation_cse"] = parse_date(
+            declaration["date_consultation_cse"]
+        )
 
     effectif = data["effectif"]
     clean_legacy(effectif)
