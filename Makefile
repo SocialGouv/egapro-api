@@ -28,3 +28,6 @@ download-data:
 
 download-db:
 	ssh egapro.dev "set -o allexport; source /srv/egapro/env; set +o allexport; PGPASSWORD=\$$EGAPRO_DBPASS pg_dump  --host \$$EGAPRO_DBHOST --user \$$EGAPRO_DBUSER \$$EGAPRO_DBNAME --file /tmp/dump.sql"
+
+restore-db:
+	pg_restore -d egapro -S postgres --clean --table declaration --table simulation tmp/dump.psql
