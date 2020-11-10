@@ -20,11 +20,16 @@ class Request(BaseRequest):
         super().__init__(*args, **kwargs)
 
     @property
+    def json(self):
+        data = super().json
+        if "data" in data:
+            data = data["data"]
+        return data
+
+    @property
     def data(self):
         if self._data is None:
             data = self.json
-            if "data" in data:
-                data = data["data"]
             # Legacy identifier, be defensive and try hard to find it.
             if "id" not in data:
                 id_ = self.json.get("id")
@@ -162,9 +167,9 @@ async def get_declaration(request, response, siren, year):
 
 @app.route("/simulation", methods=["POST"])
 async def start_simulation(request, response):
-    data = request.data
-    email = data.email
-    uid = await db.simulation.create(data)
+    data = request.json
+    email = data.get("informationsDeclarant", {}).get("email")
+    uid = await db.simulation.create(request.json)
     response.json = {"id": uid}
     if email:
         emails.permalink.send(email, id=uid)
@@ -186,18 +191,14 @@ async def send_simulation_code(request, response, uuid):
 @app.route("/simulation/{uuid}")
 class SimulationResource:
     async def on_put(self, request, response, uuid):
-        data = request.data
-        await db.simulation.put(uuid, data)
-        if self.is_declaration(response, data):
+        await db.simulation.put(uuid, request.json)
+        if self.is_declaration(response, request.data):
             return
         response.json = db.simulation.as_resource(await db.simulation.get(uuid))
         response.status = 200
 
     async def on_get(self, request, response, uuid):
         record = await db.simulation.get(uuid)
-        data = models.Data(record["data"])
-        if self.is_declaration(response, data):
-            return
         try:
             response.json = db.simulation.as_resource(record)
         except db.NoData:
