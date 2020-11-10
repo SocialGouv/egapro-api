@@ -44,28 +44,36 @@ async def test_dump():
     ]
 
 
-async def test_dgt_dump_should_compute_naf(declaration):
+async def test_dgt_dump(declaration):
     await declaration(
         siren="12345678",
         year=2020,
         uid="12345678-1234-5678-9012-123456789012",
-        entreprise={"code_naf": "47.25Z"},
+        entreprise={"code_naf": "47.25Z", "région": "11", "département": "77"},
     )
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
+    # Code NAF
     assert sheet["U1"].value == "Code_NAF"
-    assert (
-        sheet["U2"].value
-        == "47.25Z - Commerce de détail de boissons en magasin spécialisé"
+    assert sheet["U2"].value == (
+        "47.25Z - Commerce de détail de boissons en magasin spécialisé"
     )
 
+    # Région
+    assert sheet["H1"].value == "Region"
+    assert sheet["H2"].value == "Île-de-France"
+    assert sheet["I1"].value == "Departement"
+    assert sheet["I2"].value == "Seine-et-Marne"
 
-async def test_dgt_dump_should_compute_declaration_url(declaration):
-    await declaration(
-        siren="12345678", year=2020, uid="12345678-1234-5678-9012-123456789012"
-    )
-    workbook = await dgt.as_xlsx(debug=True)
-    sheet = workbook.active
+    # Dates
+    assert sheet["M1"].value == "Annee_indicateurs"
+    assert sheet["M2"].value == 2020
+    assert sheet["N1"].value == "Date_debut_periode"
+    assert sheet["N2"].value == datetime(2019, 1, 1)
+    assert sheet["O1"].value == "Date_fin_periode"
+    assert sheet["O2"].value == datetime(2019, 12, 31)
+
+    # URL
     assert sheet["B1"].value == "URL_declaration"
     assert (
         sheet["B2"].value

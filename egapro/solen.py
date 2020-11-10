@@ -894,7 +894,9 @@ class App:
             year = record["data"].year
             siren = record["data"].siren
             owner = record["data"].email
-            modified_at = record["data"].path("déclaration.date")
+            # fmt: off
+            modified_at = datetime.fromisoformat(record["data"].path("déclaration.date"))
+            # fmt: on
             if not owner:
                 failed.append(record)
                 continue
@@ -905,7 +907,6 @@ class App:
             else:
                 current = declaration["modified_at"]
             # Allow to compare aware datetimes.
-            modified_at = modified_at.replace(tzinfo=timezone.utc)
             if not current or modified_at > current:
                 await db.declaration.put(
                     siren, year, owner, record["data"], modified_at

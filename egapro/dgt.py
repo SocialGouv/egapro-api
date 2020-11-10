@@ -2,6 +2,7 @@
 
 import time
 from collections import defaultdict
+from datetime import datetime
 
 from naf import DB as NAF
 from openpyxl import Workbook, load_workbook
@@ -20,6 +21,14 @@ AGES = {
     "50:": "50",
 }
 EFFECTIF = {"50:250": "50 à 250", "251:999": "251 à 999", "1000:": "1000 et plus"}
+
+
+def truthy(val):
+    return bool(val)
+
+
+def code_naf(code):
+    return f"{code} - {NAF[code]}"
 
 
 async def get_ues_cols():
@@ -65,35 +74,54 @@ async def get_headers_columns():
         [
             ("source", "source"),
             ("URL_declaration", "URL_declaration"),  # Built from /data/id, see below
-            ("Date_reponse", "déclaration.date"),
+            ("Date_reponse", "déclaration.date", datetime.fromisoformat),
             ("Email_declarant", "déclarant.email"),
             ("Nom", "déclarant.nom"),
             ("Prenom", "déclarant.prénom"),
             ("Telephone", "déclarant.téléphone"),
-            ("Region", "entreprise.région"),
-            ("Departement", "entreprise.département"),
+            ("Region", "entreprise.région", constants.REGIONS.get),
+            ("Departement", "entreprise.département", constants.DEPARTEMENTS.get),
             ("Adresse", "entreprise.adresse"),
             ("CP", "entreprise.code_postal"),
             ("Commune", "entreprise.commune"),
-            ("Annee_indicateurs", "déclaration.année_indicateurs"),
-            ("Date_debut_periode", "déclaration.période_référence.0"),
-            ("Date_fin_periode", "déclaration.période_référence.1"),
+            (
+                "Annee_indicateurs",
+                "déclaration.année_indicateurs",
+            ),
+            (
+                "Date_debut_periode",
+                "déclaration.période_référence.0",
+                datetime.fromisoformat,
+            ),
+            (
+                "Date_fin_periode",
+                "déclaration.période_référence.1",
+                datetime.fromisoformat,
+            ),
             ("Structure", "Structure"),
-            ("Tranche_effectif", "entreprise.effectif.tranche"),
+            ("Tranche_effectif", "entreprise.effectif.tranche", EFFECTIF.get),
             ("Nb_salaries", "entreprise.effectif.total"),
             ("Nom_Entreprise", "entreprise.raison_sociale"),
             ("SIREN", "entreprise.siren"),
-            ("Code_NAF", "code_naf"),
+            ("Code_NAF", "entreprise.code_naf", code_naf),
             ("Nom_UES", "entreprise.ues.raison_sociale"),
             # Inclure entreprise déclarante
             ("Nb_ets_UES", "nombre_ues"),
         ]
         + await get_ues_cols()
         + [
-            ("Date_publication", "déclaration.publication.date"),
+            (
+                "Date_publication",
+                "déclaration.publication.date",
+                datetime.fromisoformat,
+            ),
             ("Site_internet_publication", "déclaration.publication.url"),
             ("Modalités_publication", "déclaration.publication.modalités"),
-            ("Indic1_non_calculable", "Indic1_non_calculable"),
+            (
+                "Indic1_non_calculable",
+                "indicateurs.rémunérations.non_calculable",
+                truthy,
+            ),
             (
                 "Indic1_motif_non_calculable",
                 "indicateurs.rémunérations.non_calculable",
@@ -121,7 +149,11 @@ async def get_headers_columns():
                 "Indic1_population_favorable",
                 "indicateurs.rémunérations.population_favorable",
             ),
-            ("Indic2_non_calculable", "Indic2_non_calculable"),
+            (
+                "Indic2_non_calculable",
+                "indicateurs.augmentations_hors_promotions.non_calculable",
+                truthy,
+            ),
             (
                 "Indic2_motif_non_calculable",
                 "indicateurs.augmentations_hors_promotions.non_calculable",
@@ -140,7 +172,7 @@ async def get_headers_columns():
                 "Indic2_population_favorable",
                 "indicateurs.augmentations_hors_promotions.population_favorable",
             ),
-            ("Indic3_non_calculable", "Indic3_non_calculable"),
+            ("Indic3_non_calculable", "indicateurs.promotions.non_calculable", truthy),
             ("Indic3_motif_non_calculable", "indicateurs.promotions.non_calculable"),
         ]
         + [
@@ -156,7 +188,11 @@ async def get_headers_columns():
                 "Indic3_population_favorable",
                 "indicateurs.promotions.population_favorable",
             ),
-            ("Indic2et3_non_calculable", "Indic2et3_non_calculable"),
+            (
+                "Indic2et3_non_calculable",
+                "indicateurs.augmentations.non_calculable",
+                truthy,
+            ),
             (
                 "Indic2et3_motif_non_calculable",
                 "indicateurs.augmentations.non_calculable",
@@ -173,7 +209,11 @@ async def get_headers_columns():
                 "Indic2et3_population_favorable",
                 "indicateurs.augmentations.population_favorable",
             ),
-            ("Indic4_non_calculable", "Indic4_non_calculable"),
+            (
+                "Indic4_non_calculable",
+                "indicateurs.congés_maternité.non_calculable",
+                truthy,
+            ),
             (
                 "Indic4_motif_non_calculable",
                 "indicateurs.congés_maternité.non_calculable",
@@ -211,8 +251,11 @@ async def get_headers_columns():
             ("Mesures_correction", "déclaration.mesures_correctives"),
         ]
     )
-    headers = [header for header, _column in interesting_cols]
-    columns = [column for _header, column in interesting_cols]
+    headers = []
+    columns = []
+    for header, column, *fmt in interesting_cols:
+        headers.append(header)
+        columns.append((column, fmt[0] if fmt else lambda x: x))
     return (headers, columns)
 
 
@@ -235,7 +278,7 @@ async def as_xlsx(max_rows=None, debug=False):
     bar = ProgressBar(prefix="Computing", total=len(records))
     for record in bar.iter(records):
         data = prepare_record(record["data"])
-        ws.append([data.get(c) for c in columns])
+        ws.append([fmt(data.get(c)) if data.get(c) else None for c, fmt in columns])
     return wb
 
 
@@ -263,11 +306,6 @@ def prepare_record(data):
         "Unité Economique et Sociale (UES)" if nombre_ues else "Entreprise"
     )
     data["nombre_ues"] = nombre_ues or None
-    data["entreprise.effectif.tranche"] = EFFECTIF[data["entreprise.effectif.tranche"]]
-    data["entreprise.région"] = constants.REGIONS[data["entreprise.région"]]
-    code_naf = data.get("entreprise.code_naf")
-    if code_naf:
-        data["code_naf"] = f"{code_naf} - {NAF[code_naf]}"
 
     # Indicateur 1
     indic1_mode = data.get("indicateurs.rémunérations.mode")
@@ -290,22 +328,6 @@ def prepare_record(data):
                     str(round(tranches.get("50:") or 0, 1) or ""),
                 ]
             )
-
-    # Indicateur 2
-    data["Indic2_non_calculable"] = (
-        True
-        if data.get("indicateurs.augmentations_hors_promotions.non_calculable")
-        else False
-    )
-    data["Indic3_non_calculable"] = (
-        True if data.get("indicateurs.promotions.non_calculable") else False
-    )
-    data["Indic2et3_non_calculable"] = (
-        True if data.get("indicateurs.augmentations.non_calculable") else False
-    )
-    data["Indic4_non_calculable"] = (
-        True if data.get("indicateurs.congés_maternité.non_calculable") else False
-    )
     return data
 
 
