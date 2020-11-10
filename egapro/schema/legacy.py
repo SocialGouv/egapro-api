@@ -17,11 +17,17 @@ REVERSED_DEPARTEMENTS.update(
 
 
 def parse_datetime(v):
-    return datetime.strptime(v, "%d/%m/%Y %H:%M").replace(tzinfo=timezone.utc)
+    if not v:
+        return None
+    # fmt: off
+    return datetime.strptime(v, "%d/%m/%Y %H:%M").replace(tzinfo=timezone.utc).isoformat()
+    # fmt: on
 
 
 def parse_date(v):
-    return datetime.strptime(v, "%d/%m/%Y").date()
+    if not v:
+        return None
+    return datetime.strptime(v, "%d/%m/%Y").date().isoformat()
 
 
 def from_legacy(data):
