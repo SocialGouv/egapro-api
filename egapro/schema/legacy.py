@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+import pytz
+
 from egapro import constants
 
 TRANCHES = {"50 à 250": "50:250", "251 à 999": "251:999", "1000 et plus": "1000:"}
@@ -19,9 +21,10 @@ REVERSED_DEPARTEMENTS.update(
 def parse_datetime(v):
     if not v:
         return None
-    # fmt: off
-    return datetime.strptime(v, "%d/%m/%Y %H:%M").replace(tzinfo=timezone.utc).isoformat()
-    # fmt: on
+    paris = pytz.timezone("Europe/Paris")
+    dt = datetime.strptime(v, "%d/%m/%Y %H:%M")
+    dt = paris.localize(dt)
+    return dt.astimezone(timezone.utc).isoformat()
 
 
 def parse_date(v):
