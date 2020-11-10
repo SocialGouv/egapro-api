@@ -10,6 +10,7 @@ from roll.extensions import cors, options, traceback
 from stdnum.fr.siren import is_valid as siren_is_valid
 
 from . import config, constants, db, emails, models, tokens, schema, utils
+from .schema.legacy import from_legacy
 from .loggers import logger
 
 
@@ -29,6 +30,8 @@ class Request(BaseRequest):
                 id_ = self.json.get("id")
                 if id_:
                     data["id"] = id_
+            if data and "déclaration" not in data:
+                data = from_legacy(data)
             self._data = models.Data(data)
         return self._data
 
@@ -97,7 +100,6 @@ def flatten(view):
         )
         if to_flatten and request._body:
             request._json = utils.unflatten(request.json)
-            print(request._json)
         ret = await view(request, response, *args, **kwargs)
         if to_flatten and response.body:
             # TODO act before jsonifying the dict.
