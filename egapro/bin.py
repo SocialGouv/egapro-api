@@ -278,24 +278,10 @@ async def migrate_schema(no_schema=False):
     records = await db.declaration.fetch("SELECT * FROM declaration")
     bar = progressist.ProgressBar(prefix="Migrating…", total=len(records), throttle=100)
     for record in bar.iter(records):
-        data = from_legacy(record["legacy"])
-        declared_at = data["déclaration"]["date"]
-        declaration = data["déclaration"]
-        declaration["période_référence"][0] = declaration["période_référence"][
-            0
-        ].isoformat()
-        declaration["période_référence"][1] = declaration["période_référence"][
-            1
-        ].isoformat()
-        declaration["date"] = declaration["date"].isoformat()
-        if "date_consultation_cse" in declaration:
-            declaration["date_consultation_cse"] = declaration[
-                "date_consultation_cse"
-            ].isoformat()
-        if "date" in declaration["publication"]:
-            declaration["publication"]["date"] = declaration["publication"][
-                "date"
-            ].isoformat()
+        data = record["legacy"]
+        if "déclaration" not in data:
+            data = from_legacy(data)
+        declared_at = datetime.fromisoformat(data["déclaration"]["date"])
         try:
             schema.validate(data)
         except ValueError as err:
@@ -305,7 +291,9 @@ async def migrate_schema(no_schema=False):
             print(record)
         async with db.declaration.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE declaration SET data=$1, declared_at=$2 WHERE siren=$3 AND year=$4",
+                "UPDATE declaration "
+                "SET data=$1, declared_at=$2, modified_at=$2 "
+                "WHERE siren=$3 AND year=$4",
                 data,
                 declared_at,
                 record["siren"],
