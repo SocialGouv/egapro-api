@@ -35,6 +35,16 @@ async def test_get_simulation(client):
     }
 
 
+async def test_get_simulation_with_unknown_id(client):
+    resp = await client.get("/simulation/12345678-1234-5678-9012-123456789012")
+    assert resp.status == 404
+
+
+async def test_get_simulation_with_invalid_uuid(client):
+    resp = await client.get("/simulation/foo")
+    assert resp.status == 400
+
+
 async def test_basic_simulation_should_save_data(client):
     resp = await client.put(
         "/simulation/12345678-1234-5678-9012-123456789012",
@@ -67,7 +77,7 @@ async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
     assert not calls
     resp = await client.post(
         "/simulation",
-        body={"data": {"déclarant": {"email": "foo@bar.org"}}},
+        body={"data": {"informationsDeclarant": {"email": "foo@bar.org"}}},
     )
     assert resp.status == 200
     data = json.loads(resp.body)
@@ -79,9 +89,13 @@ async def test_put_simulation_should_redirect_to_declaration_if_validated(client
         "/simulation/12345678-1234-5678-9012-123456789012",
         body={
             "data": {
-                "déclarant": {"email": "foo@bar.org"},
-                "entreprise": {"siren": "12345678"},
-                "déclaration": {"année_indicateurs": 2019, "date": "2020-11-04"},
+                "informationsDeclarant": {"email": "foo@bar.org"},
+                "declaration": {
+                    "formValidated": "Valid",
+                    "dateDeclaration": "04/11/2019 10:10",
+                },
+                "informationsEntreprise": {"siren": "12345678"},
+                "informations": {"anneeDeclaration": 2019},
             },
         },
     )
@@ -89,20 +103,6 @@ async def test_put_simulation_should_redirect_to_declaration_if_validated(client
     assert resp.headers["Location"] == "/declaration/12345678/2019"
     # Simulation should have been saved too
     assert await db.simulation.get("12345678-1234-5678-9012-123456789012")
-
-
-async def test_get_simulation_should_redirect_to_declaration_if_validated(client):
-    uid = await db.simulation.create(
-        {
-            "déclarant": {"email": "foo@bar.org"},
-            "entreprise": {"siren": "12345678"},
-            "déclaration": {"année_indicateurs": 2019, "date": "2020-11-04"},
-        }
-    )
-    resp = await client.get(f"/simulation/{uid}")
-    assert resp.status == 307
-    assert resp.headers["Location"] == "/declaration/12345678/2019"
-    assert "api-key" in resp.cookies
 
 
 async def test_send_code_endpoint(client, monkeypatch, body):
