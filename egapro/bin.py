@@ -293,7 +293,10 @@ async def migrate_schema(no_schema=False):
         data = record["legacy"]
         if "déclaration" not in data:
             data = from_legacy(data)
-        declared_at = datetime.fromisoformat(data["déclaration"]["date"])
+        date = data["déclaration"].get("date")
+        declared_at = None
+        if date:
+            declared_at = datetime.fromisoformat(date)
         try:
             schema.validate(data)
         except ValueError as err:
@@ -304,10 +307,11 @@ async def migrate_schema(no_schema=False):
         async with db.declaration.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE declaration "
-                "SET data=$1, declared_at=$2, modified_at=$2 "
-                "WHERE siren=$3 AND year=$4",
+                "SET data=$1, declared_at=$2, modified_at=$3 "
+                "WHERE siren=$4 AND year=$5",
                 data,
                 declared_at,
+                declared_at or record["modified_at"],
                 record["siren"],
                 record["year"],
             )
