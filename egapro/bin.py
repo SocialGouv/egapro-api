@@ -202,7 +202,9 @@ async def validate(pdb=False):
     from egapro.schema.legacy import from_legacy
 
     for row in await db.declaration.all():
-        data = from_legacy(row["data"])
+        data = row["data"]
+        if "déclaration" not in data:
+            data = from_legacy(data)
         try:
             JSON_SCHEMA.validate(json.loads(json_dumps(data)))
         except ValidationError as err:
