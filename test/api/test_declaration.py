@@ -609,7 +609,7 @@ async def test_declare_with_legacy_schema(client, body):
             "augmentations_hors_promotions": {"catégories": [0, 0, 0, 0]},
         },
         "déclaration": {
-            "date": "2020-02-14T16:02:00+00:00",
+            "date": "2020-02-14T15:02:00+00:00",
             "index": 94,
             "points": 94,
             "publication": {
