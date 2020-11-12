@@ -396,19 +396,56 @@ async def test_search_endpoint(client):
         {
             "declaration": {"noteIndex": 95},
             "id": "12345678-1234-5678-9012-123456789013",
-            "informations": {"anneeDeclaration": "2019"},
+            "informations": {
+                "anneeDeclaration": "2019",
+                "trancheEffectifs": "1000 et plus"
+            },
             "informationsEntreprise": {"nomEntreprise": "Bio c Bon"},
         },
     )
     await db.declaration.put(
         "12345672",
-        2019,
+        2018,
         "foo@bar.org",
         {
             "declaration": {"noteIndex": 93},
             "id": "12345678-1234-5678-9012-123456789012",
-            "informations": {"anneeDeclaration": "2019"},
+            "informations": {
+                "anneeDeclaration": "2018",
+                "trancheEffectifs": "Plus de 250"
+            },
             "informationsEntreprise": {"nomEntreprise": "Biocoop"},
+            "effectif": {"nombreSalariesTotal": 1000},
+        },
+    )
+    # Only public data should be returned: https://github.com/SocialGouv/egapro-api/pull/14
+    await db.declaration.put(
+        "12345673",
+        2019,
+        "foo@bar.org",
+        {
+            "declaration": {"noteIndex": 95},
+            "id": "12345678-1234-5678-9012-123456789015",
+            "informations": {
+                "anneeDeclaration": "2019",
+                "trancheEffectifs": "Plus de 250"
+            },
+            "informationsEntreprise": {"nomEntreprise": "Bio c Bon moins de 1000"},
+        },
+    )
+    await db.declaration.put(
+        "12345674",
+        2018,
+        "foo@bar.org",
+        {
+            "declaration": {"noteIndex": 93},
+            "id": "12345678-1234-5678-9012-123456789014",
+            "informations": {
+                "anneeDeclaration": "2018",
+                "trancheEffectifs": "Plus de 250"
+            },
+            "informationsEntreprise": {"nomEntreprise": "Biocoop moins de 1000"},
+            "effectif": {"nombreSalariesTotal": 999},
         },
     )
     resp = await client.get("/search?q=bio")
@@ -424,7 +461,7 @@ async def test_search_endpoint(client):
             {
                 "declaration": {"noteIndex": 93},
                 "id": "12345678-1234-5678-9012-123456789012",
-                "informations": {"anneeDeclaration": "2019"},
+                "informations": {"anneeDeclaration": "2018"},
                 "informationsEntreprise": {"nomEntreprise": "Biocoop"},
             },
         ],
