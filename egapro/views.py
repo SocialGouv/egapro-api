@@ -3,6 +3,7 @@ import sys
 from functools import wraps
 
 import ujson as json
+from naf import DB as NAF
 from roll import Roll, HttpError
 from roll import Request as BaseRequest
 from asyncpg.exceptions import DataError
@@ -265,6 +266,7 @@ async def get_config(request, response):
         "DEPARTEMENTS": constants.DEPARTEMENTS,
         "REGIONS": constants.REGIONS,
         "REGIONS_TO_DEPARTEMENTS": constants.REGIONS_TO_DEPARTEMENTS,
+        "NAF": dict(NAF.pairs()),
     }
     response.json = {k: v for k, v in data.items() if not keys or k in keys}
 

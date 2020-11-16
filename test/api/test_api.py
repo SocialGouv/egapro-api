@@ -98,6 +98,7 @@ async def test_config_endpoint(client):
         "DEPARTEMENTS",
         "REGIONS",
         "REGIONS_TO_DEPARTEMENTS",
+        "NAF",
     ]
     assert json.loads(resp.body)["YEARS"] == [2018, 2019]
     resp = await client.get("/config?key=YEARS&key=REGIONS")
