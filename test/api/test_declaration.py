@@ -233,7 +233,7 @@ async def test_invalid_declaration_data_should_raise_on_put(client):
         body={"foo": "bar"},
     )
     assert resp.status == 422
-    assert json.loads(resp.body) == {"error": "False schema does not allow '\"foo\"'"}
+    assert json.loads(resp.body) == {"error": "data.déclaration.date must be string"}
 
 
 async def test_put_declaration_should_compute_notes(client, body):
