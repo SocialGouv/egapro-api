@@ -1,0 +1,62 @@
+name: CI
+on:
+  - push
+  - pull_request
+
+jobs:
+  Quality:
+    strategy:
+      # Don't fast-fail on tag and master
+      fail-fast: ${{ github.event_name == 'pull_request' || (github.ref !=
+        'refs/heads/master' && !startsWith(github.ref, 'refs/tags/')) }}
+
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:11-alpine
+        env:
+          POSTGRES_DB: test_egapro
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Save pip cache dir
+        id: init
+        run: echo "::set-output name=pip_cache::$(pip cache dir)"
+        
+      - uses: actions/checkout@v2
+      
+      - name: Cache Pip packages
+        id: yarn_cache_packages
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.init.outputs.pip_cache }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.cfg') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install requirements 
+        run: sudo apt-get install -yqq libxml2-dev libxslt-dev
+          
+      - name: Install dependencies
+        run: make develop
+
+      - name: Test
+        run: make test
+        
+      - name: Send test coverage to codecov
+        continue-on-error: true
+        uses: codecov/codecov-action@v1
