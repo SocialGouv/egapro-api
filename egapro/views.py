@@ -258,13 +258,15 @@ async def search(request, response):
 
 @app.route("/config")
 async def get_config(request, response):
-    response.json = {
+    keys = request.query.list("key", [])
+    data = {
         "YEARS": constants.YEARS,
         "EFFECTIFS": constants.EFFECTIFS,
         "DEPARTEMENTS": constants.DEPARTEMENTS,
         "REGIONS": constants.REGIONS,
         "REGIONS_TO_DEPARTEMENTS": constants.REGIONS_TO_DEPARTEMENTS,
     }
+    response.json = {k: v for k, v in data.items() if not keys or k in keys}
 
 
 @app.route("/jsonschema.json")
