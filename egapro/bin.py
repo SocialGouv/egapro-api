@@ -188,6 +188,18 @@ def serve(reload=False):
     simple_server(app, port=2626)
 
 
+@minicli.cli
+async def migrate_effectif(source: Path):
+    more_1000 = [l.split(";")[1] for l in source.read_text().split("\n") if l]
+    await db.declaration.execute(
+        """UPDATE declaration SET data = jsonb_set(data, '{informations,trancheEffectifs}', '"1000 et plus"') WHERE data->'informations'->>'trancheEffectifs'='Plus de 250' AND siren = any($1::text[])""",
+        tuple(more_1000),
+    )
+    await db.declaration.execute(
+        """UPDATE declaration SET data = jsonb_set(data, '{informations,trancheEffectifs}', '"251 à 999"') WHERE data->'informations'->>'trancheEffectifs'='Plus de 250'""",
+    )
+
+
 @minicli.wrap
 async def wrapper():
     await db.init()
