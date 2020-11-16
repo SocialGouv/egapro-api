@@ -53,6 +53,10 @@ async def test_dgt_dump(declaration):
     )
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
+    # Calculable
+    assert sheet["AA1"].value == "Indic1_calculable"
+    assert sheet["AA2"].value is True
+
     # Code NAF
     assert sheet["U1"].value == "Code_NAF"
     assert sheet["U2"].value == (
