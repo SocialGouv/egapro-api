@@ -3,7 +3,7 @@ from collections import namedtuple
 from dataclasses import dataclass
 from pathlib import Path
 
-from jsonschema_rs import JSONSchema, ValidationError
+import fastjsonschema
 import ujson as json
 
 from egapro.utils import import_by_path
@@ -17,7 +17,7 @@ def init():
     schema = Schema(path.read_text()).raw
     globals()["SCHEMA"] = schema
     try:
-        globals()["JSON_SCHEMA"] = JSONSchema(schema)
+        globals()["JSON_SCHEMA"] = fastjsonschema.compile(schema)
     except ValueError as err:
         print(json.dumps(schema))
         sys.exit(err)
@@ -25,8 +25,8 @@ def init():
 
 def validate(data):
     try:
-        JSON_SCHEMA.validate(data)
-    except ValidationError as err:
+        JSON_SCHEMA(data)
+    except fastjsonschema.JsonSchemaException as err:
         raise ValueError(err)
 
 

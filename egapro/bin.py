@@ -196,9 +196,7 @@ def serve(reload=False):
 
 @minicli.cli
 async def validate(pdb=False):
-    from jsonschema_rs import ValidationError
-
-    from egapro.schema import JSON_SCHEMA
+    from egapro.schema import validate
     from egapro.schema.legacy import from_legacy
 
     for row in await db.declaration.all():
@@ -206,8 +204,8 @@ async def validate(pdb=False):
         if "déclaration" not in data:
             data = from_legacy(data)
         try:
-            JSON_SCHEMA.validate(json.loads(json_dumps(data)))
-        except ValidationError as err:
+            validate(json.loads(json_dumps(data)))
+        except ValueError as err:
             print(f"\n\nERROR WITH {row['siren']}/{row['year']}\n")
             print(err)
             if pdb:
