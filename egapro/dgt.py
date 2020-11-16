@@ -27,7 +27,19 @@ def truthy(val):
     return bool(val)
 
 
+def falsy(val):
+    return not truthy(val)
+
+
+def isoformat(val):
+    if not val:
+        return None
+    return datetime.fromisoformat(val)
+
+
 def code_naf(code):
+    if not code:
+        return None
     return f"{code} - {NAF[code]}"
 
 
@@ -74,7 +86,7 @@ async def get_headers_columns():
         [
             ("source", "source"),
             ("URL_declaration", "URL_declaration"),  # Built from /data/id, see below
-            ("Date_reponse", "déclaration.date", datetime.fromisoformat),
+            ("Date_reponse", "déclaration.date", isoformat),
             ("Email_declarant", "déclarant.email"),
             ("Nom", "déclarant.nom"),
             ("Prenom", "déclarant.prénom"),
@@ -91,12 +103,12 @@ async def get_headers_columns():
             (
                 "Date_debut_periode",
                 "déclaration.période_référence.0",
-                datetime.fromisoformat,
+                isoformat,
             ),
             (
                 "Date_fin_periode",
                 "déclaration.période_référence.1",
-                datetime.fromisoformat,
+                isoformat,
             ),
             ("Structure", "Structure"),
             ("Tranche_effectif", "entreprise.effectif.tranche", EFFECTIF.get),
@@ -113,14 +125,14 @@ async def get_headers_columns():
             (
                 "Date_publication",
                 "déclaration.publication.date",
-                datetime.fromisoformat,
+                isoformat,
             ),
             ("Site_internet_publication", "déclaration.publication.url"),
             ("Modalités_publication", "déclaration.publication.modalités"),
             (
-                "Indic1_non_calculable",
+                "Indic1_calculable",
                 "indicateurs.rémunérations.non_calculable",
-                truthy,
+                falsy,
             ),
             (
                 "Indic1_motif_non_calculable",
@@ -146,9 +158,9 @@ async def get_headers_columns():
                 "indicateurs.rémunérations.population_favorable",
             ),
             (
-                "Indic2_non_calculable",
+                "Indic2_calculable",
                 "indicateurs.augmentations_hors_promotions.non_calculable",
-                truthy,
+                falsy,
             ),
             (
                 "Indic2_motif_non_calculable",
@@ -168,7 +180,7 @@ async def get_headers_columns():
                 "Indic2_population_favorable",
                 "indicateurs.augmentations_hors_promotions.population_favorable",
             ),
-            ("Indic3_non_calculable", "indicateurs.promotions.non_calculable", truthy),
+            ("Indic3_calculable", "indicateurs.promotions.non_calculable", falsy),
             ("Indic3_motif_non_calculable", "indicateurs.promotions.non_calculable"),
         ]
         + [
@@ -185,9 +197,9 @@ async def get_headers_columns():
                 "indicateurs.promotions.population_favorable",
             ),
             (
-                "Indic2et3_non_calculable",
+                "Indic2et3_calculable",
                 "indicateurs.augmentations.non_calculable",
-                truthy,
+                falsy,
             ),
             (
                 "Indic2et3_motif_non_calculable",
@@ -206,9 +218,9 @@ async def get_headers_columns():
                 "indicateurs.augmentations.population_favorable",
             ),
             (
-                "Indic4_non_calculable",
+                "Indic4_calculable",
                 "indicateurs.congés_maternité.non_calculable",
-                truthy,
+                falsy,
             ),
             (
                 "Indic4_motif_non_calculable",
@@ -270,7 +282,7 @@ async def as_xlsx(max_rows=None, debug=False):
     bar = ProgressBar(prefix="Computing", total=len(records))
     for record in bar.iter(records):
         data = prepare_record(record["data"])
-        ws.append([fmt(data.get(c)) if data.get(c) else None for c, fmt in columns])
+        ws.append([fmt(data.get(c)) for c, fmt in columns])
     return wb
 
 
@@ -303,7 +315,6 @@ def prepare_record(data):
     indic1_mode = data.get("indicateurs.rémunérations.mode")
     data["Indic1_nb_coef_niv"] = indic1_nv_niveaux if indic1_mode != "csp" else None
     indic1_calculable = not data.get("indicateurs.rémunérations.non_calculable")
-    data["Indic1_non_calculable"] = "0" if indic1_calculable else "1"
     if indic1_calculable:
         # DGT want data to be in different columns whether its csp or any coef.
         csp_names = ["Ouv", "Emp", "TAM", "IC"]
