@@ -126,10 +126,6 @@ async def get_headers_columns():
                 "Indic1_motif_non_calculable",
                 "indicateurs.rémunérations.non_calculable",
             ),
-            (
-                "Indic1_precision_autre_motif",
-                "indicateurs.rémunérations.motif_non_calculable",
-            ),
             ("Indic1_modalite_calc", "indicateurs.rémunérations.mode"),
             ("Indic1_Ouv", "Indic1_Ouv"),
             ("Indic1_Emp", "Indic1_Emp"),
@@ -217,10 +213,6 @@ async def get_headers_columns():
             (
                 "Indic4_motif_non_calculable",
                 "indicateurs.congés_maternité.non_calculable",
-            ),
-            (
-                "Indic4_precision_autre_motif",
-                "indicateurs.congés_maternité.motif_non_calculable",
             ),
             ("Indic4_resultat", "indicateurs.congés_maternité.résultat"),
             ("Indic5_resultat", "indicateurs.hautes_rémunérations.résultat"),
