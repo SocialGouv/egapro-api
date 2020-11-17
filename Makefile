@@ -18,7 +18,7 @@ migrate-legacy:
 .PHONY: migrate-legacy
 
 test:
-	py.test -vvx
+	py.test -vv --cov
 .PHONY: test
 
 download-data:

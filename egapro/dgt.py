@@ -335,7 +335,7 @@ def prepare_record(data):
     return data
 
 
-async def duplicates(current_export, legacy, *solen_data):
+async def duplicates(current_export, legacy, *solen_data):  # pragma: no cover
     before = time.perf_counter()
     headers, columns = await get_headers_columns()
     reversed_headers = dict(zip(headers, columns))
