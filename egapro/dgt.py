@@ -282,7 +282,7 @@ async def as_xlsx(max_rows=None, debug=False):
     ws.append(headers)
     bar = ProgressBar(prefix="Computing", total=len(records))
     for record in bar.iter(records):
-        data = prepare_record(record["data"])
+        data = prepare_record(record["data"] or record["legacy"] or {})
         ws.append([fmt(data.get(c)) for c, fmt in columns])
     return wb
 
