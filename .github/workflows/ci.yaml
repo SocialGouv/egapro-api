@@ -1,0 +1,50 @@
+name: CI
+on:
+  - push
+
+jobs:
+  Quality:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:11-alpine
+        env:
+          POSTGRES_DB: test_egapro
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Get pip cache dir
+        id: init
+        run: echo "::set-output name=pip_cache::$(pip cache dir)"
+        
+      - uses: actions/checkout@v2
+      
+      - name: Cache Pip packages
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.init.outputs.pip_cache }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.cfg') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install requirements 
+        run: sudo apt-get install -yqq libxml2-dev libxslt-dev
+          
+      - name: Install dependencies
+        run: make develop
+
+      - name: Test
+        run: make test
+        
+      - name: Send test coverage to codecov
+        continue-on-error: true
+        uses: codecov/codecov-action@v1

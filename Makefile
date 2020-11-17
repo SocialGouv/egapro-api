@@ -18,8 +18,8 @@ migrate-legacy:
 .PHONY: migrate-legacy
 
 test:
-	py.test -vvx
-.PHONI: test
+	py.test -vv --cov
+.PHONY: test
 
 download-data:
 	scp egapro.prod:/tmp/solen-2019.xlsx tmp/
