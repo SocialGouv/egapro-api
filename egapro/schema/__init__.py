@@ -7,6 +7,7 @@ import fastjsonschema
 import ujson as json
 
 from egapro.utils import import_by_path
+from egapro.models import Data
 
 SCHEMA = None
 JSON_SCHEMA = None
@@ -28,6 +29,26 @@ def validate(data):
         JSON_SCHEMA(data)
     except fastjsonschema.JsonSchemaException as err:
         raise ValueError(err)
+    try:
+        cross_validate(data)
+    except AssertionError as err:
+        raise ValueError(err)
+
+
+def cross_validate(data):
+    data = Data(data)
+    if data.validated:
+        # Those keys are only required if the data is validated
+        required = [
+            "entreprise.région",
+            "entreprise.département",
+            "entreprise.adresse",
+            "entreprise.commune",
+            "entreprise.code_postal",
+            "entreprise.code_naf",
+        ]
+        for path in required:
+            assert data.path(path), f"{path} must not be empty"
 
 
 def extrapolate(definition):

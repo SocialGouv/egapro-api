@@ -202,7 +202,7 @@ async def validate(pdb=False):
     for row in await db.declaration.all():
         data = row["data"]
         if "déclaration" not in data:
-            data = from_legacy(data)
+            data = from_legacy(row["legacy"])
         try:
             validate(json.loads(json_dumps(data)))
         except ValueError as err:
