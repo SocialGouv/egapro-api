@@ -22,6 +22,7 @@ def body():
             "raison_sociale": "FooBar",
             "siren": "514027945",
             "code_naf": "47.25Z",
+            "code_postal": "12345",
             "région": "76",
             "département": "12",
             "adresse": "12, rue des adresses",
@@ -188,6 +189,16 @@ async def test_confirmed_declaration_should_raise_if_missing_id(
     assert not calls
 
 
+async def test_confirmed_declaration_should_raise_if_missing_entreprise_data(
+    client, monkeypatch, body
+):
+    del body["entreprise"]["région"]
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    body = json.loads(resp.body)
+    assert body == {"error": "entreprise.région must not be empty"}
+
+
 async def test_with_unknown_siren_or_year(client):
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 404
@@ -209,6 +220,7 @@ async def test_declare_with_flat_data(client, body):
         "entreprise.adresse": "12, rue des adresses",
         "entreprise.commune": "Y",
         "entreprise.code_naf": "47.25Z",
+        "entreprise.code_postal": "12345",
     }
     resp = await client.put(
         "/declaration/514027945/2019",
