@@ -127,7 +127,6 @@ def from_legacy(data):
     if un["mode"] is None:
         un["mode"] = "coef" if "coefficient" in un and un.get("coefficient") else "csp"
     categories = []
-    # TODO coefficient
     key = "remunerationAnnuelle" if un["mode"] == "csp" else "coefficient"
     for idx, category in enumerate(un.get(key, [])):
         if "tranchesAges" not in category:
@@ -186,7 +185,7 @@ def from_legacy(data):
 
 
 def clean_legacy(legacy):
-    if not legacy.get("nonCalculable"):
+    if not legacy.get("nonCalculable") and legacy.get("source", "").startswith("solen"):
         try:
             del legacy["motifNonCalculable"]
         except KeyError:
