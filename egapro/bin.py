@@ -306,33 +306,54 @@ async def migrate_schema(no_schema=False):
 
 
 @minicli.cli
-async def view(siren, year):
-    record = await db.declaration.get(siren, year)
-    sep = "—" * 80
-    print(f"Data for {siren} {year}")
-    print(sep)
-    for key in ["modified_at", "declared_at", "owner"]:
-        print(f"{key:<20} | {record[key]}")
-    data = models.Data(record["data"])
-    for root in [
-        "indicateurs.hautes_rémunérations",
-        "indicateurs.congés_maternité",
-        "indicateurs.promotions",
-        "indicateurs.augmentations",
-        "indicateurs.augmentations_hors_promotions",
-        "indicateurs.rémunérations",
-        "entreprise",
-        "déclaration",
-    ]:
+async def explore(*siren_year):
+    """Explore déclarations
+
+    Usage: egapro explore [siren, year[, siren, year…]]
+
+    Without any arguments, will return metadata for last 10 déclarations.
+    Otherwise, pass siren, year pairs to get déclarations détailled data.
+    """
+    if not siren_year:
+        records = await db.declaration.fetch(
+            "SELECT * FROM declaration ORDER BY modified_at LIMIT 10"
+        )
+        print("# Latest déclarations")
+        print("| siren     | year | modified_at      | declared_at      | owner")
+        for record in records:
+            declared_at = (
+                str(record["declared_at"])[:16] if record["declared_at"] else "-" * 16
+            )
+            print(
+                f"| {record['siren']} | {record['year']} | {str(record['modified_at'])[:16]} | {declared_at} | {record['owner']}"
+            )
+        return
+    for siren, year in zip(siren_year[::2], siren_year[1::2]):
+        record = await db.declaration.get(siren, year)
+        sep = "—" * 80
+        print(f"Data for {siren} {year}")
+        data = models.Data(record["data"])
+        for root in [
+            "indicateurs.hautes_rémunérations",
+            "indicateurs.congés_maternité",
+            "indicateurs.promotions",
+            "indicateurs.augmentations",
+            "indicateurs.augmentations_hors_promotions",
+            "indicateurs.rémunérations",
+            "entreprise",
+            "déclaration",
+        ]:
+            print(sep)
+            print(f"# {root}")
+            sequence = data.path(root)
+            if not sequence:
+                print("—")
+                continue
+            for key, value in sequence.items():
+                print(f"{key:<20} | {value}")
         print(sep)
-        print(f"# {root}")
-        sequence = data.path(root)
-        if not sequence:
-            print("—")
-            continue
-        for key, value in sequence.items():
-            print(f"{key:<20} | {value}")
-    # print(record)
+        for key in ["modified_at", "declared_at", "owner"]:
+            print(f"{key:<20} | {record[key]}")
 
 
 @minicli.wrap
