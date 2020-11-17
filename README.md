@@ -1,5 +1,8 @@
 # Egapro backend POC
 
+[![Github Master CI Status](https://github.com/SocialGouv/egapro-api/workflows/CI/badge.svg?branch=master)](https://github.com/SocialGouv/egapro-api/actions/)
+[![codecov](https://codecov.io/gh/SocialGouv/egapro-api/branch/master/graph/badge.svg)](https://codecov.io/gh/SocialGouv/egapro-api)
+
 ## Dependencies
 
 - python >= 3.6
