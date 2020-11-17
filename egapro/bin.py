@@ -305,6 +305,36 @@ async def migrate_schema(no_schema=False):
             )
 
 
+@minicli.cli
+async def view(siren, year):
+    record = await db.declaration.get(siren, year)
+    sep = "—" * 80
+    print(f"Data for {siren} {year}")
+    print(sep)
+    for key in ["modified_at", "declared_at", "owner"]:
+        print(f"{key:<20} | {record[key]}")
+    data = models.Data(record["data"])
+    for root in [
+        "indicateurs.hautes_rémunérations",
+        "indicateurs.congés_maternité",
+        "indicateurs.promotions",
+        "indicateurs.augmentations",
+        "indicateurs.augmentations_hors_promotions",
+        "indicateurs.rémunérations",
+        "entreprise",
+        "déclaration",
+    ]:
+        print(sep)
+        print(f"# {root}")
+        sequence = data.path(root)
+        if not sequence:
+            print("—")
+            continue
+        for key, value in sequence.items():
+            print(f"{key:<20} | {value}")
+    # print(record)
+
+
 @minicli.wrap
 async def wrapper():
     try:
