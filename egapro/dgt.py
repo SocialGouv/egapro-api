@@ -324,14 +324,15 @@ def prepare_record(data):
             key = f"indicateurs.rémunérations.catégories.{idx}"
             if indic1_mode == "csp":
                 key = f"Indic1_{csp_names[idx]}"
-            data[key] = ";".join(
-                [
-                    str(round(tranches.get(":29") or 0, 1) or ""),
-                    str(round(tranches.get("30:39") or 0, 1) or ""),
-                    str(round(tranches.get("40:49") or 0, 1) or ""),
-                    str(round(tranches.get("50:") or 0, 1) or ""),
-                ]
-            )
+            values = [
+                tranches.get(":29"),
+                tranches.get("30:39"),
+                tranches.get("40:49"),
+                tranches.get("50:"),
+            ]
+            # Adding "+ 0" to prevent "-0.0" as str representation
+            values = [str(round(v, 1) + 0) if v is not None else "" for v in values]
+            data[key] = ";".join(values)
     return data
 
 

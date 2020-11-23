@@ -50,6 +50,52 @@ async def test_dgt_dump(declaration):
         year=2020,
         uid="12345678-1234-5678-9012-123456789012",
         entreprise={"code_naf": "47.25Z", "région": "11", "département": "77"},
+        indicateurs={
+            "rémunérations": {
+                "catégories": [
+                    {
+                        "nom": "tranche 0",
+                        "tranches": {
+                            "30:39": -0.03,
+                            "40:49": 1.5,
+                            "50:": 3.7,
+                            ":29": 2.8,
+                        },
+                    },
+                    {
+                        "nom": "tranche 1",
+                        "tranches": {
+                            "30:39": 0.1,
+                            "40:49": -11.3,
+                            "50:": 11.1,
+                            ":29": -10.8,
+                        },
+                    },
+                    {
+                        "nom": "tranche 2",
+                        "tranches": {
+                            "30:39": 2.3,
+                            "40:49": 2.8,
+                            "50:": 0.2,
+                            ":29": 5.0,
+                        },
+                    },
+                    {
+                        "nom": "tranche 3",
+                        "tranches": {
+                            "30:39": 5.2,
+                            "40:49": 7.1,
+                            "50:": 12.2,
+                            ":29": 1.1,
+                        },
+                    },
+                ],
+                "mode": "csp",
+                "note": 40,
+                "population_favorable": "femmes",
+                "résultat": 0.0,
+            },
+        },
     )
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
@@ -83,6 +129,16 @@ async def test_dgt_dump(declaration):
         sheet["B2"].value
         == "'https://index-egapro.travail.gouv.fr/simulateur/12345678-1234-5678-9012-123456789012"
     )
+
+    # Indicateurs rémunérations
+    assert sheet["AD1"].value == "Indic1_Ouv"
+    assert sheet["AE1"].value == "Indic1_Emp"
+    assert sheet["AF1"].value == "Indic1_TAM"
+    assert sheet["AG1"].value == "Indic1_IC"
+    assert sheet["AD2"].value == "2.8;0.0;1.5;3.7"
+    assert sheet["AE2"].value == "-10.8;0.1;-11.3;11.1"
+    assert sheet["AF2"].value == "5.0;2.3;2.8;0.2"
+    assert sheet["AG2"].value == "1.1;5.2;7.1;12.2"
 
 
 async def test_dgt_dump_should_compute_declaration_url_for_solen_data(declaration):
