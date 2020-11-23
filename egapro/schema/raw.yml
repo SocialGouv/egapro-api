@@ -45,7 +45,7 @@ déclarant:
         siren: string
 indicateurs:
   rémunérations:  # Indicateur 1 relatif à l'écart de rémunération entre les femmes et les hommes
-    +mode: csp|coef|autre
+    mode: csp|coef|autre
     non_calculable: egvi40pcet|am # Vide ou egvi40pcet: Effectif des groupes valides inférieur à 40% de l'effectif total
     résultat: number # Résultat final en % après application du seuil de pertinence à chaque catégorie
     population_favorable: femmes|hommes|egalite
