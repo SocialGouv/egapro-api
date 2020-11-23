@@ -138,7 +138,7 @@ async def get_headers_columns():
                 "Indic1_motif_non_calculable",
                 "indicateurs.rémunérations.non_calculable",
             ),
-            ("Indic1_modalite_calc", "indicateurs.rémunérations.mode"),
+            ("Indic1_modalite_calcul", "indicateurs.rémunérations.mode"),
             ("Indic1_Ouv", "Indic1_Ouv"),
             ("Indic1_Emp", "Indic1_Emp"),
             ("Indic1_TAM", "Indic1_TAM"),
