@@ -87,8 +87,7 @@ def ensure_owner(view):
                     siren,
                     year,
                 )
-                # TODO should we obfuscate the existence of the resource?
-                if request.method not in ("GET", "OPTIONS"):
+                if declarant not in config.STAFF:
                     raise HttpError(403, "Sorry, no")
         if request._body and "déclarant" in request.data:
             # Make sure we set the email used for token as owner.
