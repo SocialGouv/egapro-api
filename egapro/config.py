@@ -22,6 +22,7 @@ DBMAXSIZE = 10
 LEGACY_PSQL = "postgresql://postgres@localhost/legacy_egapro"
 BASE_URL = ""
 ALLOW_ORIGIN = "*"
+STAFF = []
 
 
 def init():
@@ -29,8 +30,8 @@ def init():
         if key.isupper():
             env_key = "EGAPRO_" + key
             typ = type(value)
-            if typ == list:
-                typ = lambda x: x.split()
+            if typ in (list, tuple, set):
+                real_type, typ = typ, lambda x: real_type(x.split(","))
             if env_key in os.environ:
                 globals()[key] = typ(os.environ[env_key])
 

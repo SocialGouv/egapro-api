@@ -95,7 +95,6 @@ async def test_basic_declaration_should_remove_data_namespace_if_present(client,
     assert (await db.declaration.get("514027945", "2019"))["data"] == body
 
 
-@pytest.mark.xfail
 async def test_cannot_load_not_owned_declaration(client, monkeypatch):
     async def mock_owner(*args, **kwargs):
         return "foo@bar.baz"
@@ -104,6 +103,18 @@ async def test_cannot_load_not_owned_declaration(client, monkeypatch):
     client.login("other@email.com")
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 403
+
+
+async def test_staff_can_load_not_owned_declaration(client, monkeypatch, declaration):
+    async def mock_owner(*args, **kwargs):
+        return "foo@bar.baz"
+
+    await declaration(siren="514027945", year=2019)
+    monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
+    monkeypatch.setattr("egapro.db.declaration.owner", mock_owner)
+    client.login("Staff@email.com")
+    resp = await client.get("/declaration/514027945/2019")
+    assert resp.status == 200
 
 
 async def test_cannot_put_not_owned_declaration(client, monkeypatch):
