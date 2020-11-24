@@ -133,24 +133,25 @@ def from_legacy(data):
     for idx, category in enumerate(un.get(key, [])):
         if "tranchesAges" not in category:
             continue
-        tranches = [None, None, None, None]
-        for i in range(4):
+        tranches = {
+            ":29": None,
+            "30:39": None,
+            "40:49": None,
+            "50:": None,
+        }
+        for i, key in enumerate(tranches):
             ta = category["tranchesAges"][i]
             if "ecartTauxRemuneration" in ta:
-                tranches[i] = ta["ecartTauxRemuneration"]
+                tranches[key] = ta["ecartTauxRemuneration"]
             elif (h := ta.get("remunerationAnnuelleBrutHommes")) and (
                 f := ta.get("remunerationAnnuelleBrutFemmes")
             ):
-                tranches[i] = 1 - f / h
+                tranches[key] = 1 - f / h
+        tranches = {k: v for k, v in tranches.items() if v is not None}
         categories.append(
             {
                 "nom": category.get("nom", f"tranche {idx}"),
-                "tranches": {
-                    ":29": tranches[0],
-                    "30:39": tranches[1],
-                    "40:49": tranches[2],
-                    "50:": tranches[3],
-                },
+                "tranches": tranches,
             }
         )
     un["catégories"] = categories
