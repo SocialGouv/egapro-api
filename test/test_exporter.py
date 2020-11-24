@@ -137,7 +137,7 @@ async def test_dgt_dump(declaration):
     assert sheet["AG1"].value == "Indic1_IC"
     assert sheet["AD2"].value == "2.8;-0.03;1.5;3.7"
     assert sheet["AE2"].value == "-10.8;0.1;-11.3;11.1"
-    assert sheet["AF2"].value == "5.0;2.3;2.8;0.2"
+    assert sheet["AF2"].value == "5;2.3;2.8;0.2"
     assert sheet["AG2"].value == "1.1;5.2;7.1;12.2"
 
 
@@ -289,13 +289,13 @@ async def test_dgt_dump_with_coef_mode(declaration):
     assert sheet["AI2"].value == "0;0;0;0"
     assert sheet["AJ2"].value == "0;1.4;0;56.5"
     assert sheet["AK2"].value == "0;0;0;-43.9"
-    assert sheet["AL2"].value == "-20.1;0;22.9;-17.0"
+    assert sheet["AL2"].value == "-20.1;0;22.9;-17"
     assert sheet["AM2"].value == "7.6;19.3;36.2;6.8"
-    assert sheet["AN2"].value == "-13.0;21.4;0;-3.8"
+    assert sheet["AN2"].value == "-13;21.4;0;-3.8"
     assert sheet["AO2"].value == "0;39.6;17.9;4.5"
-    assert sheet["AP2"].value == "4.2;8.6;59.5;5.0"
-    assert sheet["AQ2"].value == "0;20.0;6.8;23.2"
-    assert sheet["AR2"].value == "-4.8;6.6;16.4;12.0"
+    assert sheet["AP2"].value == "4.2;8.6;59.5;5"
+    assert sheet["AQ2"].value == "0;20;6.8;23.2"
+    assert sheet["AR2"].value == "-4.8;6.6;16.4;12"
     assert sheet["AS2"].value == "0;36.6;2.6;16.3"
     assert sheet["AT2"].value == "0;0;7.5;20.9"
 
