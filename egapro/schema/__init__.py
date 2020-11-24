@@ -63,7 +63,8 @@ def extrapolate(definition):
             definition = definition()
         return definition
     if definition.count(":") == 1:
-        out = {"type": "integer"}
+        type_ = float if "." in definition else int
+        out = {"type": "number" if type_ is float else "integer"}
         min_ = max_ = None
         minmax = definition.split(":")
         if len(minmax) == 2:
@@ -73,9 +74,9 @@ def extrapolate(definition):
         else:
             min_ = minmax[0]
         if min_ is not None:
-            out["minimum"] = int(min_)  # float ?
+            out["minimum"] = type_(min_)
         if max_ is not None:
-            out["maximum"] = int(max_)
+            out["maximum"] = type_(max_)
         return out
     if "|" in definition:
         enum = definition.split("|")
