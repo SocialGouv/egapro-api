@@ -335,8 +335,8 @@ def prepare_record(data):
                 tranches.get("40:49"),
                 tranches.get("50:"),
             ]
-            # Prevent "-0.0" or "0.0" as str representation
-            values = [0 if v == 0 else v for v in values]
+            # Prevent "-0.0" or "0.0" or "12.0" as str representation
+            values = [int(v) if v is not None and v % 1 == 0 else v for v in values]
             values = [str(round(v, 2) + 0) if v is not None else "" for v in values]
             data[key] = ";".join(values)
     return data
