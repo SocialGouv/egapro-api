@@ -135,7 +135,7 @@ async def test_dgt_dump(declaration):
     assert sheet["AE1"].value == "Indic1_Emp"
     assert sheet["AF1"].value == "Indic1_TAM"
     assert sheet["AG1"].value == "Indic1_IC"
-    assert sheet["AD2"].value == "2.8;0.0;1.5;3.7"
+    assert sheet["AD2"].value == "2.8;-0.03;1.5;3.7"
     assert sheet["AE2"].value == "-10.8;0.1;-11.3;11.1"
     assert sheet["AF2"].value == "5.0;2.3;2.8;0.2"
     assert sheet["AG2"].value == "1.1;5.2;7.1;12.2"
