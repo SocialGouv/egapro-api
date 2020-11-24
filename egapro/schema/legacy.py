@@ -117,15 +117,17 @@ def from_legacy(data):
     un = data["indicateurs"]["rémunérations"]
     un["mode"] = (
         un.get("autre")
-        and "autre"
+        and "niveau_autre"
         or un.get("coef")
-        and "coef"
+        and "niveau_branche"
         or un.get("csp")
         and "csp"
         or None
     )
     if un["mode"] is None:
-        un["mode"] = "coef" if "coefficient" in un and un.get("coefficient") else "csp"
+        un["mode"] = (
+            "niveau_branche" if "coefficient" in un and un.get("coefficient") else "csp"
+        )
     categories = []
     key = "remunerationAnnuelle" if un["mode"] == "csp" else "coefficient"
     for idx, category in enumerate(un.get(key, [])):

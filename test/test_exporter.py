@@ -149,7 +149,7 @@ async def test_dgt_dump_with_coef_mode(declaration):
         entreprise={"code_naf": "47.25Z", "région": "11", "département": "77"},
         indicateurs={
             "rémunérations": {
-                "mode": "coef",
+                "mode": "niveau_branche",
                 "note": 25,
                 "résultat": 10.6,
                 "catégories": [
@@ -256,6 +256,12 @@ async def test_dgt_dump_with_coef_mode(declaration):
     )
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
+
+    # Calculable
+    assert sheet["AA1"].value == "Indic1_calculable"
+    assert sheet["AA2"].value is True
+    assert sheet["AC1"].value == "Indic1_modalite_calcul"
+    assert sheet["AC2"].value == "niveau_branche"
 
     # Indicateurs rémunérations for CSP should be empty
     assert sheet["AD1"].value == "Indic1_Ouv"
