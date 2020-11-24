@@ -49,6 +49,11 @@ def cross_validate(data):
         ]
         for path in required:
             assert data.path(path), f"{path} must not be empty"
+    for key in SCHEMA["properties"]["indicateurs"]["properties"].keys():
+        path = f"indicateurs.{key}"
+        if data.path(f"{path}.non_calculable"):
+            msg = f"{path} must not contain other key when set to non_calculable"
+            assert list(data.path(path).keys()) == ["non_calculable"], msg
 
 
 def extrapolate(definition):

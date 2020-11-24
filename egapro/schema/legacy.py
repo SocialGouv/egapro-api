@@ -124,6 +124,8 @@ def from_legacy(data):
         and "csp"
         or None
     )
+    if not mode and "coefficient" in un:
+        un["mode"] = "niveau_branche"
     if mode:
         un["mode"] = mode
     categories = []
@@ -257,3 +259,7 @@ def clean_legacy(legacy):
             del legacy[k]
         except KeyError:
             pass
+    non_calculable = legacy.get("non_calculable")
+    if non_calculable:
+        legacy.clear()
+        legacy["non_calculable"] = non_calculable
