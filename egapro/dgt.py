@@ -48,8 +48,8 @@ async def get_ues_cols():
     try:
         max_num_ues = await db.declaration.fetchval(
             "SELECT "
-            "jsonb_array_length(data->'informationsEntreprise'->'entreprisesUES') AS length "
-            "FROM declaration WHERE data->'informationsEntreprise' ? 'entreprisesUES' "
+            "jsonb_array_length(data->'entreprise'->'ues'->'entreprises') AS length "
+            "FROM declaration WHERE data->'entreprise'->'ues' ? 'entreprises' "
             "ORDER BY length DESC LIMIT 1;"
         )
     except db.NoData:
@@ -78,10 +78,15 @@ async def get_ues_cols():
 
 async def get_headers_columns():
     """Return a tuple of lists of (header_names, column_names) that we want in the export."""
-    num_coefficient = await db.declaration.fetchval(
-        "SELECT coalesce(MAX((data->'indicateurUn'->>'nombreCoefficients')::int),0) AS max_val "
-        "FROM declaration WHERE data->'indicateurUn' ? 'nombreCoefficients'"
-    )
+    try:
+        num_coefficient = await db.declaration.fetchval(
+                "SELECT "
+                "jsonb_array_length(data->'indicateurs'->'rémunérations'->'catégories') AS length "
+                "FROM declaration WHERE data->'indicateurs'->'rémunérations' ? 'catégories' "
+                "ORDER BY length DESC LIMIT 1;"
+        )
+    except db.NoData:
+        num_coefficient = 0
     interesting_cols = (
         [
             ("source", "source"),
