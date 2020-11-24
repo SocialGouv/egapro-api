@@ -53,10 +53,10 @@ indicateurs:
     catégories:
       - nom: string
         tranches:
-          ":29": number
-          "30:39": number
-          "40:49": number
-          "50:": number
+          ":29": ?number
+          "30:39": ?number
+          "40:49": ?number
+          "50:": ?number
   augmentations_hors_promotions:  # Indicateur 2 relatif à l'écart de taux d'augmentations individuelles (hors promotion) entre les femmes et les homme
     non_calculable: egvi40pcet|absaugi|am # Trois items : Effectif des groupes valides inférieur à 40% de l'effectif total (egvi40pcet) ou Absence d'augmentations individuelles (absaugi)
     résultat: number

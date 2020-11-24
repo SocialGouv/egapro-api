@@ -606,19 +606,39 @@ async def test_declare_with_legacy_schema(client, body):
                 "catégories": [
                     {
                         "nom": "tranche 0",
-                        "tranches": {"50:": 0, ":29": 0, "30:39": 0, "40:49": 0},
+                        "tranches": {
+                            "50:": None,
+                            ":29": None,
+                            "30:39": None,
+                            "40:49": None,
+                        },
                     },
                     {
                         "nom": "tranche 1",
-                        "tranches": {"50:": 0, ":29": 0, "30:39": 0, "40:49": 0},
+                        "tranches": {
+                            "50:": 0.0473157824,
+                            ":29": 0.028016061300000002,
+                            "30:39": 0.0379358564,
+                            "40:49": 0.0430078442,
+                        },
                     },
                     {
                         "nom": "tranche 2",
-                        "tranches": {"50:": 0, ":29": 0, "30:39": 0, "40:49": 0},
+                        "tranches": {
+                            "50:": None,
+                            ":29": None,
+                            "30:39": 0.080339148,
+                            "40:49": None,
+                        },
                     },
                     {
                         "nom": "tranche 3",
-                        "tranches": {"50:": 0, ":29": 0, "30:39": 0, "40:49": 0},
+                        "tranches": {
+                            "50:": None,
+                            ":29": None,
+                            "30:39": None,
+                            "40:49": None,
+                        },
                     },
                 ],
                 "population_favorable": "hommes",
