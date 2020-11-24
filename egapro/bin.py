@@ -375,6 +375,7 @@ def shell():
             user_ns={
                 "db": db,
                 "config": config,
+                "schema": schema,
             },
         )
 
