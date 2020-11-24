@@ -287,7 +287,7 @@ async def test_dgt_dump_with_coef_mode(declaration):
     assert sheet["AT1"].value == "Indic1_Niv12"
     assert sheet["AH2"].value == "0;0;0;0"
     assert sheet["AI2"].value == "0;0;0;0"
-    assert sheet["AJ2"].value == "0.0;1.4;0;56.5"
+    assert sheet["AJ2"].value == "0;1.4;0;56.5"
     assert sheet["AK2"].value == "0;0;0;-43.9"
     assert sheet["AL2"].value == "-20.1;0;22.9;-17.0"
     assert sheet["AM2"].value == "7.6;19.3;36.2;6.8"
