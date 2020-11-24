@@ -115,7 +115,7 @@ def from_legacy(data):
 
     # Un
     un = data["indicateurs"]["rémunérations"]
-    un["mode"] = (
+    mode = (
         un.get("autre")
         and "niveau_autre"
         or un.get("coef")
@@ -124,12 +124,10 @@ def from_legacy(data):
         and "csp"
         or None
     )
-    if un["mode"] is None:
-        un["mode"] = (
-            "niveau_branche" if "coefficient" in un and un.get("coefficient") else "csp"
-        )
+    if mode:
+        un["mode"] = mode
     categories = []
-    key = "remunerationAnnuelle" if un["mode"] == "csp" else "coefficient"
+    key = "remunerationAnnuelle" if un.get("mode") == "csp" else "coefficient"
     for idx, category in enumerate(un.get(key, [])):
         if "tranchesAges" not in category:
             continue
