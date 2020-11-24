@@ -57,6 +57,9 @@ def cross_validate(data):
 
 
 def extrapolate(definition):
+    # TODO: arbitrate between ?key: value and key: ?value
+    if definition.startswith("?"):
+        return {"oneOf": [{"type": "null"}, extrapolate(definition[1:])]}
     if definition in ("date", "time", "date-time", "uri", "email"):
         return {"type": "string", "format": definition}
     if definition in ("integer", "string", "boolean", "number"):

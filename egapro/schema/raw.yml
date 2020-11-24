@@ -1,5 +1,5 @@
 # +key: means a required key
-# ?key: means a nullable key
+# "key: ?value" means a nullable key (null is valid value)
 # key: this|is|an|enum
 # key: 12:24 # this is a range
 # description comes after the # on the property definition
