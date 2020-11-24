@@ -122,6 +122,15 @@ def test_nullable():
             "key1": {"anyOf": [{"type": "null"}, {"type": "integer"}]},
         },
     }
+    raw = "key1: ?integer"
+    schema = Schema(raw).raw
+    assert schema == {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "key1": {"oneOf": [{"type": "null"}, {"type": "integer"}]},
+        },
+    }
 
 
 def test_liberal():
