@@ -20,11 +20,11 @@ source: string
   points_calculables: integer # Nombre total de points pouvant être obtenus
   mesures_correctives: mmo|me|mne # Mesures de corrections prévues à l'article D. 1142-5 / Trois items : Mesures mises en œuvre (mmo), Mesures envisagées (me), Mesures non envisagées (mne)"
   index: integer # Résultat final sur 100 points
-déclarant:
++déclarant:
   prénom: string
   nom: string
   téléphone: string
-  email: email
+  +email: email
 +entreprise:
   raison_sociale: string
   +siren: string
