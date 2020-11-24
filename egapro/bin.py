@@ -362,6 +362,23 @@ async def explore(*siren_year):
             print(f"{key:<20} | {record[key]}")
 
 
+@minicli.cli
+def shell():
+    """Run an ipython already connected to PSQL."""
+    try:
+        from IPython import start_ipython
+    except ImportError:
+        print('IPython is not installed. Type "pip install ipython"')
+    else:
+        start_ipython(
+            argv=[],
+            user_ns={
+                "db": db,
+                "config": config,
+            },
+        )
+
+
 @minicli.wrap
 async def wrapper():
     try:
