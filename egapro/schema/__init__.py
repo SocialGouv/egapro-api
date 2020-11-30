@@ -77,9 +77,21 @@ def _cross_validate(data):
         if data.path(f"{path}.non_calculable"):
             msg = f"{path} must not contain other key when set to non_calculable"
             assert list(data.path(path).keys()) == ["non_calculable"], msg
+    keys = ["rémunérations", "augmentations", "promotions"]
+    for key in keys:
+        path = f"indicateurs.{key}"
         if data.path(f"{path}.résultat") == 0:
             msg = f"{path}.population_favorable must be empty if résultat=0"
             assert not data.path(f"{path}.population_favorable"), msg
+    path = "indicateurs.hautes_rémunérations"
+    if data.path(f"{path}.résultat") == 5:
+        msg = f"{path}.population_favorable must be empty if résultat=5"
+        assert not data.path(f"{path}.population_favorable"), msg
+    path = "indicateurs.augmentations_et_promotions"
+    print(data)
+    if data.path(f"{path}.résultat") == 0 and data.path(f"{path}.résultat_nombre_salariés") == 0:
+        msg = f"{path}.population_favorable must be empty if résultat=0 and résultat_nombre_salariés=0"
+        assert not data.path(f"{path}.population_favorable"), msg
 
 
 def extrapolate(definition):
