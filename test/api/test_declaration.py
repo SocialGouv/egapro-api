@@ -279,6 +279,26 @@ async def test_cannot_set_augmentations_if_tranche_is_not_50_250(client, body):
     )
 
 
+async def test_population_favorable_must_be_empty_if_resultat_is_zero(client, body):
+    body["indicateurs"] = {
+        "rémunérations": {
+            "mode": "csp",
+            "résultat": 0,
+            "population_favorable": "femmes",
+        },
+        "augmentations_hors_promotions": {"résultat": 5.03},
+        "promotions": {"résultat": 2.03},
+        "congés_maternité": {"résultat": 88},
+        "hautes_rémunérations": {"résultat": 3},
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert (
+        json.loads(resp.body)["error"]
+        == "indicateurs.rémunérations.population_favorable must be empty if résultat=0"
+    )
+
+
 async def test_cannot_set_promotions_if_tranche_is_50_250(client, body):
     body["entreprise"]["effectif"]["tranche"] = "50:250"
     body["indicateurs"] = {

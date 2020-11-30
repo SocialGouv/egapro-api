@@ -275,3 +275,5 @@ def clean_legacy(legacy):
     if non_calculable:
         legacy.clear()
         legacy["non_calculable"] = non_calculable
+    if legacy.get("résultat") == 0:
+        legacy.pop("population_favorable", None)
