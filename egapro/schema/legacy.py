@@ -162,6 +162,8 @@ def from_legacy(data):
         )
     un["catégories"] = categories
     clean_legacy(un)
+    if un.get("résultat") == 0:
+        un.pop("population_favorable", None)
 
     # Deux
     deux = data["indicateurs"]["augmentations"]
@@ -172,12 +174,19 @@ def from_legacy(data):
     clean_legacy(deux)
     if effectif["tranche"] == "50:250":
         deux.clear()
+    if deux.get("résultat") == 0:
+        deux.pop("population_favorable", None)
 
     # # DeuxTrois
     deux_trois = data["indicateurs"]["augmentations_et_promotions"]
     clean_legacy(deux_trois)
     if effectif["tranche"] != "50:250":
         deux_trois.clear()
+    if (
+        deux_trois.get("résultat") == 0
+        and deux_trois.get("résultat_nombre_salariés") == 0
+    ):
+        deux_trois.pop("population_favorable", None)
 
     # Trois
     trois = data["indicateurs"]["promotions"]
@@ -188,6 +197,8 @@ def from_legacy(data):
     clean_legacy(trois)
     if effectif["tranche"] == "50:250":
         trois.clear()
+    if trois.get("résultat") == 0:
+        trois.pop("population_favorable", None)
 
     # Quatre
     quatre = data["indicateurs"]["congés_maternité"]
@@ -196,6 +207,8 @@ def from_legacy(data):
     # Cinq
     cinq = data["indicateurs"]["hautes_rémunérations"]
     clean_legacy(cinq)
+    if cinq.get("résultat") == 5:
+        cinq.pop("population_favorable", None)
     # if 5 < cinq["résultat"] < 10:
     #     cinq["résultat"] = 10 - cinq["résultat"]
     #     cinq["population_favorable"] = (
@@ -281,5 +294,3 @@ def clean_legacy(legacy):
     if non_calculable:
         legacy.clear()
         legacy["non_calculable"] = non_calculable
-    if legacy.get("résultat") == 0:
-        legacy.pop("population_favorable", None)
