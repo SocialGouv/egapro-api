@@ -60,8 +60,8 @@ def from_legacy(data):
 
     data["indicateurs"] = {
         "rémunérations": data.pop("indicateurUn", {}),
-        "augmentations_hors_promotions": data.pop("indicateurDeux", {}),
-        "augmentations": data.pop("indicateurDeuxTrois", {}),
+        "augmentations": data.pop("indicateurDeux", {}),
+        "augmentations_et_promotions": data.pop("indicateurDeuxTrois", {}),
         "promotions": data.pop("indicateurTrois", {}),
         "congés_maternité": data.pop("indicateurQuatre", {}),
         "hautes_rémunérations": data.pop("indicateurCinq", {}),
@@ -161,7 +161,7 @@ def from_legacy(data):
     clean_legacy(un)
 
     # Deux
-    deux = data["indicateurs"]["augmentations_hors_promotions"]
+    deux = data["indicateurs"]["augmentations"]
     if not deux.get("nonCalculable"):
         deux["catégories"] = [
             c.get("ecartTauxAugmentation", 0) for c in deux.get("tauxAugmentation", [])
@@ -171,7 +171,7 @@ def from_legacy(data):
         deux.clear()
 
     # # DeuxTrois
-    deux_trois = data["indicateurs"]["augmentations"]
+    deux_trois = data["indicateurs"]["augmentations_et_promotions"]
     clean_legacy(deux_trois)
     if effectif["tranche"] != "50:250":
         deux_trois.clear()

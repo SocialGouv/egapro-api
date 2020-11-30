@@ -146,8 +146,8 @@ def test_from_legacy_solen():
         },
         "id": "1162z18z1z906z-1zB82CA6D199",
         "indicateurs": {
-            "augmentations": {},
-            "augmentations_hors_promotions": {
+            "augmentations_et_promotions": {},
+            "augmentations": {
                 "catégories": [0.94, 0.08, -0.79, -0.16],
                 "note": 20,
                 "population_favorable": "hommes",

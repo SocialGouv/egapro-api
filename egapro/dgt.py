@@ -80,10 +80,10 @@ async def get_headers_columns():
     """Return a tuple of lists of (header_names, column_names) that we want in the export."""
     try:
         num_coefficient = await db.declaration.fetchval(
-                "SELECT "
-                "jsonb_array_length(data->'indicateurs'->'rémunérations'->'catégories') AS length "
-                "FROM declaration WHERE data->'indicateurs'->'rémunérations' ? 'catégories' "
-                "ORDER BY length DESC LIMIT 1;"
+            "SELECT "
+            "jsonb_array_length(data->'indicateurs'->'rémunérations'->'catégories') AS length "
+            "FROM declaration WHERE data->'indicateurs'->'rémunérations' ? 'catégories' "
+            "ORDER BY length DESC LIMIT 1;"
         )
     except db.NoData:
         num_coefficient = 0
@@ -162,28 +162,24 @@ async def get_headers_columns():
                 "Indic1_population_favorable",
                 "indicateurs.rémunérations.population_favorable",
             ),
-            (
-                "Indic2_calculable",
-                "indicateurs.augmentations_hors_promotions.non_calculable",
-                falsy,
-            ),
+            ("Indic2_calculable", "indicateurs.augmentations.non_calculable", falsy),
             (
                 "Indic2_motif_non_calculable",
-                "indicateurs.augmentations_hors_promotions.non_calculable",
+                "indicateurs.augmentations.non_calculable",
             ),
         ]
         + [
             (
                 f"Indic2_{CSP}",
-                f"indicateurs.augmentations_hors_promotions.catégories.{index_csp}",
+                f"indicateurs.augmentations.catégories.{index_csp}",
             )
             for (index_csp, CSP) in enumerate(["Ouv", "Emp", "TAM", "IC"])
         ]
         + [
-            ("Indic2_resultat", "indicateurs.augmentations_hors_promotions.résultat"),
+            ("Indic2_resultat", "indicateurs.augmentations.résultat"),
             (
                 "Indic2_population_favorable",
-                "indicateurs.augmentations_hors_promotions.population_favorable",
+                "indicateurs.augmentations.population_favorable",
             ),
             ("Indic3_calculable", "indicateurs.promotions.non_calculable", falsy),
             ("Indic3_motif_non_calculable", "indicateurs.promotions.non_calculable"),
@@ -203,24 +199,24 @@ async def get_headers_columns():
             ),
             (
                 "Indic2et3_calculable",
-                "indicateurs.augmentations.non_calculable",
+                "indicateurs.augmentations_et_promotions.non_calculable",
                 falsy,
             ),
             (
                 "Indic2et3_motif_non_calculable",
-                "indicateurs.augmentations.non_calculable",
+                "indicateurs.augmentations_et_promotions.non_calculable",
             ),
             (
                 "Indic2et3_resultat_pourcent",
-                "indicateurs.augmentations.résultat",
+                "indicateurs.augmentations_et_promotions.résultat",
             ),
             (
                 "Indic2et3_resultat_nb_sal",
-                "indicateurs.augmentations.résultat_nombre_salariés",
+                "indicateurs.augmentations_et_promotions.résultat_nombre_salariés",
             ),
             (
                 "Indic2et3_population_favorable",
-                "indicateurs.augmentations.population_favorable",
+                "indicateurs.augmentations_et_promotions.population_favorable",
             ),
             (
                 "Indic4_calculable",
@@ -238,15 +234,15 @@ async def get_headers_columns():
                 "indicateurs.hautes_rémunérations.population_favorable",
             ),
             ("Indicateur_1", "indicateurs.rémunérations.note"),
-            ("Indicateur_2", "indicateurs.augmentations_hors_promotions.note"),
-            ("Indicateur_2et3", "indicateurs.augmentations.note"),
+            ("Indicateur_2", "indicateurs.augmentations.note"),
+            ("Indicateur_2et3", "indicateurs.augmentations_et_promotions.note"),
             (
                 "Indicateur_2et3_PourCent",
-                "indicateurs.augmentations.note_en_pourcentage",
+                "indicateurs.augmentations_et_promotions.note_en_pourcentage",
             ),
             (
                 "Indicateur_2et3_ParSal",
-                "indicateurs.augmentations.note_nombre_salariés",
+                "indicateurs.augmentations_et_promotions.note_nombre_salariés",
             ),
             ("Indicateur_3", "indicateurs.promotions.note"),
             ("Indicateur_4", "indicateurs.congés_maternité.note"),
