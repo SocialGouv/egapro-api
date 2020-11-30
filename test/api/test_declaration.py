@@ -90,6 +90,18 @@ async def test_basic_declaration_should_save_data(client, body):
     assert data == {"data": body, "siren": "514027945", "year": 2019}
 
 
+async def test_basic_declaration_without_declarant_should_be_ok(client, body):
+    del body["déclarant"]
+    del body["déclaration"]["date"]
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    resp = await client.get("/declaration/514027945/2019")
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert "modified_at" in data
+    assert data["data"]["déclarant"] == {"email": "foo@bar.org"}
+
+
 async def test_owner_email_should_be_lower_cased(client, body):
     client.login("FoO@BAZ.baR")
     resp = await client.put("/declaration/514027945/2019", body=body)
