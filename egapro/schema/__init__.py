@@ -49,6 +49,16 @@ def cross_validate(data):
         ]
         for path in required:
             assert data.path(path), f"{path} must not be empty"
+    tranche = data.path("entreprise.effectif.tranche")
+    if tranche == "50:250":
+        paths = ("indicateurs.promotions", "indicateurs.augmentations_hors_promotions")
+        for path in paths:
+            msg = f"{path} cannot be set if entreprise.effectif.tranche='50:250'"
+            assert not data.path(path), msg
+    else:
+        path = "indicateurs.augmentations"
+        msg = f"{path} cannot be set if entreprise.effectif.tranche is not '50:250'"
+        assert not data.path(path), msg
     for key in SCHEMA["properties"]["indicateurs"]["properties"].keys():
         path = f"indicateurs.{key}"
         if data.path(f"{path}.non_calculable"):

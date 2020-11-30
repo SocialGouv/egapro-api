@@ -164,10 +164,14 @@ def from_legacy(data):
             c.get("ecartTauxAugmentation", 0) for c in deux.get("tauxAugmentation", [])
         ]
     clean_legacy(deux)
+    if effectif["tranche"] == "50:250":
+        deux.clear()
 
     # # DeuxTrois
     deux_trois = data["indicateurs"]["augmentations"]
     clean_legacy(deux_trois)
+    if effectif["tranche"] != "50:250":
+        deux_trois.clear()
 
     # Trois
     trois = data["indicateurs"]["promotions"]
@@ -176,6 +180,8 @@ def from_legacy(data):
             c.get("ecartTauxPromotion", 0) for c in trois.get("tauxPromotion", [])
         ]
     clean_legacy(trois)
+    if effectif["tranche"] == "50:250":
+        trois.clear()
 
     # Quatre
     quatre = data["indicateurs"]["congés_maternité"]
