@@ -206,7 +206,6 @@ def test_from_legacy_solen():
                 ],
                 "mode": "csp",
                 "note": 40,
-                "population_favorable": "femmes",
                 "résultat": 0.0,
             },
         },

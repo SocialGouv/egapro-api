@@ -64,6 +64,9 @@ def cross_validate(data):
         if data.path(f"{path}.non_calculable"):
             msg = f"{path} must not contain other key when set to non_calculable"
             assert list(data.path(path).keys()) == ["non_calculable"], msg
+        if data.path(f"{path}.résultat") == 0:
+            msg = f"{path}.population_favorable must be empty if résultat=0"
+            assert not data.path(f"{path}.population_favorable"), msg
 
 
 def extrapolate(definition):
