@@ -266,10 +266,9 @@ def compute_notes(data):
         points += note
 
     # Global counts
-    if data.validated:
-        data["déclaration"]["points"] = points
-        data["déclaration"]["points_calculables"] = maximum
-        if maximum >= 75:
-            # Make sure to round up halway
-            # cf https://stackoverflow.com/a/33019698/
-            data["déclaration"]["index"] = math.floor((points / maximum * 100) + 0.5)
+    data["déclaration"]["points"] = points
+    data["déclaration"]["points_calculables"] = maximum
+    if maximum >= 75:
+        # Make sure to round up halway
+        # cf https://stackoverflow.com/a/33019698/
+        data["déclaration"]["index"] = math.floor((points / maximum * 100) + 0.5)
