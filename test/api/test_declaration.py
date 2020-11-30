@@ -27,6 +27,7 @@ def body():
             "département": "12",
             "adresse": "12, rue des adresses",
             "commune": "Y",
+            "effectif": {"total": 312, "tranche": "251:999"},
         },
     }
 
@@ -232,6 +233,8 @@ async def test_declare_with_flat_data(client, body):
         "entreprise.commune": "Y",
         "entreprise.code_naf": "47.25Z",
         "entreprise.code_postal": "12345",
+        "entreprise.effectif.total": 312,
+        "entreprise.effectif.tranche": "251:999",
     }
     resp = await client.put(
         "/declaration/514027945/2019",
@@ -259,7 +262,7 @@ async def test_invalid_declaration_data_should_raise_on_put(client):
     assert json.loads(resp.body) == {"error": "data.déclaration.date must be string"}
 
 
-async def test_put_declaration_should_compute_notes(client, body):
+async def test_cannot_set_augmentations_if_tranche_is_not_50_250(client, body):
     body["indicateurs"] = {
         "rémunérations": {"mode": "csp", "résultat": 5.28},
         "augmentations_hors_promotions": {"résultat": 5.03},
@@ -269,19 +272,75 @@ async def test_put_declaration_should_compute_notes(client, body):
         "hautes_rémunérations": {"résultat": 3},
     }
     resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert (
+        json.loads(resp.body)["error"]
+        == "indicateurs.augmentations cannot be set if entreprise.effectif.tranche is not '50:250'"
+    )
+
+
+async def test_cannot_set_promotions_if_tranche_is_50_250(client, body):
+    body["entreprise"]["effectif"]["tranche"] = "50:250"
+    body["indicateurs"] = {
+        "rémunérations": {"mode": "csp", "résultat": 5.28},
+        "promotions": {"résultat": 2.03},
+        "augmentations_hors_promotions": {"résultat": 5.03},
+        "augmentations": {"résultat": 4.73, "résultat_nombre_salariés": 5.5},
+        "congés_maternité": {"résultat": 88},
+        "hautes_rémunérations": {"résultat": 3},
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert (
+        json.loads(resp.body)["error"]
+        == "indicateurs.promotions cannot be set if entreprise.effectif.tranche='50:250'"
+    )
+
+
+async def test_put_declaration_should_compute_notes(client, body):
+    body["indicateurs"] = {
+        "rémunérations": {"mode": "csp", "résultat": 5.28},
+        "augmentations_hors_promotions": {"résultat": 5.03},
+        "augmentations": {},
+        "promotions": {"résultat": 2.03},
+        "congés_maternité": {"résultat": 88},
+        "hautes_rémunérations": {"résultat": 3},
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     data = (await db.declaration.get("514027945", 2019))["data"]
     assert data["indicateurs"]["rémunérations"]["note"] == 34
     assert data["indicateurs"]["augmentations_hors_promotions"]["note"] == 10
-    assert data["indicateurs"]["augmentations"]["note_nombre_salariés"] == 15
-    assert data["indicateurs"]["augmentations"]["note_en_pourcentage"] == 25
-    assert data["indicateurs"]["augmentations"]["note"] == 25
     assert data["indicateurs"]["promotions"]["note"] == 15
     assert data["indicateurs"]["congés_maternité"]["note"] == 0
     assert data["indicateurs"]["hautes_rémunérations"]["note"] == 5
-    assert data["déclaration"]["points"] == 89
-    assert data["déclaration"]["points_calculables"] == 135
-    assert data["déclaration"]["index"] == 66
+    assert data["déclaration"]["points"] == 64
+    assert data["déclaration"]["points_calculables"] == 100
+    assert data["déclaration"]["index"] == 64
+
+
+async def test_put_declaration_should_compute_notes_for_50_250(client, body):
+    body["entreprise"]["effectif"]["tranche"] = "50:250"
+    body["indicateurs"] = {
+        "rémunérations": {"mode": "csp", "résultat": 5.28},
+        "augmentations_hors_promotions": {},
+        "augmentations": {"résultat": 4.73, "résultat_nombre_salariés": 5.5},
+        "promotions": {},
+        "congés_maternité": {"résultat": 88},
+        "hautes_rémunérations": {"résultat": 3},
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    data = (await db.declaration.get("514027945", 2019))["data"]
+    assert data["indicateurs"]["rémunérations"]["note"] == 34
+    assert data["indicateurs"]["augmentations"]["note_nombre_salariés"] == 15
+    assert data["indicateurs"]["augmentations"]["note_en_pourcentage"] == 25
+    assert data["indicateurs"]["augmentations"]["note"] == 25
+    assert data["indicateurs"]["congés_maternité"]["note"] == 0
+    assert data["indicateurs"]["hautes_rémunérations"]["note"] == 5
+    assert data["déclaration"]["points"] == 64
+    assert data["déclaration"]["points_calculables"] == 100
+    assert data["déclaration"]["index"] == 64
 
 
 async def test_declare_with_legacy_schema(client, body):
@@ -590,7 +649,7 @@ async def test_declare_with_legacy_schema(client, body):
             "raison_sociale": "SAS PERDRIX",
         },
         "indicateurs": {
-            "promotions": {"catégories": [0, 0, 0, 0]},
+            "promotions": {},
             "augmentations": {
                 "note": 35,
                 "résultat": 2.2222,
@@ -636,7 +695,7 @@ async def test_declare_with_legacy_schema(client, body):
                 "résultat": 3,
                 "population_favorable": "hommes",
             },
-            "augmentations_hors_promotions": {"catégories": [0, 0, 0, 0]},
+            "augmentations_hors_promotions": {},
         },
         "déclaration": {
             "date": "2020-02-14T15:02:00+00:00",
