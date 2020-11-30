@@ -46,6 +46,9 @@ def cross_validate(data):
             "entreprise.commune",
             "entreprise.code_postal",
             "entreprise.code_naf",
+            "déclarant.prénom",
+            "déclarant.nom",
+            "déclarant.téléphone",
         ]
         for path in required:
             assert data.path(path), f"{path} must not be empty"
