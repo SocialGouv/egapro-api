@@ -311,8 +311,9 @@ async def migrate_schema(no_schema=False):
         except ValueError as err:
             print(err)
             data = None
-        except Exception:
+        except Exception as err:
             print(record)
+            raise
         async with db.declaration.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE declaration "

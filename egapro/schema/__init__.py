@@ -88,7 +88,6 @@ def _cross_validate(data):
         msg = f"{path}.population_favorable must be empty if résultat=5"
         assert not data.path(f"{path}.population_favorable"), msg
     path = "indicateurs.augmentations_et_promotions"
-    print(data)
     if data.path(f"{path}.résultat") == 0 and data.path(f"{path}.résultat_nombre_salariés") == 0:
         msg = f"{path}.population_favorable must be empty if résultat=0 and résultat_nombre_salariés=0"
         assert not data.path(f"{path}.population_favorable"), msg
