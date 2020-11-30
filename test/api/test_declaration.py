@@ -322,6 +322,42 @@ async def test_population_favorable_must_be_empty_if_resultat_is_zero(client, bo
     )
 
 
+async def test_population_favorable_must_be_empty_if_resultat_is_0_on2et3(client, body):
+    body["entreprise"]["effectif"]["tranche"] = "50:250"
+    body["indicateurs"] = {
+        "augmentations_et_promotions": {
+            "résultat": 0,
+            "résultat_nombre_salariés": 0,
+            "population_favorable": "femmes",
+        },
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert (
+        json.loads(resp.body)["error"]
+        == "indicateurs.augmentations_et_promotions.population_favorable must be empty if résultat=0 and résultat_nombre_salariés=0"
+    )
+
+
+async def test_population_favorable_must_be_empty_if_resultat_is_five(client, body):
+    body["indicateurs"] = {
+        "rémunérations": {
+            "mode": "csp",
+            "résultat": 20,
+        },
+        "augmentations": {"résultat": 5.03},
+        "promotions": {"résultat": 2.03},
+        "congés_maternité": {"résultat": 88},
+        "hautes_rémunérations": {"résultat": 5, "population_favorable": "femmes"},
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert (
+        json.loads(resp.body)["error"]
+        == "indicateurs.hautes_rémunérations.population_favorable must be empty if résultat=5"
+    )
+
+
 async def test_mesures_correctives_must_be_set_if_index_below_75(client, body):
     del body["déclaration"]["mesures_correctives"]
     body["indicateurs"] = {

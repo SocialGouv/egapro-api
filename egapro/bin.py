@@ -295,6 +295,7 @@ async def migrate_schema(no_schema=False):
             declared_at = datetime.fromisoformat(date)
         try:
             schema.validate(data)
+            schema.cross_validate(data)
         except ValueError as err:
             print(err)
             data = None
