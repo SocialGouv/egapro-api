@@ -169,7 +169,7 @@ def from_legacy(data):
     deux = data["indicateurs"]["augmentations"]
     if not deux.get("nonCalculable"):
         deux["catégories"] = [
-            c.get("ecartTauxAugmentation", 0) for c in deux.get("tauxAugmentation", [])
+            c.get("ecartTauxAugmentation") for c in deux.get("tauxAugmentation", [])
         ]
     clean_legacy(deux)
     if effectif["tranche"] == "50:250":
@@ -192,7 +192,7 @@ def from_legacy(data):
     trois = data["indicateurs"]["promotions"]
     if not trois.get("nonCalculable"):
         trois["catégories"] = [
-            c.get("ecartTauxPromotion", 0) for c in trois.get("tauxPromotion", [])
+            c.get("ecartTauxPromotion") for c in trois.get("tauxPromotion", [])
         ]
     clean_legacy(trois)
     if effectif["tranche"] == "50:250":

@@ -62,13 +62,13 @@ indicateurs:
     résultat: number
     population_favorable: femmes|hommes|egalite
     note: integer
-    catégories: [number, number, number, number]
+    catégories: [?number, ?number, ?number, ?number]
   promotions: # Indicateur 3 relatif à l'écart de taux de promotions entre les femmes et les hommes
     non_calculable: egvi40pcet|absprom|am
     résultat: number
     population_favorable: femmes|hommes|egalite
     note: integer
-    catégories: [number, number, number, number]
+    catégories: [?number, ?number, ?number, ?number]
   augmentations_et_promotions:  # Indicateur 2et3 relatif à l'écart de taux d'augmentations individuelles entre les femmes et les homme pour les entreprises de 250 salariés ou moins
     non_calculable: egvi40pcet|absaugi|etsno5f5h|am # Trois items : Effectif des groupes valides inférieur à 40% de l'effectif total (egvi40pcet) ou Absence d'augmentations individuelles (absaugi)
     résultat: number
