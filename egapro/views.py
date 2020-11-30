@@ -89,7 +89,8 @@ def ensure_owner(view):
                 )
                 if declarant not in config.STAFF:
                     raise HttpError(403, "You are not owner of this resource")
-        if request._body and "déclarant" in request.data:
+        if request._body:  # This is a PUT.
+            request.data.setdefault("déclarant", {})
             # Make sure we set the email used for token as owner.
             request.data["déclarant"]["email"] = declarant
         return await view(request, response, siren, year, *args, **kwargs)
