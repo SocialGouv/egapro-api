@@ -91,6 +91,9 @@ def from_legacy(data):
     index = declaration.get("index") or 0
     if index >= 75:
         declaration.pop("mesures_correctives", None)
+    elif not declaration.get("mesures_correctives"):
+        # Fallback for declarations from 2019
+        declaration["mesures_correctives"] = "me"
     declaration["date"] = parse_datetime(declaration.get("date"))
     if "date_consultation_cse" in declaration:
         declaration["date_consultation_cse"] = parse_date(
