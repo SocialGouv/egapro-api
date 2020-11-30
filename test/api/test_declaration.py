@@ -16,6 +16,7 @@ def body():
             "date": "2020-11-04T10:37:06+00:00",
             "année_indicateurs": 2019,
             "période_référence": ["2019-01-01", "2019-12-31"],
+            "mesures_correctives": "mmo",
         },
         "déclarant": {
             "email": "foo@bar.org",
@@ -227,6 +228,7 @@ async def test_declare_with_flat_data(client, body):
         "déclaration.date": "2020-11-04T10:37:06+00:00",
         "déclaration.année_indicateurs": 2019,
         "déclaration.période_référence": ["2019-01-01", "2019-12-31"],
+        "déclaration.mesures_correctives": "mmo",
         "déclarant.email": "foo@bar.org",
         "déclarant.prénom": "Foo",
         "déclarant.nom": "Bar",
@@ -302,6 +304,46 @@ async def test_population_favorable_must_be_empty_if_resultat_is_zero(client, bo
     assert (
         json.loads(resp.body)["error"]
         == "indicateurs.rémunérations.population_favorable must be empty if résultat=0"
+    )
+
+
+async def test_mesures_correctives_must_be_set_if_index_below_75(client, body):
+    del body["déclaration"]["mesures_correctives"]
+    body["indicateurs"] = {
+        "rémunérations": {
+            "mode": "csp",
+            "résultat": 10,
+            "population_favorable": "femmes",
+        },
+        "augmentations_hors_promotions": {"résultat": 15.03},
+        "promotions": {"résultat": 15.03},
+        "congés_maternité": {"résultat": 88},
+        "hautes_rémunérations": {"résultat": 3},
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert (
+        json.loads(resp.body)["error"]
+        == "déclaration.mesures_correctives must not be null when déclaration.index < 75"
+    )
+
+
+async def test_mesures_correctives_must_not_be_set_if_index_above_75(client, body):
+    body["indicateurs"] = {
+        "rémunérations": {
+            "mode": "csp",
+            "résultat": 0,
+        },
+        "augmentations_hors_promotions": {"résultat": 1.03},
+        "promotions": {"résultat": 2.03},
+        "congés_maternité": {"résultat": 88},
+        "hautes_rémunérations": {"résultat": 1},
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert (
+        json.loads(resp.body)["error"]
+        == "déclaration.mesures_correctives must not be set when déclaration.index >= 75"
     )
 
 

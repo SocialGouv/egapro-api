@@ -208,7 +208,7 @@ async def migrate_effectif(source: Path):
 
 @minicli.cli
 async def validate(pdb=False, verbose=False):
-    from egapro.schema import validate
+    from egapro.schema import validate, cross_validate
     from egapro.schema.legacy import from_legacy
 
     errors = set()
@@ -216,8 +216,10 @@ async def validate(pdb=False, verbose=False):
         data = row["data"] or row["legacy"]
         if "déclaration" not in data:
             data = from_legacy(row["legacy"])
+        data = json.loads(json_dumps(data))
         try:
-            validate(json.loads(json_dumps(data)))
+            validate(data)
+            cross_validate(data)
         except ValueError as err:
             sys.stdout.write("×")
             errors.add(str(err))

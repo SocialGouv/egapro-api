@@ -87,6 +87,9 @@ def from_legacy(data):
         publication["modalités"] = modalites
     declaration["publication"] = publication
     clean_legacy(declaration)
+    index = declaration.get("index") or 0
+    if index >= 75:
+        declaration.pop("mesures_correctives", None)
     declaration["date"] = parse_datetime(declaration.get("date"))
     if "date_consultation_cse" in declaration:
         declaration["date_consultation_cse"] = parse_date(
