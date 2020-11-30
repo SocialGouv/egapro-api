@@ -69,27 +69,27 @@ def test_compute_augmentations_note():
         {
             "déclaration": {},
             "indicateurs": {
-                "augmentations": {"résultat": 5, "résultat_nombre_salariés": 6}
+                "augmentations_et_promotions": {"résultat": 5, "résultat_nombre_salariés": 6}
             },
         }
     )
     utils.compute_notes(data)
-    assert data["indicateurs"]["augmentations"]["note"] == 25
-    assert data["indicateurs"]["augmentations"]["note_nombre_salariés"] == 15
-    assert data["indicateurs"]["augmentations"]["note_en_pourcentage"] == 25
+    assert data["indicateurs"]["augmentations_et_promotions"]["note"] == 25
+    assert data["indicateurs"]["augmentations_et_promotions"]["note_nombre_salariés"] == 15
+    assert data["indicateurs"]["augmentations_et_promotions"]["note_en_pourcentage"] == 25
 
     data = models.Data(
         {
             "déclaration": {},
             "indicateurs": {
-                "augmentations": {"résultat": 5.05, "résultat_nombre_salariés": 2}
+                "augmentations_et_promotions": {"résultat": 5.05, "résultat_nombre_salariés": 2}
             },
         }
     )
     utils.compute_notes(data)
-    assert data["indicateurs"]["augmentations"]["note"] == 35
-    assert data["indicateurs"]["augmentations"]["note_nombre_salariés"] == 35
-    assert data["indicateurs"]["augmentations"]["note_en_pourcentage"] == 15
+    assert data["indicateurs"]["augmentations_et_promotions"]["note"] == 35
+    assert data["indicateurs"]["augmentations_et_promotions"]["note_nombre_salariés"] == 35
+    assert data["indicateurs"]["augmentations_et_promotions"]["note_en_pourcentage"] == 15
 
 
 def test_compute_augmentations_note_with_correction_measures():
@@ -98,7 +98,7 @@ def test_compute_augmentations_note_with_correction_measures():
             "déclaration": {},
             "indicateurs": {
                 "rémunérations": {"résultat": 5, "population_favorable": "hommes"},
-                "augmentations": {
+                "augmentations_et_promotions": {
                     "résultat": 5,
                     "résultat_nombre_salariés": 6,
                     "population_favorable": "femmes",
@@ -109,7 +109,7 @@ def test_compute_augmentations_note_with_correction_measures():
     utils.compute_notes(data)
     # Maximal note because this indicateur is favourable for the opposition population
     # of rémunérations indicateur
-    assert data["indicateurs"]["augmentations"]["note"] == 35
+    assert data["indicateurs"]["augmentations_et_promotions"]["note"] == 35
 
 
 def test_compute_augmentations_note_with_correction_measures_but_equality():
@@ -118,7 +118,7 @@ def test_compute_augmentations_note_with_correction_measures_but_equality():
             "déclaration": {},
             "indicateurs": {
                 "rémunérations": {"résultat": 0, "population_favorable": "hommes"},
-                "augmentations": {
+                "augmentations_et_promotions": {
                     "résultat": 5,
                     "résultat_nombre_salariés": 6,
                     "population_favorable": "femmes",
@@ -129,7 +129,7 @@ def test_compute_augmentations_note_with_correction_measures_but_equality():
     utils.compute_notes(data)
     # rémuénrations.résultat == 0, this means equality, so whatever the value of
     # population_favorable, we do not follow it
-    assert data["indicateurs"]["augmentations"]["note"] == 25
+    assert data["indicateurs"]["augmentations_et_promotions"]["note"] == 25
 
 
 def test_compute_augmentations_hp_note_with_correction_measures_but_equality():
@@ -141,14 +141,14 @@ def test_compute_augmentations_hp_note_with_correction_measures_but_equality():
                 "résultat": 0.0,
                 "population_favorable": "femmes",
             },
-            "augmentations_hors_promotions": {
+            "augmentations": {
                 "résultat": 4.0,
                 "population_favorable": "hommes",
             },
         },
     })
     utils.compute_notes(data)
-    assert data["indicateurs"]["augmentations_hors_promotions"]["note"] == 10
+    assert data["indicateurs"]["augmentations"]["note"] == 10
 
 
 def test_flatten():

@@ -116,7 +116,7 @@ AUGMENTATIONS_HP_THRESHOLDS = {
     10.05: 0,
 }
 
-AUGMENTATIONS_THRESHOLDS = {
+AUGMENTATIONS_PROMOTIONS_THRESHOLDS = {
     0.00: 35,
     2.05: 25,
     5.05: 15,
@@ -179,50 +179,57 @@ def compute_notes(data):
             points += note
 
     # indicateurs 2
-    if not data.path("indicateurs.augmentations_hors_promotions.non_calculable"):
+    if not data.path("indicateurs.augmentations.non_calculable"):
         note = compute_note(
-            data.path("indicateurs.augmentations_hors_promotions.résultat"),
+            data.path("indicateurs.augmentations.résultat"),
             AUGMENTATIONS_HP_THRESHOLDS,
         )
         if note is not None:
             maximum += 20
             indic_favorable = data.path(
-                "indicateurs.augmentations_hors_promotions.population_favorable"
+                "indicateurs.augmentations.population_favorable"
             )
             if population_favorable and population_favorable != indic_favorable:
                 # Cf https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000037964765/ Annexe 5.2
                 note = 20
-            data["indicateurs"]["augmentations_hors_promotions"]["note"] = note
+            data["indicateurs"]["augmentations"]["note"] = note
             points += note
 
     # indicateurs 2et3
     if not data.path("indicateurs.augmentations.non_calculable"):
         # in percent
         percent = compute_note(
-            data.path("indicateurs.augmentations.résultat"), AUGMENTATIONS_THRESHOLDS
+            data.path("indicateurs.augmentations_et_promotions.résultat"),
+            AUGMENTATIONS_PROMOTIONS_THRESHOLDS,
         )
 
         if percent is not None:
-            data["indicateurs"]["augmentations"]["note_en_pourcentage"] = percent
+            data["indicateurs"]["augmentations_et_promotions"][
+                "note_en_pourcentage"
+            ] = percent
         # in absolute
         absolute = compute_note(
-            data.path("indicateurs.augmentations.résultat_nombre_salariés"),
-            AUGMENTATIONS_THRESHOLDS,
+            data.path(
+                "indicateurs.augmentations_et_promotions.résultat_nombre_salariés"
+            ),
+            AUGMENTATIONS_PROMOTIONS_THRESHOLDS,
         )
         if absolute is not None:
-            data["indicateurs"]["augmentations"]["note_nombre_salariés"] = absolute
+            data["indicateurs"]["augmentations_et_promotions"][
+                "note_nombre_salariés"
+            ] = absolute
         if absolute is not None or percent is not None:
             absolute = absolute or 0
             percent = percent or 0
             note = max(absolute, percent)
             maximum += 35
             indic_favorable = data.path(
-                "indicateurs.augmentations.population_favorable"
+                "indicateurs.augmentations_et_promotions.population_favorable"
             )
             if population_favorable and population_favorable != indic_favorable:
                 # Cf https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000037964765/ Annexe 5.2
                 note = 35
-            data["indicateurs"]["augmentations"]["note"] = note
+            data["indicateurs"]["augmentations_et_promotions"]["note"] = note
             points += note
 
     # indicateurs 3

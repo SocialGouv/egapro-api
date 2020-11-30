@@ -64,12 +64,12 @@ def _cross_validate(data):
             assert data.path("déclaration.mesures_correctives"), msg
     tranche = data.path("entreprise.effectif.tranche")
     if tranche == "50:250":
-        paths = ("indicateurs.promotions", "indicateurs.augmentations_hors_promotions")
+        paths = ("indicateurs.promotions", "indicateurs.augmentations")
         for path in paths:
             msg = f"{path} cannot be set if entreprise.effectif.tranche='50:250'"
             assert not data.path(path), msg
     else:
-        path = "indicateurs.augmentations"
+        path = "indicateurs.augmentations_et_promotions"
         msg = f"{path} cannot be set if entreprise.effectif.tranche is not '50:250'"
         assert not data.path(path), msg
     for key in SCHEMA["properties"]["indicateurs"]["properties"].keys():

@@ -248,10 +248,10 @@ async def compare_index(pdb=False, verbose=False):
             "points": record["data"]["déclaration"].get("points"),
             "max": record["data"]["déclaration"].get("points_calculables"),
             "indic1": record["data"]["indicateurs"]["rémunérations"].get("note"),
-            "indic2": record["data"]["indicateurs"][
-                "augmentations_hors_promotions"
+            "indic2": record["data"]["indicateurs"]["augmentations"].get("note"),
+            "indic2et3": record["data"]["indicateurs"][
+                "augmentations_et_promotions"
             ].get("note"),
-            "indic2et3": record["data"]["indicateurs"]["augmentations"].get("note"),
             "indic3": record["data"]["indicateurs"]["promotions"].get("note"),
             "indic4": record["data"]["indicateurs"]["congés_maternité"].get("note"),
             "indic5": record["data"]["indicateurs"]["hautes_rémunérations"].get("note"),
@@ -345,8 +345,8 @@ async def explore(*siren_year):
             "indicateurs.hautes_rémunérations",
             "indicateurs.congés_maternité",
             "indicateurs.promotions",
+            "indicateurs.augmentations_et_promotions",
             "indicateurs.augmentations",
-            "indicateurs.augmentations_hors_promotions",
             "indicateurs.rémunérations",
             "entreprise",
             "déclaration",
