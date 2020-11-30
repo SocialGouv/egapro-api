@@ -156,7 +156,6 @@ def test_from_legacy_solen():
             "congés_maternité": {"note": 15, "résultat": 100.0},
             "hautes_rémunérations": {
                 "note": 10,
-                "population_favorable": "femmes",
                 "résultat": 5,
             },
             "promotions": {
