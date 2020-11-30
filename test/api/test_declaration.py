@@ -17,7 +17,12 @@ def body():
             "année_indicateurs": 2019,
             "période_référence": ["2019-01-01", "2019-12-31"],
         },
-        "déclarant": {"email": "foo@bar.org", "prénom": "Foo", "nom": "Bar"},
+        "déclarant": {
+            "email": "foo@bar.org",
+            "prénom": "Foo",
+            "nom": "Bar",
+            "téléphone": "+33123456789",
+        },
         "entreprise": {
             "raison_sociale": "FooBar",
             "siren": "514027945",
@@ -225,6 +230,7 @@ async def test_declare_with_flat_data(client, body):
         "déclarant.email": "foo@bar.org",
         "déclarant.prénom": "Foo",
         "déclarant.nom": "Bar",
+        "déclarant.téléphone": "+33123456789",
         "entreprise.raison_sociale": "FooBar",
         "entreprise.siren": "514027945",
         "entreprise.région": "76",
