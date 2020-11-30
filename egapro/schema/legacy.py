@@ -34,6 +34,7 @@ def parse_date(v):
 
 
 def from_legacy(data):
+    source = data.get("source", "egapro")
     data["déclarant"] = data.pop("informationsDeclarant", {})
     clean_legacy(data["déclarant"])
 
@@ -146,10 +147,12 @@ def from_legacy(data):
             ta = category["tranchesAges"][i]
             if "ecartTauxRemuneration" in ta:
                 tranches[key] = ta["ecartTauxRemuneration"]
+                if not source.startswith("solen"):
+                    tranches[key] *= 100
             elif (h := ta.get("remunerationAnnuelleBrutHommes")) and (
                 f := ta.get("remunerationAnnuelleBrutFemmes")
             ):
-                tranches[key] = 1 - f / h
+                tranches[key] = (1 - f / h) * 100
         tranches = {k: v for k, v in tranches.items() if v is not None}
         categories.append(
             {
