@@ -125,6 +125,7 @@ async def declare(request, response, siren, year):
     data = request.data
     schema.validate(data.raw)
     utils.compute_notes(data)
+    schema.cross_validate(data.raw)
     declarant = request["email"]
     try:
         current = await db.declaration.get(siren, year)
