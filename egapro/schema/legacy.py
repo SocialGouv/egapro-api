@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 import pytz
 
-from egapro import constants
+from egapro import constants, utils
 
 TRANCHES = {"50 à 250": "50:250", "251 à 999": "251:999", "1000 et plus": "1000:"}
 MOTIFS_NON_CALCULABLE = {
@@ -67,6 +67,14 @@ def from_legacy(data):
         "congés_maternité": data.pop("indicateurQuatre", {}),
         "hautes_rémunérations": data.pop("indicateurCinq", {}),
     }
+    # Make sure we do not use motifNonCalculable for solen data when data is calculable.
+    if data.get("source", "").startswith("solen"):
+        for indicateur in data["indicateurs"].values():
+            if not indicateur.get("nonCalculable"):
+                try:
+                    del indicateur["motifNonCalculable"]
+                except KeyError:
+                    pass
     declaration = data["déclaration"] = data.pop("declaration", {})
     informations = data.pop("informations", {})
     declaration["année_indicateurs"] = informations.pop("anneeDeclaration", None)
@@ -190,6 +198,25 @@ def from_legacy(data):
         and deux_trois.get("résultat_nombre_salariés") == 0
     ):
         deux_trois.pop("population_favorable", None)
+    # Missing in some Egapro declarations
+    if not deux_trois.get("non_calculable"):
+        # in percent
+        if deux_trois.get("note_en_pourcentage") is None:
+            note = utils.compute_note(
+                deux_trois.get("résultat"),
+                utils.AUGMENTATIONS_PROMOTIONS_THRESHOLDS,
+            )
+            if note is not None:
+                deux_trois["note_en_pourcentage"] = note
+
+        # in absolute
+        if deux_trois.get("note_nombre_salariés") is None:
+            note = utils.compute_note(
+                deux_trois.get("résultat_nombre_salariés"),
+                utils.AUGMENTATIONS_PROMOTIONS_THRESHOLDS,
+            )
+            if note is not None:
+                deux_trois["note_nombre_salariés"] = note
 
     # Trois
     trois = data["indicateurs"]["promotions"]
@@ -221,11 +248,6 @@ def from_legacy(data):
 
 
 def clean_legacy(legacy):
-    if not legacy.get("nonCalculable") and legacy.get("source", "").startswith("solen"):
-        try:
-            del legacy["motifNonCalculable"]
-        except KeyError:
-            pass
     mapping = {
         "motifNonCalculable": "non_calculable",
         "noteFinale": "note",
