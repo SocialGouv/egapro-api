@@ -75,7 +75,7 @@ async def get_ues_cols():
                 f"entreprise.ues.entreprises.{index_ues}.siren",
             ),
         ]
-        for index_ues in range(max_num_ues)
+        for index_ues in range(1, max_num_ues)
     ]
     # This is a list of 2*max_num_ues of cols (ues 0 > nom, ues 0 > siren, ues 1 > nom, ues 1 > siren...)
     flattened_cols = [col for ues_cols in ues_cols_name_and_siren for col in ues_cols]

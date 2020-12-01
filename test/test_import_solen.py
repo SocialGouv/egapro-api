@@ -42,6 +42,7 @@ async def test_solen_import_with_ues():
     assert data.path("entreprise.ues.raison_sociale") == "BazBaz"
     assert data.path("entreprise.raison_sociale") == "BazBaz SA"
     assert data.path("entreprise.ues.entreprises") == [
+        {"raison_sociale": "BazBaz SA", "siren": "775701488"},
         {"raison_sociale": "BazBaz One", "siren": "423499322"},
         {"raison_sociale": "BazBaz Two", "siren": "344898355"},
         {"raison_sociale": "BazBaz Three", "siren": "775701488"},

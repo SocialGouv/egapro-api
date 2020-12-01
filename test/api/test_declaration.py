@@ -772,7 +772,6 @@ async def test_declare_with_legacy_schema(client, body):
             "téléphone": "0238295999",
         },
         "entreprise": {
-            "ues": {"entreprises": [], "raison_sociale": ""},
             "siren": "514027945",
             "adresse": "4 RUE DE SAVOIE",
             "commune": "SAINTE MERE SUR LOIR",
