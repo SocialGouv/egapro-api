@@ -364,6 +364,7 @@ async def explore(*siren_year):
             "indicateurs.rémunérations",
             "entreprise",
             "déclaration",
+            "déclarant",
         ]:
             print(sep)
             print(f"# {root}")
