@@ -43,6 +43,12 @@ def code_naf(code):
     return f"{code} - {NAF[code]}"
 
 
+def value_or_nc(val):
+    if val is None:
+        return "nc"
+    return val
+
+
 async def get_ues_cols():
     """Return a list of `nom` and `siren` cols for the max number of UES columns."""
     try:
@@ -153,6 +159,7 @@ async def get_headers_columns():
             (
                 f"Indic1_Niv{index_coef}",
                 f"indicateurs.rémunérations.catégories.{index_coef}",
+                value_or_nc
             )
             for index_coef in range(num_coefficient)
         ]
@@ -172,6 +179,7 @@ async def get_headers_columns():
             (
                 f"Indic2_{CSP}",
                 f"indicateurs.augmentations.catégories.{index_csp}",
+                value_or_nc
             )
             for (index_csp, CSP) in enumerate(["Ouv", "Emp", "TAM", "IC"])
         ]
@@ -188,6 +196,7 @@ async def get_headers_columns():
             (
                 f"Indic3_{CSP}",
                 f"indicateurs.promotions.catégories.{index_csp}",
+                value_or_nc
             )
             for (index_csp, CSP) in enumerate(["Ouv", "Emp", "TAM", "IC"])
         ]
@@ -333,7 +342,7 @@ def prepare_record(data):
             ]
             # Prevent "-0.0" or "0.0" or "12.0" as str representation
             values = [int(v) if v is not None and v % 1 == 0 else v for v in values]
-            values = [str(round(v, 2) + 0) if v is not None else "" for v in values]
+            values = [str(round(v, 2) + 0) if v is not None else "nc" for v in values]
             data[key] = ";".join(values)
     return data
 
