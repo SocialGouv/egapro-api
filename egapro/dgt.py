@@ -159,7 +159,7 @@ async def get_headers_columns():
             (
                 f"Indic1_Niv{index_coef}",
                 f"indicateurs.rémunérations.catégories.{index_coef}",
-                value_or_nc
+                value_or_nc,
             )
             for index_coef in range(num_coefficient)
         ]
@@ -179,7 +179,7 @@ async def get_headers_columns():
             (
                 f"Indic2_{CSP}",
                 f"indicateurs.augmentations.catégories.{index_csp}",
-                value_or_nc
+                value_or_nc,
             )
             for (index_csp, CSP) in enumerate(["Ouv", "Emp", "TAM", "IC"])
         ]
@@ -196,7 +196,7 @@ async def get_headers_columns():
             (
                 f"Indic3_{CSP}",
                 f"indicateurs.promotions.catégories.{index_csp}",
-                value_or_nc
+                value_or_nc,
             )
             for (index_csp, CSP) in enumerate(["Ouv", "Emp", "TAM", "IC"])
         ]
@@ -242,20 +242,26 @@ async def get_headers_columns():
                 "Indic5_sexe_sur_represente",
                 "indicateurs.hautes_rémunérations.population_favorable",
             ),
-            ("Indicateur_1", "indicateurs.rémunérations.note"),
-            ("Indicateur_2", "indicateurs.augmentations.note"),
-            ("Indicateur_2et3", "indicateurs.augmentations_et_promotions.note"),
+            ("Indicateur_1", "indicateurs.rémunérations.note", value_or_nc),
+            ("Indicateur_2", "indicateurs.augmentations.note", value_or_nc),
+            (
+                "Indicateur_2et3",
+                "indicateurs.augmentations_et_promotions.note",
+                value_or_nc,
+            ),
             (
                 "Indicateur_2et3_PourCent",
                 "indicateurs.augmentations_et_promotions.note_en_pourcentage",
+                value_or_nc,
             ),
             (
                 "Indicateur_2et3_ParSal",
                 "indicateurs.augmentations_et_promotions.note_nombre_salariés",
+                value_or_nc,
             ),
-            ("Indicateur_3", "indicateurs.promotions.note"),
-            ("Indicateur_4", "indicateurs.congés_maternité.note"),
-            ("Indicateur_5", "indicateurs.hautes_rémunérations.note"),
+            ("Indicateur_3", "indicateurs.promotions.note", value_or_nc),
+            ("Indicateur_4", "indicateurs.congés_maternité.note", value_or_nc),
+            ("Indicateur_5", "indicateurs.hautes_rémunérations.note", value_or_nc),
             ("Nombre_total_points obtenus", "déclaration.total_points"),
             (
                 "Nombre_total_points_pouvant_etre_obtenus",
