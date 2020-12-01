@@ -175,6 +175,33 @@ async def test_declaring_twice_should_not_duplicate(client, app, body):
 
 async def test_confirmed_declaration_should_send_email(client, monkeypatch, body):
     calls = 0
+    company = "FooBar"
+    del body["id"]
+
+    def mock_send(to, subject, txt, html):
+        assert to == "foo@bar.org"
+        assert "/declaration/514027945/2019" in txt
+        assert "/declaration/514027945/2019" in html
+        assert company in txt
+        assert company in html
+        nonlocal calls
+        calls += 1
+
+    declared_at = body["déclaration"].pop("date")
+    monkeypatch.setattr("egapro.emails.send", mock_send)
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    assert not calls
+    body["déclaration"]["date"] = declared_at
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    assert calls == 1
+
+
+async def test_confirmed_declaration_should_send_email_for_legacy_call(
+    client, monkeypatch, body
+):
+    calls = 0
     id = "1234"
     company = "FooBar"
 
@@ -196,27 +223,6 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch, body
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     assert calls == 1
-
-
-async def test_confirmed_declaration_should_raise_if_missing_id(
-    client, monkeypatch, body
-):
-    calls = 0
-
-    def mock_send(to, subject, txt, html):
-        nonlocal calls
-        calls += 1
-
-    del body["id"]
-    monkeypatch.setattr("egapro.emails.send", mock_send)
-    resp = await client.put(
-        "/declaration/514027945/2019",
-        body=body,
-    )
-    assert resp.status == 400
-    body = json.loads(resp.body)
-    assert body == {"error": "Missing id"}
-    assert not calls
 
 
 async def test_confirmed_declaration_should_raise_if_missing_entreprise_data(
