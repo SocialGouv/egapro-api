@@ -196,7 +196,7 @@ def compute_notes(data):
             points += note
 
     # indicateurs 2et3
-    if not data.path("indicateurs.augmentations.non_calculable"):
+    if not data.path("indicateurs.augmentations_et_promotions.non_calculable"):
         # in percent
         percent = compute_note(
             data.path("indicateurs.augmentations_et_promotions.résultat"),

@@ -40,6 +40,7 @@ def from_legacy(data):
 
     data["entreprise"] = data.pop("informationsEntreprise", {})
     entreprise = data["entreprise"]
+    ues = entreprise.get("structure") == "Unité Economique et Sociale (UES)"
     clean_legacy(entreprise)
     if entreprise.get("code_naf"):
         entreprise["code_naf"] = entreprise["code_naf"][:6]
@@ -50,14 +51,26 @@ def from_legacy(data):
             entreprise.get("département")
         )
     nom_ues = entreprise.pop("nomUES", entreprise.get("raison_sociale", ""))
-    if "entreprisesUES" in entreprise:
+    if "entreprisesUES" in entreprise or ues:
+        entreprises = [
+                {"raison_sociale": e.get("nom"), "siren": e["siren"]}
+                for e in entreprise.pop("entreprisesUES", [])
+            ]
+        declarante = {
+            "raison_sociale": entreprise["raison_sociale"],
+            "siren": entreprise["siren"],
+        }
+        if declarante not in entreprises:
+            entreprises.insert(0, declarante)
         entreprise["ues"] = {
             "raison_sociale": nom_ues,
-            "entreprises": [
-                {"raison_sociale": e.get("nom"), "siren": e["siren"]}
-                for e in entreprise.pop("entreprisesUES")
-            ],
+            "entreprises": entreprises,
         }
+    if not ues:
+        try:
+            del entreprise["ues"]
+        except KeyError:
+            pass
 
     data["indicateurs"] = {
         "rémunérations": data.pop("indicateurUn", {}),
