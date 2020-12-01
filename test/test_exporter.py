@@ -183,7 +183,6 @@ async def test_dgt_dump_with_coef_mode(declaration):
                         "tranches": {
                             "50:": 6.8,
                             ":29": 7.6,
-                            "30:39": 19.3,
                             "40:49": 36.2,
                         },
                     },
@@ -290,7 +289,7 @@ async def test_dgt_dump_with_coef_mode(declaration):
     assert sheet["AJ2"].value == "0;1.4;0;56.5"
     assert sheet["AK2"].value == "0;0;0;-43.9"
     assert sheet["AL2"].value == "-20.1;0;22.9;-17"
-    assert sheet["AM2"].value == "7.6;19.3;36.2;6.8"
+    assert sheet["AM2"].value == "7.6;nc;36.2;6.8"
     assert sheet["AN2"].value == "-13;21.4;0;-3.8"
     assert sheet["AO2"].value == "0;39.6;17.9;4.5"
     assert sheet["AP2"].value == "4.2;8.6;59.5;5"
