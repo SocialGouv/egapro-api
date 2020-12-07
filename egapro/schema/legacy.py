@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 import pytz
 
-from egapro import constants, utils
+from egapro import constants, helpers
 
 TRANCHES = {"50 à 250": "50:250", "251 à 999": "251:999", "1000 et plus": "1000:"}
 MOTIFS_NON_CALCULABLE = {
@@ -215,18 +215,18 @@ def from_legacy(data):
     if not deux_trois.get("non_calculable"):
         # in percent
         if deux_trois.get("note_en_pourcentage") is None:
-            note = utils.compute_note(
+            note = helpers.compute_note(
                 deux_trois.get("résultat"),
-                utils.AUGMENTATIONS_PROMOTIONS_THRESHOLDS,
+                helpers.AUGMENTATIONS_PROMOTIONS_THRESHOLDS,
             )
             if note is not None:
                 deux_trois["note_en_pourcentage"] = note
 
         # in absolute
         if deux_trois.get("note_nombre_salariés") is None:
-            note = utils.compute_note(
+            note = helpers.compute_note(
                 deux_trois.get("résultat_nombre_salariés"),
-                utils.AUGMENTATIONS_PROMOTIONS_THRESHOLDS,
+                helpers.AUGMENTATIONS_PROMOTIONS_THRESHOLDS,
             )
             if note is not None:
                 deux_trois["note_nombre_salariés"] = note

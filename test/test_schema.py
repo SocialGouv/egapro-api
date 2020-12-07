@@ -150,3 +150,26 @@ def test_liberal():
             },
         },
     }
+
+
+def test_readonly():
+    raw = """
+key1:
+    subkey: integer
+    =subkey2: integer
+"""
+    schema = Schema(raw).raw
+    assert schema == {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "key1": {
+                "type": "object",
+                "properties": {
+                    "subkey": {"type": "integer"},
+                    "subkey2": {"type": "integer", "readOnly": True},
+                },
+                "additionalProperties": False,
+            },
+        },
+    }

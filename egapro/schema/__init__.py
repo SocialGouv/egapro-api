@@ -162,6 +162,7 @@ class Node:
     kind: str = None
     strict: bool = True
     nullable: bool = False
+    readonly: bool = False
 
     def __bool__(self):
         return bool(self.key or self.definition)
@@ -193,6 +194,8 @@ class Object(dict):
             definition["description"] = node.description
         if node.nullable:
             definition = {"anyOf": [{"type": "null"}, definition]}
+        if node.readonly:
+            definition["readOnly"] = True
         self["properties"][node.key] = definition
         if node.required:
             self.required(node.key)
@@ -252,6 +255,9 @@ class Schema:
                 if key.startswith("?"):
                     key = key[1:]
                     node.nullable = True
+                if key.startswith("="):
+                    key = key[1:]
+                    node.readonly = True
                 if key.startswith("~"):
                     key = key[1:]
                     node.strict = False
