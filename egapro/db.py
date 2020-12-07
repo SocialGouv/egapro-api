@@ -70,6 +70,10 @@ class declaration(table):
         # Allow to force modified_at, eg. during migrations.
         if modified_at is None:
             modified_at = utils.utcnow()
+        data.setdefault("déclaration", {})
+        data["déclaration"]["année_indicateurs"] = year
+        data.setdefault("entreprise", {})
+        data["entreprise"]["siren"] = siren
         ft = data.get("entreprise", {}).get("raison_sociale")
         declared_at = data.get("déclaration", {}).get("date")
         if isinstance(declared_at, str):
@@ -121,12 +125,22 @@ class declaration(table):
 
     @classmethod
     def public_data(cls, data):
+        # Keep old schema for now, as it's used only by egapro
         data = models.Data(data)
         out = {
             "id": data.get("id"),
             "declaration": {"noteIndex": data.path("déclaration.index")},
             "informationsEntreprise": {
-                "nomEntreprise": data.path("entreprise.raison_sociale")
+                "nomEntreprise": data.path("entreprise.raison_sociale"),
+                "siren": data.path("entreprise.siren"),
+                "region": data.path("entreprise.région"),
+                "departement": data.path("entreprise.département"),
+                "structure": data.structure,
+                "nomUES": data.path("entreprise.ues.raison_sociale"),
+                "entreprisesUES": [
+                    {"nom": e["raison_sociale"], "siren": e["siren"]}
+                    for e in data.path("entreprise.ues.entreprises") or []
+                ],
             },
             "informations": {
                 "anneeDeclaration": data.path("déclaration.année_indicateurs")

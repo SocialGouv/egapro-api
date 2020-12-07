@@ -28,8 +28,18 @@ async def test_search(client):
             2020,
             "foo@bar.org",
             {
-                "entreprise": {"raison_sociale": nom, "effectif": {"tranche": "1000:"}},
-                "déclaration": {"année_indicateurs": 2020},
+                "entreprise": {
+                    "raison_sociale": nom,
+                    "effectif": {"tranche": "1000:"},
+                    "département": "77",
+                    "région": "11",
+                    "ues": {
+                        "raison_sociale": "Nom UES",
+                        "entreprises": [
+                            {"siren": "987654321", "raison_sociale": "foobabar"}
+                        ],
+                    },
+                },
             },
         )
     results = await db.declaration.search("total")
@@ -37,7 +47,15 @@ async def test_search(client):
     assert results[0] == {
         "declaration": {"noteIndex": None},
         "id": None,
-        "informationsEntreprise": {"nomEntreprise": "Total"},
+        "informationsEntreprise": {
+            "nomEntreprise": "Total",
+            "nomUES": "Nom UES",
+            "departement": "77",
+            "region": "11",
+            "siren": "12345671",
+            "structure": "Unité Economique et Sociale (UES)",
+            "entreprisesUES": [{"nom": "foobabar", "siren": "987654321"}],
+        },
         "informations": {"anneeDeclaration": 2020},
     }
     results = await db.declaration.search("pyrenées")

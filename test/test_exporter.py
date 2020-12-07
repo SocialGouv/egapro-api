@@ -39,8 +39,14 @@ async def test_dump():
     path = Path("/tmp/test_dump_egapro.json")
     await exporter.dump(path)
     assert json.loads(path.read_text()) == [
-        {"déclaration": {"date": 1603534272}},
-        {"déclaration": {"date": 1603534273}},
+        {
+            "déclaration": {"date": 1603534272, "année_indicateurs": 2020},
+            "entreprise": {"siren": "12345678"},
+        },
+        {
+            "déclaration": {"date": 1603534273, "année_indicateurs": 2020},
+            "entreprise": {"siren": "87654321"},
+        },
     ]
 
 
