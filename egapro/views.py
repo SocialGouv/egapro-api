@@ -48,7 +48,7 @@ class App(Roll):
 
 app = App()
 traceback(app)
-cors(app, methods="*", headers=["*", "Content-Type"], credentials=True)
+cors(app, methods="*", headers=["*", "Content-Type"], credentials=True, origin="http://localhost:3000")
 options(app)
 
 
@@ -135,9 +135,12 @@ async def declare(request, response, siren, year):
         # This is a new declaration, let's validate year and siren.
         if not siren_is_valid(siren):
             raise HttpError(422, f"Numéro SIREN invalide: {siren}")
-        years = [str(y) for y in constants.YEARS]  # Compare str with str
-        if year not in years:
-            years = ", ".join(years)
+        try:
+            year = int(year)
+        except ValueError:
+            raise HttpError(f"Invalid value for year: {year}")
+        if year not in constants.YEARS:
+            years = ", ".join([str(y) for y in constants.YEARS])
             raise HttpError(
                 422, f"Il est possible de déclarer seulement pour les années {years}"
             )
