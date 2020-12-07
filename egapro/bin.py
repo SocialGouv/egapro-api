@@ -11,7 +11,8 @@ from openpyxl import load_workbook
 from egapro import config, db, dgt, exporter, models, schema
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro.solen import *  # noqa: expose to minicli
-from egapro.utils import compute_notes, json_dumps
+from egapro.utils import json_dumps
+from egapro.helpers import compute_notes
 
 
 @minicli.cli

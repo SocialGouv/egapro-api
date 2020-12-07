@@ -10,7 +10,7 @@ from asyncpg.exceptions import DataError
 from roll.extensions import cors, options, traceback
 from stdnum.fr.siren import is_valid as siren_is_valid
 
-from . import config, constants, db, emails, models, tokens, schema, utils
+from . import config, constants, db, emails, helpers, models, tokens, schema, utils
 from .schema.legacy import from_legacy
 from .loggers import logger
 
@@ -125,7 +125,7 @@ def flatten(view):
 async def declare(request, response, siren, year):
     data = request.data
     schema.validate(data.raw)
-    utils.compute_notes(data)
+    helpers.compute_notes(data)
     schema.cross_validate(data.raw)
     declarant = request["email"]
     try:
