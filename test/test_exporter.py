@@ -57,6 +57,18 @@ async def test_dgt_dump(declaration):
         uid="12345678-1234-5678-9012-123456789012",
         entreprise={"code_naf": "47.25Z", "région": "11", "département": "77"},
         indicateurs={
+            "augmentations": {
+                "note": 20,
+                "résultat": 1.08,
+                "catégories": [0.1, 10.5, 10.3, 11.0],
+                "population_favorable": "femmes",
+            },
+            "promotions": {
+                "note": 15,
+                "résultat": 0.5,
+                "catégories": [None, 0.1, -0.3, -0.4],
+                "population_favorable": "femmes",
+            },
             "rémunérations": {
                 "catégories": [
                     {
@@ -100,6 +112,12 @@ async def test_dgt_dump(declaration):
                 "note": 40,
                 "population_favorable": "femmes",
                 "résultat": 0.0,
+            },
+            "congés_maternité": {"note": 0, "résultat": 57.0},
+            "hautes_rémunérations": {
+                "note": 5,
+                "résultat": 3,
+                "population_favorable": "hommes",
             },
         },
     )
@@ -145,6 +163,24 @@ async def test_dgt_dump(declaration):
     assert sheet["AG2"].value == "-10.8;0.1;-11.3;11.1"
     assert sheet["AH2"].value == "5;2.3;2.8;0.2"
     assert sheet["AI2"].value == "1.1;5.2;7.1;12.2"
+
+    # Global notes
+    assert sheet["BP1"].value == "Indicateur_1"
+    assert sheet["BQ1"].value == "Indicateur_2"
+    assert sheet["BR1"].value == "Indicateur_3"
+    assert sheet["BS1"].value == "Indicateur_2et3"
+    assert sheet["BT1"].value == "Indicateur_2et3_PourCent"
+    assert sheet["BU1"].value == "Indicateur_2et3_ParSal"
+    assert sheet["BV1"].value == "Indicateur_4"
+    assert sheet["BW1"].value == "Indicateur_5"
+    assert sheet["BP2"].value == 40
+    assert sheet["BQ2"].value == 20
+    assert sheet["BR2"].value == 15
+    assert sheet["BS2"].value == "nc"
+    assert sheet["BT2"].value == "nc"
+    assert sheet["BU2"].value == "nc"
+    assert sheet["BV2"].value == 0
+    assert sheet["BW2"].value == 5
 
 
 async def test_dgt_dump_with_coef_mode(declaration):
