@@ -88,6 +88,15 @@ async def test_basic_declaration_should_save_data(client, body):
     assert "modified_at" in data
     del data["modified_at"]
     assert data == {"data": body, "siren": "514027945", "year": 2019}
+    # Just to make sure we have the same result on an existing declaration
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    resp = await client.get("/declaration/514027945/2019")
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert "modified_at" in data
+    del data["modified_at"]
+    assert data == {"data": body, "siren": "514027945", "year": 2019}
 
 
 async def test_basic_declaration_without_declarant_should_be_ok(client, body):
