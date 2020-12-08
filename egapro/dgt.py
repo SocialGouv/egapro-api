@@ -127,7 +127,7 @@ async def get_headers_columns():
             ("Nom_Entreprise", "entreprise.raison_sociale"),
             ("SIREN", "entreprise.siren"),
             ("Code_NAF", "entreprise.code_naf", code_naf),
-            ("Nom_UES", "entreprise.ues.raison_sociale"),
+            ("Nom_UES", "entreprise.ues.nom"),
             # Inclure entreprise déclarante
             ("Nb_ets_UES", "nombre_ues"),
             (
@@ -337,7 +337,7 @@ def ues_data(sheet, data):
     cp = data.path("entreprise.code_postal")
     commune = data.path("entreprise.commune")
     tranche = EFFECTIF.get(data.path("entreprise.effectif.tranche"))
-    nom = data.path("entreprise.ues.raison_sociale")
+    nom = data.path("entreprise.ues.nom")
     for ues in data.path("entreprise.ues.entreprises") or []:
         sheet.append(
             [

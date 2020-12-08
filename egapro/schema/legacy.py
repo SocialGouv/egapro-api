@@ -63,7 +63,7 @@ def from_legacy(data):
         if declarante not in entreprises:
             entreprises.insert(0, declarante)
         entreprise["ues"] = {
-            "raison_sociale": nom_ues,
+            "nom": nom_ues,
             "entreprises": entreprises,
         }
     if not ues:

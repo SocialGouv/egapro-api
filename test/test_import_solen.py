@@ -39,7 +39,7 @@ async def test_solen_import_with_ues():
     declaration = await db.declaration.get("775701488", 2018)
     data = models.Data(declaration["data"])
     assert data.siren == "775701488"
-    assert data.path("entreprise.ues.raison_sociale") == "BazBaz"
+    assert data.path("entreprise.ues.nom") == "BazBaz"
     assert data.path("entreprise.raison_sociale") == "BazBaz SA"
     assert data.path("entreprise.ues.entreprises") == [
         {"raison_sociale": "BazBaz SA", "siren": "775701488"},
