@@ -150,6 +150,8 @@ async def get_headers_columns():
                 "indicateurs.rémunérations.non_calculable",
             ),
             ("Indic1_modalite_calcul", "indicateurs.rémunérations.mode"),
+            ("Indic1_date_consult_CSE", "déclaration.date_consultation_cse", isoformat),
+            ("Indic1_nb_coef_niv", "Indic1_nb_coef_niv"),
             ("Indic1_Ouv", "Indic1_Ouv"),
             ("Indic1_Emp", "Indic1_Emp"),
             ("Indic1_TAM", "Indic1_TAM"),
