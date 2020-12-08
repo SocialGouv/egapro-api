@@ -137,14 +137,14 @@ async def test_dgt_dump(declaration):
     )
 
     # Indicateurs rémunérations
-    assert sheet["AD1"].value == "Indic1_Ouv"
-    assert sheet["AE1"].value == "Indic1_Emp"
-    assert sheet["AF1"].value == "Indic1_TAM"
-    assert sheet["AG1"].value == "Indic1_IC"
-    assert sheet["AD2"].value == "2.8;-0.03;1.5;3.7"
-    assert sheet["AE2"].value == "-10.8;0.1;-11.3;11.1"
-    assert sheet["AF2"].value == "5;2.3;2.8;0.2"
-    assert sheet["AG2"].value == "1.1;5.2;7.1;12.2"
+    assert sheet["AF1"].value == "Indic1_Ouv"
+    assert sheet["AG1"].value == "Indic1_Emp"
+    assert sheet["AH1"].value == "Indic1_TAM"
+    assert sheet["AI1"].value == "Indic1_IC"
+    assert sheet["AF2"].value == "2.8;-0.03;1.5;3.7"
+    assert sheet["AG2"].value == "-10.8;0.1;-11.3;11.1"
+    assert sheet["AH2"].value == "5;2.3;2.8;0.2"
+    assert sheet["AI2"].value == "1.1;5.2;7.1;12.2"
 
 
 async def test_dgt_dump_with_coef_mode(declaration):
@@ -269,40 +269,40 @@ async def test_dgt_dump_with_coef_mode(declaration):
     assert sheet["AC2"].value == "niveau_branche"
 
     # Indicateurs rémunérations for CSP should be empty
-    assert sheet["AD1"].value == "Indic1_Ouv"
-    assert sheet["AE1"].value == "Indic1_Emp"
-    assert sheet["AF1"].value == "Indic1_TAM"
-    assert sheet["AG1"].value == "Indic1_IC"
-    assert sheet["AD2"].value is None
-    assert sheet["AE2"].value is None
+    assert sheet["AF1"].value == "Indic1_Ouv"
+    assert sheet["AG1"].value == "Indic1_Emp"
+    assert sheet["AH1"].value == "Indic1_TAM"
+    assert sheet["AI1"].value == "Indic1_IC"
     assert sheet["AF2"].value is None
     assert sheet["AG2"].value is None
-    assert sheet["AH1"].value == "Indic1_Niv0"
-    assert sheet["AI1"].value == "Indic1_Niv1"
-    assert sheet["AJ1"].value == "Indic1_Niv2"
-    assert sheet["AK1"].value == "Indic1_Niv3"
-    assert sheet["AL1"].value == "Indic1_Niv4"
-    assert sheet["AM1"].value == "Indic1_Niv5"
-    assert sheet["AN1"].value == "Indic1_Niv6"
-    assert sheet["AO1"].value == "Indic1_Niv7"
-    assert sheet["AP1"].value == "Indic1_Niv8"
-    assert sheet["AQ1"].value == "Indic1_Niv9"
-    assert sheet["AR1"].value == "Indic1_Niv10"
-    assert sheet["AS1"].value == "Indic1_Niv11"
-    assert sheet["AT1"].value == "Indic1_Niv12"
-    assert sheet["AH2"].value == "0;0;0;0"
-    assert sheet["AI2"].value == "0;0;0;0"
-    assert sheet["AJ2"].value == "0;1.4;0;56.5"
-    assert sheet["AK2"].value == "0;0;0;-43.9"
-    assert sheet["AL2"].value == "-20.1;0;22.9;-17"
-    assert sheet["AM2"].value == "7.6;nc;36.2;6.8"
-    assert sheet["AN2"].value == "-13;21.4;0;-3.8"
-    assert sheet["AO2"].value == "0;39.6;17.9;4.5"
-    assert sheet["AP2"].value == "4.2;8.6;59.5;5"
-    assert sheet["AQ2"].value == "0;20;6.8;23.2"
-    assert sheet["AR2"].value == "-4.8;6.6;16.4;12"
-    assert sheet["AS2"].value == "0;36.6;2.6;16.3"
-    assert sheet["AT2"].value == "0;0;7.5;20.9"
+    assert sheet["AH2"].value is None
+    assert sheet["AI2"].value is None
+    assert sheet["AJ1"].value == "Indic1_Niv0"
+    assert sheet["AK1"].value == "Indic1_Niv1"
+    assert sheet["AL1"].value == "Indic1_Niv2"
+    assert sheet["AM1"].value == "Indic1_Niv3"
+    assert sheet["AN1"].value == "Indic1_Niv4"
+    assert sheet["AO1"].value == "Indic1_Niv5"
+    assert sheet["AP1"].value == "Indic1_Niv6"
+    assert sheet["AQ1"].value == "Indic1_Niv7"
+    assert sheet["AR1"].value == "Indic1_Niv8"
+    assert sheet["AS1"].value == "Indic1_Niv9"
+    assert sheet["AT1"].value == "Indic1_Niv10"
+    assert sheet["AU1"].value == "Indic1_Niv11"
+    assert sheet["AV1"].value == "Indic1_Niv12"
+    assert sheet["AJ2"].value == "0;0;0;0"
+    assert sheet["AK2"].value == "0;0;0;0"
+    assert sheet["AL2"].value == "0;1.4;0;56.5"
+    assert sheet["AM2"].value == "0;0;0;-43.9"
+    assert sheet["AN2"].value == "-20.1;0;22.9;-17"
+    assert sheet["AO2"].value == "7.6;nc;36.2;6.8"
+    assert sheet["AP2"].value == "-13;21.4;0;-3.8"
+    assert sheet["AQ2"].value == "0;39.6;17.9;4.5"
+    assert sheet["AR2"].value == "4.2;8.6;59.5;5"
+    assert sheet["AS2"].value == "0;20;6.8;23.2"
+    assert sheet["AT2"].value == "-4.8;6.6;16.4;12"
+    assert sheet["AU2"].value == "0;36.6;2.6;16.3"
+    assert sheet["AV2"].value == "0;0;7.5;20.9"
 
 
 async def test_dgt_dump_should_compute_declaration_url_for_solen_data(declaration):
