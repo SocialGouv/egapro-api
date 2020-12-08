@@ -19,7 +19,7 @@ source: string
   =points: integer # Nombre total de points obtenus
   =points_calculables: integer # Nombre total de points pouvant être obtenus
   =index: integer # Résultat final sur 100 points
-  mesures_correctives: mmo|me|mne # Mesures de corrections prévues à l'article D. 1142-5 / Trois items : Mesures mises en œuvre (mmo), Mesures envisagées (me), Mesures non envisagées (mne)"
+  mesures_correctives: mmo|me|mne # Mesures de corrections prévues à l'article D. 1142-6 / Trois items : Mesures mises en œuvre (mmo), Mesures envisagées (me), Mesures non envisagées (mne)"
 +déclarant:
   prénom: string
   nom: string
