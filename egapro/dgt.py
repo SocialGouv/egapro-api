@@ -8,7 +8,7 @@ from naf import DB as NAF
 from openpyxl import Workbook, load_workbook
 from progressist import ProgressBar
 
-from egapro import constants, db
+from egapro import constants, db, models
 from egapro.solen import ExcelData, RowProcessor
 from egapro.utils import flatten
 from egapro.schema.legacy import from_legacy
@@ -130,9 +130,6 @@ async def get_headers_columns():
             ("Nom_UES", "entreprise.ues.raison_sociale"),
             # Inclure entreprise déclarante
             ("Nb_ets_UES", "nombre_ues"),
-        ]
-        + await get_ues_cols()
-        + [
             (
                 "Date_publication",
                 "déclaration.publication.date",
@@ -296,18 +293,66 @@ async def as_xlsx(max_rows=None, debug=False):
     ws = wb.create_sheet()
     ws.title = "BDD REPONDANTS"
     wb.active = ws
+    ws_ues = wb.create_sheet()
+    ws_ues.title = "BDD UES"
+    ws_ues.append(
+        [
+            "raison sociale",
+            "siren",
+            "région",
+            "département",
+            "adresse",
+            "CP",
+            "commune",
+            "année indicateur",
+            "tranche effectif",
+            "nom_ues",
+            "siren entreprise déclarante"
+        ]
+    )
     headers, columns = await get_headers_columns()
     ws.append(headers)
     bar = ProgressBar(prefix="Computing", total=len(records))
     for record in bar.iter(records):
-        data = prepare_record(record["data"] or record["legacy"] or {})
+        data = record["data"] or record["legacy"]
+        if not data:
+            continue
+        if "déclaration" not in data:  # Legacy schema
+            from_legacy(data)
+        ues_data(ws_ues, data)
+        data = prepare_record(data)
         ws.append([fmt(data.get(c)) for c, fmt in columns])
     return wb
 
 
+def ues_data(sheet, data):
+    data = models.Data(data)
+    region = constants.REGIONS.get(data.path("entreprise.région"))
+    departement = constants.DEPARTEMENTS.get(data.path("entreprise.département"))
+    adresse = data.path("entreprise.adresse")
+    cp = data.path("entreprise.code_postal")
+    commune = data.path("entreprise.commune")
+    tranche = EFFECTIF.get(data.path("entreprise.effectif.tranche"))
+    nom = data.path("entreprise.ues.raison_sociale")
+    for ues in data.path("entreprise.ues.entreprises") or []:
+        sheet.append(
+            [
+                ues["raison_sociale"],
+                ues["siren"],
+                region,
+                departement,
+                adresse,
+                cp,
+                commune,
+                data.year,
+                tranche,
+                nom,
+                data.siren,
+            ]
+        )
+
+
 def prepare_record(data):
-    if "déclaration" not in data:  # Legacy schema
-        from_legacy(data)
 
     # Before flattening.
     try:
