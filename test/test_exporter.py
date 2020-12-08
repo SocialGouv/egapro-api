@@ -357,6 +357,66 @@ async def test_dgt_dump_should_compute_declaration_url_for_solen_data(declaratio
     )
 
 
+async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
+    await declaration(
+        company="Mirabar",
+        siren="87654321",
+        entreprise={
+            "ues": {
+                "raison_sociale": "MiraFoo",
+                "entreprises": [
+                    {"raison_sociale": "MiraBaz", "siren": "315710251"},
+                    {"raison_sociale": "MiraPouet", "siren": "315710251"},
+                ],
+            },
+            "effectif": {"tranche": "1000:"},
+        },
+    )
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook["BDD UES"]
+    assert list(sheet.values) == [
+        (
+            "raison sociale",
+            "siren",
+            "région",
+            "département",
+            "adresse",
+            "CP",
+            "commune",
+            "année indicateur",
+            "tranche effectif",
+            "nom_ues",
+            "siren entreprise déclarante",
+        ),
+        (
+            "MiraBaz",
+            "315710251",
+            "Auvergne-Rhône-Alpes",
+            "Drôme",
+            None,
+            None,
+            None,
+            2020,
+            "1000 et plus",
+            "MiraFoo",
+            "87654321",
+        ),
+        (
+            "MiraPouet",
+            "315710251",
+            "Auvergne-Rhône-Alpes",
+            "Drôme",
+            None,
+            None,
+            None,
+            2020,
+            "1000 et plus",
+            "MiraFoo",
+            "87654321",
+        ),
+    ]
+
+
 async def test_export_public_data(declaration):
     await declaration(
         company="Mirabar",
