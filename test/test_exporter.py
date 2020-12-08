@@ -363,7 +363,7 @@ async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
         siren="87654321",
         entreprise={
             "ues": {
-                "raison_sociale": "MiraFoo",
+                "nom": "MiraFoo",
                 "entreprises": [
                     {"raison_sociale": "MiraBaz", "siren": "315710251"},
                     {"raison_sociale": "MiraPouet", "siren": "315710251"},
