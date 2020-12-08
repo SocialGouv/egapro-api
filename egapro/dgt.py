@@ -264,10 +264,10 @@ async def get_headers_columns():
             ),
             ("Indicateur_4", "indicateurs.congés_maternité.note", value_or_nc),
             ("Indicateur_5", "indicateurs.hautes_rémunérations.note", value_or_nc),
-            ("Nombre_total_points obtenus", "déclaration.total_points"),
+            ("Nombre_total_points obtenus", "déclaration.points"),
             (
                 "Nombre_total_points_pouvant_etre_obtenus",
-                "déclaration.total_points_calculables",
+                "déclaration.points_calculables",
             ),
             ("Resultat_final_sur_100_points", "déclaration.index"),
             ("Mesures_correction", "déclaration.mesures_correctives"),
