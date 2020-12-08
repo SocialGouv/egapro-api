@@ -246,6 +246,7 @@ async def get_headers_columns():
             ),
             ("Indicateur_1", "indicateurs.rémunérations.note", value_or_nc),
             ("Indicateur_2", "indicateurs.augmentations.note", value_or_nc),
+            ("Indicateur_3", "indicateurs.promotions.note", value_or_nc),
             (
                 "Indicateur_2et3",
                 "indicateurs.augmentations_et_promotions.note",
@@ -261,7 +262,6 @@ async def get_headers_columns():
                 "indicateurs.augmentations_et_promotions.note_nombre_salariés",
                 value_or_nc,
             ),
-            ("Indicateur_3", "indicateurs.promotions.note", value_or_nc),
             ("Indicateur_4", "indicateurs.congés_maternité.note", value_or_nc),
             ("Indicateur_5", "indicateurs.hautes_rémunérations.note", value_or_nc),
             ("Nombre_total_points obtenus", "déclaration.total_points"),
