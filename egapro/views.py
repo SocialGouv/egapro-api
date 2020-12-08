@@ -48,7 +48,7 @@ class App(Roll):
 
 app = App()
 traceback(app)
-cors(app, methods="*", headers=["*", "Content-Type"], credentials=True, origin="http://localhost:3000")
+cors(app, methods="*", headers=["*", "Content-Type"], credentials=True)
 options(app)
 
 
