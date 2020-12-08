@@ -147,7 +147,11 @@ async def get_headers_columns():
                 "indicateurs.rémunérations.non_calculable",
             ),
             ("Indic1_modalite_calcul", "indicateurs.rémunérations.mode"),
-            ("Indic1_date_consult_CSE", "déclaration.date_consultation_cse", isoformat),
+            (
+                "Indic1_date_consult_CSE",
+                "indicateurs.rémunérations.date_consultation_cse",
+                isoformat,
+            ),
             ("Indic1_nb_coef_niv", "Indic1_nb_coef_niv"),
             ("Indic1_Ouv", "Indic1_Ouv"),
             ("Indic1_Emp", "Indic1_Emp"),
@@ -307,7 +311,7 @@ async def as_xlsx(max_rows=None, debug=False):
             "année indicateur",
             "tranche effectif",
             "nom_ues",
-            "siren entreprise déclarante"
+            "siren entreprise déclarante",
         ]
     )
     headers, columns = await get_headers_columns()

@@ -116,10 +116,6 @@ def from_legacy(data):
         # Fallback for declarations from 2019
         declaration["mesures_correctives"] = "me"
     declaration["date"] = parse_datetime(declaration.get("date"))
-    if "date_consultation_cse" in declaration:
-        declaration["date_consultation_cse"] = parse_date(
-            declaration["date_consultation_cse"]
-        )
 
     effectif = data.pop("effectif", {})
     clean_legacy(effectif)
@@ -143,6 +139,10 @@ def from_legacy(data):
 
     # Un
     un = data["indicateurs"]["rémunérations"]
+    if "date_consultation_cse" in declaration:
+        un["date_consultation_cse"] = parse_date(
+            declaration.pop("date_consultation_cse")
+        )
     mode = (
         un.get("autre")
         and "niveau_autre"
