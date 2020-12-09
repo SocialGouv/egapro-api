@@ -22,29 +22,52 @@ async def test_dump():
         "12345678",
         2020,
         "foo@bar.com",
-        {"déclaration": {"date": datetime(2020, 10, 24, 10, 11, 12)}},
+        {
+            "déclaration": {
+                "date": datetime(2020, 10, 24, 10, 11, 12),
+                "statut": "final",
+            }
+        },
     )
     await db.declaration.put(
         "87654321",
         2020,
         "foo@baz.com",
-        {"déclaration": {"date": datetime(2020, 10, 24, 10, 11, 13)}},
+        {
+            "déclaration": {
+                "date": datetime(2020, 10, 24, 10, 11, 13),
+                "statut": "final",
+            },
+        },
     )
     await db.declaration.put(
         "87654331",
         2020,
         "foo@baz.com",
-        {"déclaration": {"date": None}},
+        {
+            "déclaration": {
+                "date": datetime(2020, 10, 24, 10, 11, 13),
+                "statut": "brouillon",
+            }
+        },
     )
     path = Path("/tmp/test_dump_egapro.json")
     await exporter.dump(path)
     assert json.loads(path.read_text()) == [
         {
-            "déclaration": {"date": 1603534272, "année_indicateurs": 2020},
+            "déclaration": {
+                "date": 1603534272,
+                "année_indicateurs": 2020,
+                "statut": "final",
+            },
             "entreprise": {"siren": "12345678"},
         },
         {
-            "déclaration": {"date": 1603534273, "année_indicateurs": 2020},
+            "déclaration": {
+                "date": 1603534273,
+                "année_indicateurs": 2020,
+                "statut": "final",
+            },
             "entreprise": {"siren": "87654321"},
         },
     ]

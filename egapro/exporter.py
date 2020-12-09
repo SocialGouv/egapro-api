@@ -46,7 +46,7 @@ async def public_data(path: Path):
     )
     rows = []
     for record in records:
-        data = models.Data(record["data"])
+        data = record.data
         ues = ",".join(
             [
                 f"{company['raison_sociale']} ({company['siren']})"

@@ -84,6 +84,7 @@ def declaration():
         data["déclaration"].setdefault(
             "date", datetime(2020, 11, 4, 10, 37, 6).isoformat()
         )
+        data["déclaration"].setdefault("statut", "final")
         data["déclaration"].setdefault(
             "période_référence", ["2019-01-01", "2019-12-31"]
         )

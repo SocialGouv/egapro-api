@@ -6,10 +6,20 @@ from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
 import ujson as json
 
 from . import config, models, sql, utils
+from .schema.legacy import from_legacy
 
 
 class NoData(Exception):
     pass
+
+
+class DeclarationRecord(asyncpg.Record):
+    @property
+    def data(self):
+        data = self.get("draft") or self.get("data") or self.get("legacy")
+        if "déclaration" not in data:
+            data = from_legacy(data)
+        return models.Data(data)
 
 
 class table:
@@ -17,16 +27,17 @@ class table:
     conn = None
     pool = None
     fields = []
+    record_class = asyncpg.Record
 
     @classmethod
     async def fetch(cls, sql, *params):
         async with cls.pool.acquire() as conn:
-            return await conn.fetch(sql, *params)
+            return await conn.fetch(sql, *params, record_class=cls.record_class)
 
     @classmethod
     async def fetchrow(cls, sql, *params):
         async with cls.pool.acquire() as conn:
-            row = await conn.fetchrow(sql, *params)
+            row = await conn.fetchrow(sql, *params, record_class=cls.record_class)
         if not row:
             raise NoData
         return row
@@ -50,13 +61,15 @@ class table:
 
 
 class declaration(table):
-    fields = ["siren", "year", "data", "modified_at"]
+    fields = ["siren", "year", "data", "modified_at", "declared_at"]
+    record_class = DeclarationRecord
 
     @classmethod
     async def all(cls):
         # TODO ORDER BY ?
+        # Do not select draft in this request, as it must reflect the declarations state
         return await cls.fetch(
-            "SELECT * FROM declaration WHERE declared_at IS NOT NULL"
+            "SELECT data, legacy FROM declaration WHERE data IS NOT NULL"
         )
 
     @classmethod
@@ -67,6 +80,7 @@ class declaration(table):
 
     @classmethod
     async def put(cls, siren, year, owner, data, modified_at=None):
+        data = models.Data(data)
         # Allow to force modified_at, eg. during migrations.
         if modified_at is None:
             modified_at = utils.utcnow()
@@ -78,17 +92,13 @@ class declaration(table):
         declared_at = data.get("déclaration", {}).get("date")
         if isinstance(declared_at, str):
             declared_at = datetime.fromisoformat(declared_at)
+        query = sql.insert_declaration
+        args = (siren, int(year), modified_at, declared_at, owner, data.raw, ft)
+        if data.is_draft():
+            query = sql.insert_draft_declaration
+            args = (siren, int(year), modified_at, owner, data.raw)
         async with cls.pool.acquire() as conn:
-            await conn.execute(
-                sql.insert_declaration,
-                siren,
-                int(year),
-                modified_at,
-                declared_at,
-                owner,
-                data,
-                ft,
-            )
+            await conn.execute(query, *args)
 
     @classmethod
     async def owner(cls, siren, year):

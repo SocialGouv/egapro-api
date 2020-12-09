@@ -319,7 +319,7 @@ async def as_xlsx(max_rows=None, debug=False):
     ws.append(headers)
     bar = ProgressBar(prefix="Computing", total=len(records))
     for record in bar.iter(records):
-        data = record["data"] or record["legacy"]
+        data = record.data
         if not data:
             continue
         if "déclaration" not in data:  # Legacy schema

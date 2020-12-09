@@ -210,14 +210,10 @@ async def migrate_effectif(source: Path):
 @minicli.cli
 async def validate(pdb=False, verbose=False):
     from egapro.schema import validate, cross_validate
-    from egapro.schema.legacy import from_legacy
 
     errors = set()
     for row in await db.declaration.all():
-        data = row["data"] or row["legacy"]
-        if "déclaration" not in data:
-            data = from_legacy(row["legacy"])
-        data = json.loads(json_dumps(data))
+        data = json.loads(json_dumps(row.data.raw))
         try:
             validate(data)
             cross_validate(data)
@@ -294,6 +290,7 @@ async def migrate_schema(no_schema=False):
                 ALTER TABLE declaration ADD COLUMN declared_at TIMESTAMP WITH TIME ZONE;
                 ALTER TABLE declaration RENAME COLUMN data TO legacy;
                 ALTER TABLE declaration ADD COLUMN data JSONB;
+                ALTER TABLE declaration ADD COLUMN draft JSONB;
                 """,
             )
     records = await db.declaration.fetch("SELECT * FROM declaration")
@@ -355,7 +352,6 @@ async def explore(*siren_year):
         record = await db.declaration.get(siren, year)
         sep = "—" * 80
         print(f"Data for {siren} {year}")
-        data = models.Data(record["data"])
         for root in [
             "indicateurs.hautes_rémunérations",
             "indicateurs.congés_maternité",
@@ -369,7 +365,7 @@ async def explore(*siren_year):
         ]:
             print(sep)
             print(f"# {root}")
-            sequence = data.path(root)
+            sequence = record.data.path(root)
             if not sequence:
                 print("—")
                 continue

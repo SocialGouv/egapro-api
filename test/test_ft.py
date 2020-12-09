@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from egapro import db
@@ -40,6 +42,7 @@ async def test_search(client):
                         ],
                     },
                 },
+                "déclaration": {"statut": "final", "date": datetime.now()},
             },
         )
     results = await db.declaration.search("total")
