@@ -1,5 +1,10 @@
 class Data(dict):
 
+    def __init__(self, data=None):
+        if isinstance(data, Data):
+            data = data.raw
+        super().__init__(data or [])
+
     # Emulate **kwargs.
     def __getitem__(self, key):
         try:
@@ -29,6 +34,13 @@ class Data(dict):
     @property
     def validated(self):
         return bool(self.path("déclaration.date"))
+
+    @property
+    def statut(self):
+        return self.path("déclaration.statut")
+
+    def is_draft(self):
+        return self.statut != "final"
 
     @property
     def year(self):

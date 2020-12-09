@@ -116,6 +116,7 @@ def from_legacy(data):
         # Fallback for declarations from 2019
         declaration["mesures_correctives"] = "me"
     declaration["date"] = parse_datetime(declaration.get("date"))
+    declaration["statut"] = "final"
 
     effectif = data.pop("effectif", {})
     clean_legacy(effectif)

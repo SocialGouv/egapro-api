@@ -247,8 +247,8 @@ async def send_token(request, response):
 async def stats(request, response):
     async with db.table.pool.acquire() as conn:
         rows = await conn.fetch(
-            "SELECT data->'informations'->>'trancheEffectifs' as tranche, COUNT(*) "
-            "FROM declaration GROUP BY tranche;"
+            "SELECT data->'entreprise'->'effectif'->>'tranche' as tranche, COUNT(*) "
+            "FROM declaration WHERE data IS NOT NULL GROUP BY tranche;"
         )
     response.json = dict(rows)
 

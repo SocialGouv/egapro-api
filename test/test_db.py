@@ -45,16 +45,77 @@ async def test_simulation_get():
 async def test_declaration_all():
     # Given
     await db.declaration.put(
-        "12345678", 2020, "foo@bar.com", {"déclaration": {"date": datetime.now()}}
+        "12345678",
+        2020,
+        "foo@bar.com",
+        {"déclaration": {"date": datetime.now(), "statut": "final"}},
     )
     await db.declaration.put(
-        "87654321", 2020, "foo@baz.com", {"déclaration": {"date": datetime.now()}}
+        "87654321",
+        2020,
+        "foo@baz.com",
+        {"déclaration": {"date": datetime.now(), "statut": "final"}},
     )
     await db.declaration.put(
-        "87654331", 2020, "foo@baz.com", {"déclaration": {"date": None}}
+        "87654331",
+        2020,
+        "foo@baz.com",
+        {"déclaration": {"date": datetime.now(), "statut": "draft"}},
     )
 
     records = await db.declaration.all()
     assert len(records) == 2
-    assert records[0]["siren"] == "12345678"
-    assert records[1]["siren"] == "87654321"
+    assert records[0].data.siren == "12345678"
+    assert records[1].data.siren == "87654321"
+
+
+async def test_declaration_data():
+    now = datetime.now().isoformat()
+    await db.declaration.put(
+        "123456789",
+        2020,
+        "foo@bar.com",
+        {"déclaration": {"date": now, "statut": "final"}},
+    )
+    record = await db.declaration.get("123456789", 2020)
+    assert record.data == {
+        "déclaration": {
+            "date": now,
+            "statut": "final",
+            "année_indicateurs": 2020,
+        },
+        "entreprise": {"siren": "123456789"},
+    }
+    record = (await db.declaration.all())[0]
+    assert record.data == {
+        "déclaration": {
+            "date": now,
+            "statut": "final",
+            "année_indicateurs": 2020,
+        },
+        "entreprise": {"siren": "123456789"},
+    }
+    await db.declaration.put(
+        "123456789",
+        2020,
+        "foo@bar.com",
+        {"déclaration": {"date": now, "statut": "brouillon"}},
+    )
+    record = await db.declaration.get("123456789", 2020)
+    assert record.data == {
+        "déclaration": {
+            "date": now,
+            "statut": "brouillon",
+            "année_indicateurs": 2020,
+        },
+        "entreprise": {"siren": "123456789"},
+    }
+    record = (await db.declaration.all())[0]
+    assert record.data == {
+        "déclaration": {
+            "date": now,
+            "statut": "final",
+            "année_indicateurs": 2020,
+        },
+        "entreprise": {"siren": "123456789"},
+    }

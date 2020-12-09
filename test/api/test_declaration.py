@@ -17,6 +17,7 @@ def body():
             "année_indicateurs": 2019,
             "période_référence": ["2019-01-01", "2019-12-31"],
             "mesures_correctives": "mmo",
+            "statut": "final",
         },
         "déclarant": {
             "email": "foo@bar.org",
@@ -253,6 +254,7 @@ async def test_declare_with_flat_data(client, body):
     flat_body = {
         "id": "1234",
         "déclaration.date": "2020-11-04T10:37:06+00:00",
+        "déclaration.statut": "final",
         "déclaration.année_indicateurs": 2019,
         "déclaration.période_référence": ["2019-01-01", "2019-12-31"],
         "déclaration.mesures_correctives": "mmo",
@@ -866,5 +868,6 @@ async def test_declare_with_legacy_schema(client, body):
             "année_indicateurs": 2019,
             "points_calculables": 100,
             "période_référence": ["2019-01-01", "2019-12-31"],
+            "statut": "final",
         },
     }
