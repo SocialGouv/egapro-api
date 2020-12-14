@@ -115,3 +115,12 @@ async def test_config_endpoint(client):
         "YEARS",
         "REGIONS",
     ]
+
+
+async def test_validate_siren(client):
+    resp = await client.get("/validate-siren?siren=1234567")
+    assert resp.status == 422
+    resp = await client.get("/validate-siren?siren=123456789")
+    assert resp.status == 422
+    resp = await client.get("/validate-siren?siren=123456782")
+    assert resp.status == 204
