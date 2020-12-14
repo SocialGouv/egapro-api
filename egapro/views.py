@@ -282,6 +282,14 @@ async def get_jsonschema(request, response):
     response.json = schema.SCHEMA
 
 
+@app.route("/validate-siren")
+async def validate_siren(request, response):
+    siren = request.query.get("siren")
+    if not siren_is_valid(siren):
+        raise HttpError(422, f"Numéro SIREN invalide: {siren}")
+    response.status = 204
+
+
 @app.listen("startup")
 async def on_startup():
     await init()
