@@ -13,7 +13,22 @@ class NoData(Exception):
     pass
 
 
-class DeclarationRecord(asyncpg.Record):
+class DeclarationRecord:
+    def __init__(self, record):
+        self.record = record
+
+    def get(self, key, default=None):
+        return self.record.get(key, default)
+
+    def __getitem__(self, key):
+        return self.record.__getitem__(key)
+
+    def items(self):
+        return self.record.items()
+
+    def keys(self):
+        return self.record.keys()
+
     @property
     def data(self):
         data = self.get("draft") or self.get("data") or self.get("legacy")
@@ -32,15 +47,15 @@ class table:
     @classmethod
     async def fetch(cls, sql, *params):
         async with cls.pool.acquire() as conn:
-            return await conn.fetch(sql, *params, record_class=cls.record_class)
+            return [DeclarationRecord(r) for r in await conn.fetch(sql, *params)]
 
     @classmethod
     async def fetchrow(cls, sql, *params):
         async with cls.pool.acquire() as conn:
-            row = await conn.fetchrow(sql, *params, record_class=cls.record_class)
+            row = await conn.fetchrow(sql, *params)
         if not row:
             raise NoData
-        return row
+        return DeclarationRecord(row)
 
     @classmethod
     async def fetchval(cls, sql, *params):

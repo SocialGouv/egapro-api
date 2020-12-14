@@ -88,6 +88,8 @@ async def test_basic_declaration_should_save_data(client, body):
     data = json.loads(resp.body)
     assert "modified_at" in data
     del data["modified_at"]
+    assert "declared_at" in data
+    del data["declared_at"]
     assert data == {"data": body, "siren": "514027945", "year": 2019}
     # Just to make sure we have the same result on an existing declaration
     resp = await client.put("/declaration/514027945/2019", body=body)
@@ -97,6 +99,8 @@ async def test_basic_declaration_should_save_data(client, body):
     data = json.loads(resp.body)
     assert "modified_at" in data
     del data["modified_at"]
+    assert "declared_at" in data
+    del data["declared_at"]
     assert data == {"data": body, "siren": "514027945", "year": 2019}
 
 
