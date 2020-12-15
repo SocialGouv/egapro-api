@@ -65,8 +65,8 @@ async def test_declaration_completed():
 
     records = await db.declaration.completed()
     assert len(records) == 2
-    assert records[0].data.siren == "12345678"
-    assert records[1].data.siren == "87654321"
+    assert records[0].data.siren == "87654321"
+    assert records[1].data.siren == "12345678"
 
 
 async def test_declaration_data():

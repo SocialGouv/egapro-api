@@ -60,13 +60,13 @@ async def test_dump():
             "déclaration": {
                 "année_indicateurs": 2020,
             },
-            "entreprise": {"siren": "12345678"},
+            "entreprise": {"siren": "87654321"},
         },
         {
             "déclaration": {
                 "année_indicateurs": 2020,
             },
-            "entreprise": {"siren": "87654321"},
+            "entreprise": {"siren": "12345678"},
         },
     ]
 
