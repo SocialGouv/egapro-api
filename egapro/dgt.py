@@ -298,20 +298,21 @@ async def as_xlsx(max_rows=None, debug=False):
     ws.title = "BDD REPONDANTS"
     wb.active = ws
     ws_ues = wb.create_sheet()
-    ws_ues.title = "BDD UES"
+    ws_ues.title = "BDD UES détail entreprises"
     ws_ues.append(
         [
-            "raison sociale",
-            "siren",
-            "région",
-            "département",
-            "adresse",
+            "Annee_indicateurs",
+            "Region",
+            "Departement",
+            "Adresse",
             "CP",
-            "commune",
-            "année indicateur",
-            "tranche effectif",
-            "nom_ues",
-            "siren entreprise déclarante",
+            "Commune",
+            "Tranche_effectif",
+            "Nom_UES",
+            "Siren entreprise déclarante",
+            "Nom entreprise déclarante",
+            "Nom_entreprise",
+            "Siren",
         ]
     )
     headers, columns = await get_headers_columns()
@@ -341,17 +342,18 @@ def ues_data(sheet, data):
     for ues in data.path("entreprise.ues.entreprises") or []:
         sheet.append(
             [
-                ues["raison_sociale"],
-                ues["siren"],
+                data.year,
                 region,
                 departement,
                 adresse,
                 cp,
                 commune,
-                data.year,
                 tranche,
                 nom,
                 data.siren,
+                data.company,
+                ues["raison_sociale"],
+                ues["siren"],
             ]
         )
 
