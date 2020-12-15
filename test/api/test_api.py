@@ -39,7 +39,6 @@ async def test_stats_endpoint(client):
             "foo@bar.org",
             {
                 "entreprise": {"effectif": {"tranche": tranche}},
-                "déclaration": {"statut": "final"},
             },
         )
     resp = await client.get("/stats")
@@ -53,7 +52,7 @@ async def test_search_endpoint(client):
         2019,
         "foo@bar.org",
         {
-            "déclaration": {"index": 95, "année_indicateurs": 2019, "statut": "final"},
+            "déclaration": {"index": 95, "année_indicateurs": 2019},
             "id": "12345678-1234-5678-9012-123456789013",
             "entreprise": {
                 "raison_sociale": "Bio c Bon",

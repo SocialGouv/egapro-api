@@ -33,14 +33,10 @@ class Data(dict):
 
     @property
     def validated(self):
-        return bool(self.path("déclaration.date"))
-
-    @property
-    def statut(self):
-        return self.path("déclaration.statut")
+        return not self.is_draft()
 
     def is_draft(self):
-        return self.statut != "final"
+        return self.path("déclaration.brouillon")
 
     @property
     def year(self):

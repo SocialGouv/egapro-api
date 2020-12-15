@@ -42,7 +42,7 @@ async def test_search(client):
                         ],
                     },
                 },
-                "déclaration": {"statut": "final", "date": datetime.now()},
+                "déclaration": {"date": datetime.now()},
             },
         )
     results = await db.declaration.search("total")

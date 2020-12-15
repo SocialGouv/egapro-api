@@ -25,7 +25,6 @@ async def test_dump():
         {
             "déclaration": {
                 "date": datetime(2020, 10, 24, 10, 11, 12),
-                "statut": "final",
             }
         },
     )
@@ -36,7 +35,6 @@ async def test_dump():
         {
             "déclaration": {
                 "date": datetime(2020, 10, 24, 10, 11, 13),
-                "statut": "final",
             },
         },
     )
@@ -47,26 +45,26 @@ async def test_dump():
         {
             "déclaration": {
                 "date": datetime(2020, 10, 24, 10, 11, 13),
-                "statut": "brouillon",
+                "brouillon": True,
             }
         },
     )
     path = Path("/tmp/test_dump_egapro.json")
     await exporter.dump(path)
-    assert json.loads(path.read_text()) == [
+    data = json.loads(path.read_text())
+    for declaration in data:
+        assert declaration["déclaration"]["date"]
+        del declaration["déclaration"]["date"]
+    assert data == [
         {
             "déclaration": {
-                "date": 1603534272,
                 "année_indicateurs": 2020,
-                "statut": "final",
             },
             "entreprise": {"siren": "12345678"},
         },
         {
             "déclaration": {
-                "date": 1603534273,
                 "année_indicateurs": 2020,
-                "statut": "final",
             },
             "entreprise": {"siren": "87654321"},
         },

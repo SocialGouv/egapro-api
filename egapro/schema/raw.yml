@@ -9,7 +9,7 @@
 id: string
 source: string
 +déclaration:
-  date: date-time # Date de validation et de transmission des résultats au service Egapro
+  =date: date-time # Date de validation et de transmission des résultats au service Egapro
   publication:
     date: date # Date de publication du niveau de résultat de l'entreprise ou de l'UES
     url: string
@@ -20,7 +20,7 @@ source: string
   =points_calculables: integer # Nombre total de points pouvant être obtenus
   =index: integer # Résultat final sur 100 points
   mesures_correctives: mmo|me|mne # Mesures de corrections prévues à l'article D. 1142-6 / Trois items : Mesures mises en œuvre (mmo), Mesures envisagées (me), Mesures non envisagées (mne)"
-  +statut: brouillon|final
+  brouillon: boolean  # Une déclaration en brouillon ne sera pas considérée par les services de la DGT et les validations croisées globales ne seront pas effectuées
 +déclarant:
   prénom: string
   nom: string

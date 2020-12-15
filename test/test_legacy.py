@@ -135,7 +135,6 @@ def test_from_legacy_solen():
             "points_calculables": 100,
             "publication": {"date": "2019-02-20", "modalités": "néant"},
             "période_référence": ["2018-01-01", "2018-12-31"],
-            "statut": "final",
         },
         "entreprise": {
             "code_naf": "49.31Z",

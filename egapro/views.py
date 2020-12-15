@@ -150,7 +150,7 @@ async def declare(request, response, siren, year):
         # Do not send the success email on update for now (we send too much emails that
         # are unwanted, mainly because when someone loads the frontend app a PUT is
         # automatically sent, without any action from the user.)
-        if not current or not models.Data(current["data"]).validated:
+        if not current or not current.data.validated:
             if data.id:  # Coming from simulation URL
                 url = f"{config.BASE_URL}/simulateur/{data.id}"
             else:
@@ -214,7 +214,7 @@ class SimulationResource:
 
     def is_declaration(self, response, data):
         """This is an old fashioned declaration. Let's redirect for now."""
-        if not data.validated:
+        if data.is_draft():
             return
         if not data.email:
             raise HttpError(400, "Anonymous declaration")
