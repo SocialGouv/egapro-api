@@ -53,9 +53,9 @@ def from_legacy(data):
     nom_ues = entreprise.pop("nomUES", entreprise.get("raison_sociale", ""))
     if "entreprisesUES" in entreprise or ues:
         entreprises = [
-                {"raison_sociale": e.get("nom"), "siren": e["siren"]}
-                for e in entreprise.pop("entreprisesUES", [])
-            ]
+            {"raison_sociale": e.get("nom"), "siren": e["siren"]}
+            for e in entreprise.pop("entreprisesUES", [])
+        ]
         declarante = {
             "raison_sociale": entreprise["raison_sociale"],
             "siren": entreprise["siren"],
@@ -91,10 +91,9 @@ def from_legacy(data):
     declaration = data["déclaration"] = data.pop("declaration", {})
     informations = data.pop("informations", {})
     declaration["année_indicateurs"] = informations.pop("anneeDeclaration", None)
-    declaration["période_référence"] = [
-        parse_date(informations.get("debutPeriodeReference")),
-        parse_date(informations.get("finPeriodeReference")),
-    ]
+    declaration["fin_période_référence"] = parse_date(
+        informations.get("finPeriodeReference")
+    )
     if "mesuresCorrection" in declaration:
         value = declaration.pop("mesuresCorrection")
         if value not in (None, ""):

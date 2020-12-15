@@ -10,7 +10,7 @@ from progressist import ProgressBar
 
 from egapro import constants, db, models
 from egapro.solen import ExcelData, RowProcessor
-from egapro.utils import flatten
+from egapro.utils import flatten, remove_one_year
 from egapro.schema.legacy import from_legacy
 
 
@@ -111,14 +111,10 @@ async def get_headers_columns():
                 "Annee_indicateurs",
                 "déclaration.année_indicateurs",
             ),
-            (
-                "Date_debut_periode",
-                "déclaration.période_référence.0",
-                isoformat,
-            ),
+            ("Date_debut_periode", "Date_debut_periode"),
             (
                 "Date_fin_periode",
-                "déclaration.période_référence.1",
+                "déclaration.fin_période_référence",
                 isoformat,
             ),
             ("Structure", "Structure"),
@@ -380,6 +376,9 @@ def prepare_record(data):
         "Unité Economique et Sociale (UES)" if nombre_ues else "Entreprise"
     )
     data["nombre_ues"] = nombre_ues or None
+    data["Date_debut_periode"] = remove_one_year(
+        datetime.fromisoformat(data["déclaration.fin_période_référence"])
+    )
 
     # Indicateur 1
     indic1_mode = data.get("indicateurs.rémunérations.mode")

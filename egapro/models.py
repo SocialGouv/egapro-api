@@ -45,7 +45,7 @@ class Data(dict):
         except KeyError:
             try:
                 # OLD data.
-                return int(self["déclaration"]["période_référence"][1][-4:])
+                return int(self["déclaration"]["fin_période_référence"][-4:])
             except (KeyError, IndexError):
                 return None
 

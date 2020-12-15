@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from importlib import import_module
 
 import json
@@ -16,6 +16,13 @@ def json_dumps(v):
 
 def utcnow():
     return datetime.now(timezone.utc)
+
+
+def remove_one_year(end):
+    try:
+        return end.replace(end.year - 1) + timedelta(days=1)
+    except ValueError:   # 29 February
+        return (end + timedelta(days=1)).replace(end.year - 1)
 
 
 def prepare_query(query):

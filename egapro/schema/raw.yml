@@ -15,7 +15,7 @@ source: string
     url: string
     modalités: string
   +année_indicateurs: "2018:2019"
-  période_référence: [date, date] # Période de référence considérée pour le calcul des indicateurs
+  fin_période_référence: date # Date de fin de la période de référence considérée pour le calcul des indicateurs
   =points: integer # Nombre total de points obtenus
   =points_calculables: integer # Nombre total de points pouvant être obtenus
   =index: integer # Résultat final sur 100 points

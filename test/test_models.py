@@ -17,7 +17,7 @@ def test_data_year():
     assert data.year is None
     data = Data({"déclaration": {"année_indicateurs": 2020}})
     assert data.year == 2020
-    data = Data({"déclaration": {"période_référence": ["01/01/2019", "31/12/2019"]}})
+    data = Data({"déclaration": {"fin_période_référence": "31/12/2019"}})
     assert data.year == 2019
 
 

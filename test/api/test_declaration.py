@@ -15,7 +15,7 @@ def body():
         "déclaration": {
             "date": "2020-11-04T10:37:06+00:00",
             "année_indicateurs": 2019,
-            "période_référence": ["2019-01-01", "2019-12-31"],
+            "fin_période_référence": "2019-12-31",
             "mesures_correctives": "mmo",
         },
         "déclarant": {
@@ -266,7 +266,7 @@ async def test_declare_with_flat_data(client, body):
         "id": "1234",
         "déclaration.date": "2020-11-04T10:37:06+00:00",
         "déclaration.année_indicateurs": 2019,
-        "déclaration.période_référence": ["2019-01-01", "2019-12-31"],
+        "déclaration.fin_période_référence": "2019-12-31",
         "déclaration.mesures_correctives": "mmo",
         "déclarant.email": "foo@bar.org",
         "déclarant.prénom": "Foo",
@@ -876,7 +876,7 @@ async def test_declare_with_legacy_schema(client, body):
             },
             "année_indicateurs": 2019,
             "points_calculables": 100,
-            "période_référence": ["2019-01-01", "2019-12-31"],
+            "fin_période_référence": "2019-12-31",
         },
     }
     declared_at = declaration["data"]["déclaration"].pop("date")

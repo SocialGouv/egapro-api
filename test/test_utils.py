@@ -1,6 +1,8 @@
+from datetime import date
+
 import pytest
 
-from egapro import utils, models
+from egapro import utils
 
 
 @pytest.mark.parametrize(
@@ -42,3 +44,21 @@ def test_flatten_should_flatten_lists():
         "x.c.1": 2,
         "x.c.2": 3,
     }
+
+
+# 2020 is a leap year
+@pytest.mark.parametrize(
+    "input,output",
+    [
+        ((2020, 12, 12), (2019, 12, 13)),
+        ((2020, 12, 31), (2020, 1, 1)),
+        ((2020, 2, 29), (2019, 3, 1)),
+        ((2021, 2, 28), (2020, 2, 29)),
+        ((2019, 12, 12), (2018, 12, 13)),
+        ((2019, 12, 31), (2019, 1, 1)),
+        ((2019, 2, 28), (2018, 3, 1)),
+        ((2020, 2, 28), (2019, 3, 1)),
+    ],
+)
+def test_remove_one_year(input, output):
+    assert utils.remove_one_year(date(*input)) == date(*output)
