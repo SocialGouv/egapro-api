@@ -75,6 +75,7 @@ async def test_dgt_dump(declaration):
     await declaration(
         siren="12345678",
         year=2020,
+        compute_notes=True,
         uid="12345678-1234-5678-9012-123456789012",
         entreprise={"code_naf": "47.25Z", "région": "11", "département": "77"},
         indicateurs={
@@ -194,6 +195,10 @@ async def test_dgt_dump(declaration):
     assert sheet["BU1"].value == "Indicateur_2et3_ParSal"
     assert sheet["BV1"].value == "Indicateur_4"
     assert sheet["BW1"].value == "Indicateur_5"
+    assert sheet["BX1"].value == "Nombre_total_points obtenus"
+    assert sheet["BY1"].value == "Nombre_total_points_pouvant_etre_obtenus"
+    assert sheet["BZ1"].value == "Resultat_final_sur_100_points"
+    assert sheet["CA1"].value == "Mesures_correction"
     assert sheet["BP2"].value == 40
     assert sheet["BQ2"].value == 20
     assert sheet["BR2"].value == 15
@@ -202,6 +207,10 @@ async def test_dgt_dump(declaration):
     assert sheet["BU2"].value == "nc"
     assert sheet["BV2"].value == 0
     assert sheet["BW2"].value == 5
+    assert sheet["BX2"].value == 80
+    assert sheet["BY2"].value == 100
+    assert sheet["BZ2"].value == 80
+    assert sheet["CA2"].value is None
 
 
 async def test_dgt_dump_with_coef_mode(declaration):

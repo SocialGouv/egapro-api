@@ -8,7 +8,7 @@ from roll.testing import Client as BaseClient
 
 from egapro.views import app as egapro_app
 from egapro import config as egapro_config
-from egapro import db, tokens
+from egapro import db, helpers, models, tokens
 
 
 def pytest_configure(config):
@@ -67,6 +67,7 @@ def declaration():
         region="84",
         grade=26,
         uid=str(uuid.uuid1()),
+        compute_notes=False,
         **data,
     ):
         data.setdefault("entreprise", {})
@@ -90,6 +91,8 @@ def declaration():
         data["déclarant"].setdefault("prénom", "Martin")
         data["déclarant"].setdefault("nom", "Martine")
         data["indicateurs"].setdefault("rémunérations", {"mode": "csp"})
+        if compute_notes:
+            helpers.compute_notes(models.Data(data))
         await db.declaration.put(siren, year, owner, data)
         return data
 

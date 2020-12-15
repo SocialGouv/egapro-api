@@ -56,12 +56,16 @@ def _cross_validate(data):
         for path in required:
             assert data.path(path), f"{path} must not be empty"
         index = data.path("déclaration.index") or 0
+        mesures_correctives = data.path("déclaration.mesures_correctives")
         if index and index >= 75:
             msg = "déclaration.mesures_correctives must not be set when déclaration.index >= 75"
-            assert not data.path("déclaration.mesures_correctives"), msg
+            assert not mesures_correctives, msg
         elif index:
             msg = "déclaration.mesures_correctives must not be null when déclaration.index < 75"
-            assert data.path("déclaration.mesures_correctives"), msg
+            assert mesures_correctives, msg
+        elif not index:
+            msg = "déclaration.mesures_correctives must not be set when déclaration.index is 'non calculable'"
+            assert not mesures_correctives, msg
     tranche = data.path("entreprise.effectif.tranche")
     if tranche == "50:250":
         paths = ("indicateurs.promotions", "indicateurs.augmentations")

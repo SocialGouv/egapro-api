@@ -263,7 +263,7 @@ async def get_headers_columns():
                 "Nombre_total_points_pouvant_etre_obtenus",
                 "déclaration.points_calculables",
             ),
-            ("Resultat_final_sur_100_points", "déclaration.index"),
+            ("Resultat_final_sur_100_points", "déclaration.index", value_or_nc),
             ("Mesures_correction", "déclaration.mesures_correctives"),
         ]
     )

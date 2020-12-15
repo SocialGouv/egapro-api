@@ -16,7 +16,6 @@ def body():
             "date": "2020-11-04T10:37:06+00:00",
             "année_indicateurs": 2019,
             "fin_période_référence": "2019-12-31",
-            "mesures_correctives": "mmo",
         },
         "déclarant": {
             "email": "foo@bar.org",
@@ -334,6 +333,7 @@ async def test_cannot_set_augmentations_if_tranche_is_not_50_250(client, body):
         "congés_maternité": {"résultat": 88},
         "hautes_rémunérations": {"résultat": 3},
     }
+    body["déclaration"]["mesures_correctives"] = "mmo"
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert (
@@ -354,6 +354,7 @@ async def test_population_favorable_must_be_empty_if_resultat_is_zero(client, bo
         "congés_maternité": {"résultat": 88},
         "hautes_rémunérations": {"résultat": 3},
     }
+    body["déclaration"]["mesures_correctives"] = "mmo"
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert (
@@ -390,6 +391,7 @@ async def test_population_favorable_must_be_empty_if_resultat_is_five(client, bo
         "congés_maternité": {"résultat": 88},
         "hautes_rémunérations": {"résultat": 5, "population_favorable": "femmes"},
     }
+    body["déclaration"]["mesures_correctives"] = "mmo"
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert (
@@ -399,7 +401,6 @@ async def test_population_favorable_must_be_empty_if_resultat_is_five(client, bo
 
 
 async def test_mesures_correctives_must_be_set_if_index_below_75(client, body):
-    del body["déclaration"]["mesures_correctives"]
     body["indicateurs"] = {
         "rémunérations": {
             "mode": "csp",
@@ -430,6 +431,7 @@ async def test_mesures_correctives_must_not_be_set_if_index_above_75(client, bod
         "congés_maternité": {"résultat": 88},
         "hautes_rémunérations": {"résultat": 1},
     }
+    body["déclaration"]["mesures_correctives"] = "mmo"
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert (
@@ -451,6 +453,7 @@ async def test_cannot_set_promotions_if_tranche_is_50_250(client, body):
         "congés_maternité": {"résultat": 88},
         "hautes_rémunérations": {"résultat": 3},
     }
+    body["déclaration"]["mesures_correctives"] = "mmo"
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert (
@@ -468,6 +471,7 @@ async def test_put_declaration_should_compute_notes(client, body):
         "congés_maternité": {"résultat": 88},
         "hautes_rémunérations": {"résultat": 3},
     }
+    body["déclaration"]["mesures_correctives"] = "mmo"
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     data = (await db.declaration.get("514027945", 2019))["data"]
@@ -494,6 +498,7 @@ async def test_put_declaration_should_compute_notes_for_50_250(client, body):
         "congés_maternité": {"résultat": 88},
         "hautes_rémunérations": {"résultat": 3},
     }
+    body["déclaration"]["mesures_correctives"] = "mmo"
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     data = (await db.declaration.get("514027945", 2019))["data"]
