@@ -158,7 +158,6 @@ async def get_headers_columns():
             (
                 f"Indic1_Niv{index_coef}",
                 f"indicateurs.rémunérations.catégories.{index_coef}",
-                value_or_nc,
             )
             for index_coef in range(num_coefficient)
         ]
@@ -178,7 +177,6 @@ async def get_headers_columns():
             (
                 f"Indic2_{CSP}",
                 f"indicateurs.augmentations.catégories.{index_csp}",
-                value_or_nc,
             )
             for (index_csp, CSP) in enumerate(["Ouv", "Emp", "TAM", "IC"])
         ]
@@ -195,7 +193,6 @@ async def get_headers_columns():
             (
                 f"Indic3_{CSP}",
                 f"indicateurs.promotions.catégories.{index_csp}",
-                value_or_nc,
             )
             for (index_csp, CSP) in enumerate(["Ouv", "Emp", "TAM", "IC"])
         ]
