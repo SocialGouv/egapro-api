@@ -98,28 +98,7 @@ def ensure_owner(view):
     return wrapper
 
 
-def flatten(view):
-    @wraps(view)
-    async def wrapper(request, response, *args, **kwargs):
-        to_flatten = "application/vnd.egapro.v1.flat" in request.headers.get(
-            "ACCEPT", ""
-        )
-        if to_flatten and request._body:
-            request._json = utils.unflatten(request.json)
-        ret = await view(request, response, *args, **kwargs)
-        if to_flatten and response.body:
-            # TODO act before jsonifying the dict.
-            body = json.loads(response.body)
-            if "data" in body:
-                body["data"] = utils.flatten(body["data"])
-            response.body = json.dumps(body)
-        return ret
-
-    return wrapper
-
-
 @app.route("/declaration/{siren}/{year}", methods=["PUT"])
-@flatten
 @tokens.require
 @ensure_owner
 async def declare(request, response, siren, year):
@@ -159,7 +138,6 @@ async def declare(request, response, siren, year):
 
 
 @app.route("/declaration/{siren}/{year}", methods=["GET"])
-@flatten
 @tokens.require
 @ensure_owner
 async def get_declaration(request, response, siren, year):

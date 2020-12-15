@@ -313,46 +313,6 @@ async def test_with_unknown_siren_or_year(client):
     assert resp.status == 404
 
 
-@pytest.mark.xfail
-async def test_declare_with_flat_data(client, body):
-    flat_body = {
-        "id": "1234",
-        "déclaration.date": "2020-11-04T10:37:06+00:00",
-        "déclaration.année_indicateurs": 2019,
-        "déclaration.fin_période_référence": "2019-12-31",
-        "déclaration.mesures_correctives": "mmo",
-        "déclarant.email": "foo@bar.org",
-        "déclarant.prénom": "Foo",
-        "déclarant.nom": "Bar",
-        "déclarant.téléphone": "+33123456789",
-        "entreprise.raison_sociale": "FooBar",
-        "entreprise.siren": "514027945",
-        "entreprise.région": "76",
-        "entreprise.département": "12",
-        "entreprise.adresse": "12, rue des adresses",
-        "entreprise.commune": "Y",
-        "entreprise.code_naf": "47.25Z",
-        "entreprise.code_postal": "12345",
-        "entreprise.effectif.total": 312,
-        "entreprise.effectif.tranche": "251:999",
-    }
-    resp = await client.put(
-        "/declaration/514027945/2019",
-        body=flat_body,
-        headers={"Accept": "application/vnd.egapro.v1.flat+json"},
-    )
-    assert resp.status == 204
-    declaration = await db.declaration.get("514027945", 2019)
-    assert declaration["data"] == body
-    resp = await client.get(
-        "/declaration/514027945/2019",
-        headers={"Accept": "application/vnd.egapro.v1.flat+json"},
-    )
-    assert resp.status == 200
-    data = json.loads(resp.body)
-    assert data["data"] == flat_body
-
-
 async def test_invalid_declaration_data_should_raise_on_put(client):
     resp = await client.put(
         "/declaration/514027945/2019",
