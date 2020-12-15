@@ -139,10 +139,6 @@ def from_legacy(data):
 
     # Un
     un = data["indicateurs"]["rémunérations"]
-    if "date_consultation_cse" in declaration:
-        un["date_consultation_cse"] = parse_date(
-            declaration.pop("date_consultation_cse")
-        )
     mode = (
         un.get("autre")
         and "niveau_autre"
@@ -156,6 +152,9 @@ def from_legacy(data):
         un["mode"] = "niveau_branche"
     if mode:
         un["mode"] = mode
+    date_consultation_cse = declaration.pop("date_consultation_cse", None)
+    if date_consultation_cse and mode and mode != "csp":
+        un["date_consultation_cse"] = parse_date(date_consultation_cse)
     categories = []
     key = "remunerationAnnuelle" if un.get("mode") == "csp" else "coefficient"
     for idx, category in enumerate(un.get(key, [])):
