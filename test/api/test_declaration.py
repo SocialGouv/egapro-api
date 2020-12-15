@@ -487,6 +487,21 @@ async def test_put_declaration_should_compute_notes_for_50_250(client, body):
     assert data["déclaration"]["index"] == 64
 
 
+async def test_date_consultation_cse_must_be_empty_if_mode_is_csp(client, body):
+    body["indicateurs"] = {
+        "rémunérations": {
+            "mode": "csp",
+            "date_consultation_cse": "2020-01-18",
+        },
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body)["error"] == (
+        "indicateurs.rémunérations.date_consultation_cse must be empty "
+        "if indicateurs.rémunérations.mode='csp'"
+    )
+
+
 async def test_declare_with_legacy_schema(client, body):
     legacy = {
         "id": "5e41ad88-5dcc-491d-908a-93d5d2fae344",

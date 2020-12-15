@@ -83,14 +83,29 @@ def _cross_validate(data):
         if data.path(f"{path}.résultat") == 0:
             msg = f"{path}.population_favorable must be empty if résultat=0"
             assert not data.path(f"{path}.population_favorable"), msg
-    path = "indicateurs.hautes_rémunérations"
-    if data.path(f"{path}.résultat") == 5:
-        msg = f"{path}.population_favorable must be empty if résultat=5"
-        assert not data.path(f"{path}.population_favorable"), msg
-    path = "indicateurs.augmentations_et_promotions"
-    if data.path(f"{path}.résultat") == 0 and data.path(f"{path}.résultat_nombre_salariés") == 0:
-        msg = f"{path}.population_favorable must be empty if résultat=0 and résultat_nombre_salariés=0"
-        assert not data.path(f"{path}.population_favorable"), msg
+
+    # Rémunérations
+    base = "indicateurs.rémunérations"
+    if data.path(f"{base}.mode") == "csp":
+        path = f"{base}.date_consultation_cse"
+        msg = f"{path} must be empty if indicateurs.rémunérations.mode='csp'"
+        assert not data.path(path), msg
+
+    # Augmentations et promotions
+    base = "indicateurs.augmentations_et_promotions"
+    if (
+        data.path(f"{base}.résultat") == 0
+        and data.path(f"{base}.résultat_nombre_salariés") == 0
+    ):
+        path = f"{base}.population_favorable"
+        msg = f"{path} must be empty if résultat=0 and résultat_nombre_salariés=0"
+        assert not data.path(path), msg
+
+    # Hautes rémunérations
+    base = "indicateurs.hautes_rémunérations"
+    if data.path(f"{base}.résultat") == 5:
+        msg = f"{base}.population_favorable must be empty if résultat=5"
+        assert not data.path(f"{base}.population_favorable"), msg
 
 
 def extrapolate(definition):
