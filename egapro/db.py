@@ -70,10 +70,14 @@ class declaration(table):
 
     @classmethod
     async def all(cls):
+        return await cls.fetch("SELECT * FROM declaration")
+
+    @classmethod
+    async def completed(cls):
         # TODO ORDER BY ?
         # Do not select draft in this request, as it must reflect the declarations state
         return await cls.fetch(
-            "SELECT data, legacy FROM declaration WHERE data IS NOT NULL"
+            "SELECT data, legacy FROM declaration WHERE declared_at IS NOT NULL"
         )
 
     @classmethod

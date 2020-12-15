@@ -42,7 +42,7 @@ async def test_simulation_get():
     assert record["data"] == {"foo": "baré"}
 
 
-async def test_declaration_all():
+async def test_declaration_completed():
     # Given
     await db.declaration.put(
         "12345678",
@@ -63,7 +63,7 @@ async def test_declaration_all():
         {"déclaration": {"date": utils.utcnow(), "brouillon": True}},
     )
 
-    records = await db.declaration.all()
+    records = await db.declaration.completed()
     assert len(records) == 2
     assert records[0].data.siren == "12345678"
     assert records[1].data.siren == "87654321"
@@ -87,7 +87,7 @@ async def test_declaration_data():
         },
         "entreprise": {"siren": "123456789"},
     }
-    record = (await db.declaration.all())[0]
+    record = (await db.declaration.completed())[0]
     data = record.data
     assert data["déclaration"]["date"]
     del data["déclaration"]["date"]  # Can't compare
@@ -114,7 +114,7 @@ async def test_declaration_data():
         },
         "entreprise": {"siren": "123456789"},
     }
-    record = (await db.declaration.all())[0]
+    record = (await db.declaration.completed())[0]
     data = record.data
     assert data["déclaration"]["date"]
     del data["déclaration"]["date"]  # Can't compare

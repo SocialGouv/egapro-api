@@ -6,7 +6,7 @@ from pathlib import Path
 import minicli
 import ujson as json
 
-from egapro import constants, db, models, sql
+from egapro import constants, db, sql
 
 
 @minicli.cli
@@ -16,7 +16,7 @@ async def dump(path: Path):
     :path:          chemin vers le fichier d'export
     """
 
-    records = await db.declaration.all()
+    records = await db.declaration.completed()
     print("Number of records", len(records))
     with path.open("w") as f:
         json.dump([r["data"] for r in records], f, ensure_ascii=False)

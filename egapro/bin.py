@@ -212,7 +212,7 @@ async def validate(pdb=False, verbose=False):
     from egapro.schema import validate, cross_validate
 
     errors = set()
-    for row in await db.declaration.all():
+    for row in await db.declaration.completed():
         data = json.loads(json_dumps(row.data.raw))
         try:
             validate(data)
@@ -235,7 +235,7 @@ async def validate(pdb=False, verbose=False):
 async def compare_index(pdb=False, verbose=False):
     from egapro.schema.legacy import from_legacy
 
-    records = await db.declaration.all()
+    records = await db.declaration.completed()
     for record in records:
         legacy = {
             "index": record["data"]["declaration"].get("noteIndex"),
