@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from egapro import db
+from egapro import db, utils
 
 pytestmark = pytest.mark.asyncio
 
@@ -48,19 +48,19 @@ async def test_declaration_all():
         "12345678",
         2020,
         "foo@bar.com",
-        {"déclaration": {"date": datetime.now(), "statut": "final"}},
+        {"déclaration": {"date": utils.utcnow()}},
     )
     await db.declaration.put(
         "87654321",
         2020,
         "foo@baz.com",
-        {"déclaration": {"date": datetime.now(), "statut": "final"}},
+        {"déclaration": {"date": utils.utcnow()}},
     )
     await db.declaration.put(
         "87654331",
         2020,
         "foo@baz.com",
-        {"déclaration": {"date": datetime.now(), "statut": "draft"}},
+        {"déclaration": {"date": utils.utcnow(), "brouillon": True}},
     )
 
     records = await db.declaration.all()
@@ -70,27 +70,29 @@ async def test_declaration_all():
 
 
 async def test_declaration_data():
-    now = datetime.now().isoformat()
+    now = utils.utcnow().isoformat()
     await db.declaration.put(
         "123456789",
         2020,
         "foo@bar.com",
-        {"déclaration": {"date": now, "statut": "final"}},
+        {"déclaration": {"date": now}},
     )
     record = await db.declaration.get("123456789", 2020)
+    data = record.data
+    assert data["déclaration"]["date"]
+    del data["déclaration"]["date"]  # Can't compare
     assert record.data == {
         "déclaration": {
-            "date": now,
-            "statut": "final",
             "année_indicateurs": 2020,
         },
         "entreprise": {"siren": "123456789"},
     }
     record = (await db.declaration.all())[0]
+    data = record.data
+    assert data["déclaration"]["date"]
+    del data["déclaration"]["date"]  # Can't compare
     assert record.data == {
         "déclaration": {
-            "date": now,
-            "statut": "final",
             "année_indicateurs": 2020,
         },
         "entreprise": {"siren": "123456789"},
@@ -99,22 +101,25 @@ async def test_declaration_data():
         "123456789",
         2020,
         "foo@bar.com",
-        {"déclaration": {"date": now, "statut": "brouillon"}},
+        {"déclaration": {"date": now, "brouillon": True}},
     )
     record = await db.declaration.get("123456789", 2020)
+    data = record.data
+    assert data["déclaration"]["date"]
+    del data["déclaration"]["date"]  # Can't compare
     assert record.data == {
         "déclaration": {
-            "date": now,
-            "statut": "brouillon",
+            "brouillon": True,
             "année_indicateurs": 2020,
         },
         "entreprise": {"siren": "123456789"},
     }
     record = (await db.declaration.all())[0]
+    data = record.data
+    assert data["déclaration"]["date"]
+    del data["déclaration"]["date"]  # Can't compare
     assert record.data == {
         "déclaration": {
-            "date": now,
-            "statut": "final",
             "année_indicateurs": 2020,
         },
         "entreprise": {"siren": "123456789"},

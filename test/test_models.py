@@ -5,11 +5,11 @@ from egapro.models import Data
 
 def test_data_validated():
     data = Data()
-    assert not data.validated
-    data = Data({"déclaration": {"date": None}})
-    assert not data.validated
-    data = Data({"déclaration": {"date": "2020-11-04"}})
     assert data.validated
+    data = Data({"déclaration": {"brouillon": False}})
+    assert data.validated
+    data = Data({"déclaration": {"brouillon": True}})
+    assert not data.validated
 
 
 def test_data_year():

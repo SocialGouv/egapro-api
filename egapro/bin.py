@@ -298,6 +298,7 @@ async def migrate_schema(no_schema=False):
             print(err)
             data = None
         except Exception as err:
+            print(err)
             print(record)
             raise
         async with db.declaration.pool.acquire() as conn:

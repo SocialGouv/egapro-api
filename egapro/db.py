@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime
 
 import asyncpg
 from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
@@ -13,22 +12,12 @@ class NoData(Exception):
     pass
 
 
-class DeclarationRecord:
-    def __init__(self, record):
-        self.record = record
+class Record(dict):
+    def __getattr__(self, key):
+        return self.get(key)
 
-    def get(self, key, default=None):
-        return self.record.get(key, default)
 
-    def __getitem__(self, key):
-        return self.record.__getitem__(key)
-
-    def items(self):
-        return self.record.items()
-
-    def keys(self):
-        return self.record.keys()
-
+class DeclarationRecord(Record):
     @property
     def data(self):
         data = self.get("draft") or self.get("data") or self.get("legacy")
@@ -42,12 +31,12 @@ class table:
     conn = None
     pool = None
     fields = []
-    record_class = asyncpg.Record
+    record_class = Record
 
     @classmethod
     async def fetch(cls, sql, *params):
         async with cls.pool.acquire() as conn:
-            return [DeclarationRecord(r) for r in await conn.fetch(sql, *params)]
+            return [cls.record_class(r) for r in await conn.fetch(sql, *params)]
 
     @classmethod
     async def fetchrow(cls, sql, *params):
@@ -55,7 +44,7 @@ class table:
             row = await conn.fetchrow(sql, *params)
         if not row:
             raise NoData
-        return DeclarationRecord(row)
+        return cls.record_class(row)
 
     @classmethod
     async def fetchval(cls, sql, *params):
@@ -67,7 +56,7 @@ class table:
 
     @classmethod
     def as_resource(cls, row):
-        return {k: v for k, v in row.items() if k in cls.fields}
+        return {k: getattr(row, k) for k in cls.fields}
 
     @classmethod
     async def execute(cls, sql, *params):
@@ -94,6 +83,17 @@ class declaration(table):
         )
 
     @classmethod
+    async def get_declared_at(cls, siren, year):
+        try:
+            return await cls.fetchval(
+                "SELECT declared_at FROM declaration WHERE siren=$1 AND year=$2",
+                siren,
+                int(year),
+            )
+        except NoData:
+            return None
+
+    @classmethod
     async def put(cls, siren, year, owner, data, modified_at=None):
         data = models.Data(data)
         # Allow to force modified_at, eg. during migrations.
@@ -104,14 +104,14 @@ class declaration(table):
         data.setdefault("entreprise", {})
         data["entreprise"]["siren"] = siren
         ft = data.get("entreprise", {}).get("raison_sociale")
-        declared_at = data.get("déclaration", {}).get("date")
-        if isinstance(declared_at, str):
-            declared_at = datetime.fromisoformat(declared_at)
-        query = sql.insert_declaration
-        args = (siren, int(year), modified_at, declared_at, owner, data.raw, ft)
         if data.is_draft():
             query = sql.insert_draft_declaration
             args = (siren, int(year), modified_at, owner, data.raw)
+        else:
+            declared_at = await cls.get_declared_at(siren, year) or modified_at
+            data["déclaration"]["date"] = declared_at.isoformat()
+            query = sql.insert_declaration
+            args = (siren, int(year), modified_at, declared_at, owner, data.raw, ft)
         async with cls.pool.acquire() as conn:
             await conn.execute(query, *args)
 

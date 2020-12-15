@@ -108,6 +108,9 @@ def from_legacy(data):
     elif modalites:
         publication["modalités"] = modalites
     declaration["publication"] = publication
+    if source == "egapro":
+        if declaration.get("formValidated") != "Valid":
+            declaration["brouillon"] = True
     clean_legacy(declaration)
     index = declaration.get("index") or 0
     if index >= 75:
@@ -116,7 +119,6 @@ def from_legacy(data):
         # Fallback for declarations from 2019
         declaration["mesures_correctives"] = "me"
     declaration["date"] = parse_datetime(declaration.get("date"))
-    declaration["statut"] = "final"
 
     effectif = data.pop("effectif", {})
     clean_legacy(effectif)
