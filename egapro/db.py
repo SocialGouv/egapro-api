@@ -99,19 +99,24 @@ class declaration(table):
         # Allow to force modified_at, eg. during migrations.
         if modified_at is None:
             modified_at = utils.utcnow()
+        year = int(year)
         data.setdefault("déclaration", {})
         data["déclaration"]["année_indicateurs"] = year
         data.setdefault("entreprise", {})
         data["entreprise"]["siren"] = siren
         ft = data.get("entreprise", {}).get("raison_sociale")
+        declared_at = await cls.get_declared_at(siren, year)
+        if not declared_at and not data.is_draft():
+            declared_at = modified_at
+        if declared_at:
+            print("setting date")
+            data["déclaration"]["date"] = declared_at.isoformat()
         if data.is_draft():
             query = sql.insert_draft_declaration
             args = (siren, int(year), modified_at, owner, data.raw)
         else:
-            declared_at = await cls.get_declared_at(siren, year) or modified_at
-            data["déclaration"]["date"] = declared_at.isoformat()
             query = sql.insert_declaration
-            args = (siren, int(year), modified_at, declared_at, owner, data.raw, ft)
+            args = (siren, year, modified_at, declared_at, owner, data.raw, ft)
         async with cls.pool.acquire() as conn:
             await conn.execute(query, *args)
 

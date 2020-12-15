@@ -81,13 +81,14 @@ def compute_note(resultat, thresholds):
 
 
 def compute_notes(data):
+    # Remove note from previous computation
+    clean_readonly(data, schema.SCHEMA)
+
     if "indicateurs" not in data:
         return
     points = 0
     maximum = 0
     population_favorable = None
-    # Remove note from previous computation
-    clean_readonly(data, schema.SCHEMA)
 
     # indicateurs 1
     if not data.path("indicateurs.rémunérations.non_calculable"):

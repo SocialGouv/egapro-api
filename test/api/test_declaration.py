@@ -87,7 +87,7 @@ async def test_basic_declaration_should_save_data(client, body):
     data = json.loads(resp.body)
     assert "modified_at" in data
     del data["modified_at"]
-    assert "declared_at" in data
+    assert data["declared_at"]
     del data["declared_at"]
     del data["data"]["déclaration"]["date"]
     del body["déclaration"]["date"]
@@ -100,9 +100,62 @@ async def test_basic_declaration_should_save_data(client, body):
     data = json.loads(resp.body)
     assert "modified_at" in data
     del data["modified_at"]
-    assert "declared_at" in data
+    assert data["declared_at"]
     del data["declared_at"]
     del data["data"]["déclaration"]["date"]
+    assert data == {"data": body, "siren": "514027945", "year": 2019}
+
+
+async def test_draft_declaration_should_save_data(client, body):
+    # Draft
+    body["déclaration"]["brouillon"] = True
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    resp = await client.get("/declaration/514027945/2019")
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert "modified_at" in data
+    del data["modified_at"]
+    assert not data.get("declared_at")
+    assert "date" not in data["data"]["déclaration"]
+    assert data["data"]["déclaration"]["brouillon"] is True
+    del body["déclaration"]["date"]
+    assert data == {
+        "data": body,
+        "siren": "514027945",
+        "year": 2019,
+        "declared_at": None,
+    }
+
+    # Real
+    del body["déclaration"]["brouillon"]
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    resp = await client.get("/declaration/514027945/2019")
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert "modified_at" in data
+    del data["modified_at"]
+    assert data.get("declared_at")
+    del data["declared_at"]
+    assert data["data"]["déclaration"]["date"]
+    del data["data"]["déclaration"]["date"]
+    assert data == {"data": body, "siren": "514027945", "year": 2019}
+
+    # Draft again
+    body["déclaration"]["brouillon"] = True
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    resp = await client.get("/declaration/514027945/2019")
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert "modified_at" in data
+    del data["modified_at"]
+    assert data.get("declared_at")
+    del data["declared_at"]
+    assert data["data"]["déclaration"]["date"]
+    del data["data"]["déclaration"]["date"]
+    assert data["data"]["déclaration"]["brouillon"] is True
     assert data == {"data": body, "siren": "514027945", "year": 2019}
 
 
