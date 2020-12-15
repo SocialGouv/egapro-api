@@ -16,52 +16,6 @@ from egapro.helpers import compute_notes
 
 
 @minicli.cli
-async def migrate_legacy(siren=[], year: int = None):
-    conn = await asyncpg.connect(config.LEGACY_PSQL)
-    rows = await conn.fetch("SELECT * FROM objects;")
-    await conn.close()
-    bar = progressist.ProgressBar(prefix="Importing…", total=len(rows), throttle=100)
-    done = 0
-    async with db.table.pool.acquire() as conn:
-        for row in bar.iter(rows):
-            data = json.loads(row["data"])
-            if "data" not in data:
-                continue
-            uuid = row["id"]
-            data["data"]["id"] = uuid
-            data = models.Data(data["data"])
-            modified_at = row["modified_at"]
-            if siren and str(data.siren) not in siren:
-                continue
-            if year and data.year != year:
-                continue
-            if data.validated:
-                try:
-                    existing = await db.declaration.get(data.siren, data.year)
-                except db.NoData:
-                    current = None
-                else:
-                    current = existing["modified_at"]
-                # Use dateDeclaration as modified_at for declaration, so we can decide
-                # which to import between this or the same declaration from solen.
-                old_modified_at = modified_at.replace(tzinfo=timezone.utc)
-                modified_at = datetime.strptime(
-                    data.path("declaration.dateDeclaration"),
-                    "%d/%m/%Y %H:%M",
-                )
-                # Allow to compare aware datetimes.
-                modified_at = modified_at.replace(tzinfo=timezone.utc)
-                if not current or modified_at > current or current == old_modified_at:
-                    await db.declaration.put(
-                        data.siren, data.year, data.email, data, modified_at
-                    )
-            # Always import in simulation, so the redirect from OLD URLs can work.
-            await db.simulation.put(uuid, data, modified_at)
-            done += 1
-    print(f"Imported {done} rows")
-
-
-@minicli.cli
 async def dump_dgt(path: Path, max_rows: int = None):
     wb = await dgt.as_xlsx(max_rows)
     print("Writing the XLSX to", path)
