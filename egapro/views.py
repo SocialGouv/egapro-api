@@ -9,7 +9,7 @@ from asyncpg.exceptions import DataError
 from roll.extensions import cors, options, traceback
 from stdnum.fr.siren import is_valid as siren_is_valid
 
-from . import config, constants, db, emails, helpers, models, tokens, schema, utils
+from . import config, constants, db, emails, helpers, models, tokens, schema
 from .schema.legacy import from_legacy
 from .loggers import logger
 
@@ -101,6 +101,17 @@ def ensure_owner(view):
 @tokens.require
 @ensure_owner
 async def declare(request, response, siren, year):
+    try:
+        year = int(year)
+    except ValueError:
+        raise HttpError(f"Invalid value for year: {year}")
+    if not siren_is_valid(siren):
+        raise HttpError(422, f"Numéro SIREN invalide: {siren}")
+    if year not in constants.YEARS:
+        years = ", ".join([str(y) for y in constants.YEARS])
+        raise HttpError(
+            422, f"Il est possible de déclarer seulement pour les années {years}"
+        )
     data = request.data
     schema.validate(data.raw)
     helpers.compute_notes(data)
@@ -110,18 +121,6 @@ async def declare(request, response, siren, year):
         current = await db.declaration.get(siren, year)
     except db.NoData:
         current = None
-        # This is a new declaration, let's validate year and siren.
-        if not siren_is_valid(siren):
-            raise HttpError(422, f"Numéro SIREN invalide: {siren}")
-    try:
-        year = int(year)
-    except ValueError:
-        raise HttpError(f"Invalid value for year: {year}")
-    if year not in constants.YEARS:
-        years = ", ".join([str(y) for y in constants.YEARS])
-        raise HttpError(
-            422, f"Il est possible de déclarer seulement pour les années {years}"
-        )
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:

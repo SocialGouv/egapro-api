@@ -82,6 +82,10 @@ def _cross_validate(data):
         if data.path(f"{path}.non_calculable"):
             msg = f"{path} must not contain other key when set to non_calculable"
             assert list(data.path(path).keys()) == ["non_calculable"], msg
+        elif data.path(path) is not None:
+            resultat = data.path(f"{path}.résultat")
+            msg = f"{path}.résultat must be set when indicateur is calculable"
+            assert resultat is not None, msg
     keys = ["rémunérations", "augmentations", "promotions"]
     for key in keys:
         path = f"indicateurs.{key}"
@@ -96,10 +100,15 @@ def _cross_validate(data):
 
     # Rémunérations
     base = "indicateurs.rémunérations"
-    if data.path(f"{base}.mode") == "csp":
-        path = f"{base}.date_consultation_cse"
-        msg = f"{path} must be empty if indicateurs.rémunérations.mode='csp'"
-        assert not data.path(path), msg
+    if not data.path(f"{base}.non_calculable"):
+        date_consultation_cse = data.path(f"{base}.date_consultation_cse")
+        mode = data.path(f"{base}.mode")
+        if mode == "csp":
+            msg = f"{base}.date_consultation_cse must be empty if indicateurs.rémunérations.mode='csp'"
+            assert not date_consultation_cse, msg
+        elif mode in ["niveau_autre", "niveau_branche"]:
+            msg = f"{base}.date_consultation_cse must be set if indicateurs.rémunérations.mode!='csp'"
+            assert date_consultation_cse, msg
 
     # Augmentations et promotions
     base = "indicateurs.augmentations_et_promotions"

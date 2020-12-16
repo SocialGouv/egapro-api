@@ -523,6 +523,7 @@ async def test_date_consultation_cse_must_be_empty_if_mode_is_csp(client, body):
         "rémunérations": {
             "mode": "csp",
             "date_consultation_cse": "2020-01-18",
+            "résultat": 10,
         },
     }
     resp = await client.put("/declaration/514027945/2019", body=body)
@@ -571,6 +572,36 @@ async def test_basic_declaration_with_ues_and_missing_siren(client, body):
     assert resp.status == 422
     assert json.loads(resp.body) == {
         "error": "data.entreprise.ues.entreprises[0] must contain ['raison_sociale', 'siren'] properties"
+    }
+
+
+async def test_basic_declaration_with_niveau_branche(client, body):
+    body["indicateurs"] = {
+        "rémunérations": {
+            "mode": "niveau_branche",
+            "date_consultation_cse": "2020-12-12",
+            "résultat": 35,
+        }
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+
+
+async def test_basic_declaration_with_niveau_branche_without_cse(client, body):
+    body["indicateurs"] = {"rémunérations": {"mode": "niveau_branche", "résultat": 15}}
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "indicateurs.rémunérations.date_consultation_cse must be set if indicateurs.rémunérations.mode!='csp'"
+    }
+
+
+async def test_basic_declaration_without_resultat(client, body):
+    body["indicateurs"] = {"rémunérations": {"mode": "csp"}}
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "indicateurs.rémunérations.résultat must be set when indicateur is calculable"
     }
 
 
