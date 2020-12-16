@@ -33,8 +33,7 @@ id: string
   département: python:egapro.schema.utils.departements
   adresse: string
   commune: string
-  # TODO regex ?
-  code_postal: string
+  code_postal: r"\d{5}"
   code_naf: python:egapro.schema.utils.naf
   effectif:
     total: number # Nombre de salariés pris en compte pour le calcul des indicateurs sur la période de référence

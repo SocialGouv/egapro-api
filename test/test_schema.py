@@ -173,3 +173,20 @@ key1:
             },
         },
     }
+
+
+def test_pattern():
+    raw = r"""
+key: r"[\w-]"
+"""
+    schema = Schema(raw).raw
+    assert schema == {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "key": {
+                "type": "string",
+                "pattern": r"[\w-]",
+            },
+        },
+    }

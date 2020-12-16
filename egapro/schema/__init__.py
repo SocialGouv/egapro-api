@@ -135,6 +135,8 @@ def extrapolate(definition):
         return {"type": "string", "format": definition}
     if definition in ("integer", "string", "boolean", "number"):
         return {"type": definition}
+    if definition.startswith('r"') and definition.endswith('"'):
+        return {"type": "string", "pattern": definition[2:-1]}
     if definition.startswith("python:"):
         path = definition[7:]
         definition = import_by_path(path)
