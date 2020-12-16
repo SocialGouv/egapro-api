@@ -64,17 +64,17 @@ async def test_invalid_year_should_raise(client, body):
     }
 
 
-async def test_put_declaration_with_empty_body(client, body):
+async def test_put_declaration_with_empty_body(client):
     resp = await client.put("/declaration/514027945/2019", body="")
     assert resp.status == 400
 
 
-async def test_put_declaration_with_invalid_json(client, body):
+async def test_put_declaration_with_invalid_json(client):
     resp = await client.put("/declaration/514027945/2019", body="<foo>bar</foo>")
     assert resp.status == 400
 
 
-async def test_put_declaration_with_empty_json(client, body):
+async def test_put_declaration_with_empty_json(client):
     resp = await client.put("/declaration/514027945/2019", body="{}")
     assert resp.status == 422
 
@@ -602,6 +602,32 @@ async def test_basic_declaration_without_resultat(client, body):
     assert resp.status == 422
     assert json.loads(resp.body) == {
         "error": "indicateurs.rémunérations.résultat must be set when indicateur is calculable"
+    }
+
+
+async def test_put_declaration_with_invalid_region(client, body):
+    body["entreprise"]["région"] = "88"
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+
+
+async def test_put_declaration_with_departement_and_region_mismatch(client, body):
+    body["entreprise"]["région"] = "11"
+    body["entreprise"]["département"] = "11"
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "entreprise.département and entreprise.région do not match"
+    }
+
+
+async def test_put_declaration_with_code_postal_and_region_mismatch(client, body):
+    body["entreprise"]["code_postal"] = "54321"
+    body["entreprise"]["département"] = "12"
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "entreprise.département and entreprise.code_postal do not match"
     }
 
 

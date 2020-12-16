@@ -7,6 +7,7 @@ import fastjsonschema
 import ujson as json
 from stdnum.fr.siren import is_valid as siren_is_valid
 
+from egapro import constants
 from egapro.utils import import_by_path
 from egapro.models import Data
 
@@ -56,6 +57,13 @@ def _cross_validate(data):
         ]
         for path in required:
             assert data.path(path), f"{path} must not be empty"
+        dep = data.path("entreprise.département")
+        region = data.path("entreprise.région")
+        cp = data.path("entreprise.code_postal")
+        msg = "entreprise.département and entreprise.région do not match"
+        assert dep in constants.REGIONS_TO_DEPARTEMENTS[region], msg
+        msg = "entreprise.département and entreprise.code_postal do not match"
+        assert cp[:2] == dep or (dep in ["2A", "2B"] and cp[:2] == "20"), msg
         index = data.path("déclaration.index") or 0
         mesures_correctives = data.path("déclaration.mesures_correctives")
         if index and index >= 75:
