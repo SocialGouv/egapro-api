@@ -76,7 +76,7 @@ class declaration(table):
     async def completed(cls):
         # Do not select draft in this request, as it must reflect the declarations state
         return await cls.fetch(
-            "SELECT data, legacy FROM declaration "
+            "SELECT data, legacy, modified_at FROM declaration "
             "WHERE declared_at IS NOT NULL ORDER BY declared_at DESC"
         )
 

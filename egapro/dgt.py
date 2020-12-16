@@ -98,6 +98,7 @@ async def get_headers_columns():
             ("source", "source"),
             ("URL_declaration", "URL_declaration"),  # Built from /data/id, see below
             ("Date_reponse", "déclaration.date", isoformat),
+            ("Date_modification", "modified_at"),
             ("Email_declarant", "déclarant.email"),
             ("Nom", "déclarant.nom"),
             ("Prenom", "déclarant.prénom"),
@@ -319,6 +320,7 @@ async def as_xlsx(max_rows=None, debug=False):
             from_legacy(data)
         ues_data(ws_ues, data)
         data = prepare_record(data)
+        data["modified_at"] = record["modified_at"]
         ws.append([fmt(data.get(c)) for c, fmt in columns])
     return wb
 
