@@ -187,37 +187,36 @@ async def validate(pdb=False, verbose=False):
 
 @minicli.cli
 async def compare_index(pdb=False, verbose=False):
-    from egapro.schema.legacy import from_legacy
 
     records = await db.declaration.completed()
     for record in records:
         legacy = {
-            "index": record["data"]["declaration"].get("noteIndex"),
-            "points": record["data"]["declaration"].get("totalPoint"),
-            "max": record["data"]["declaration"].get("totalPointCalculable"),
-            "indic1": record["data"]["indicateurUn"].get("noteFinale"),
-            "indic2": record["data"].get("indicateurDeux", {}).get("noteFinale"),
-            "indic2et3": record["data"]
+            "index": record["legacy"]["declaration"].get("noteIndex"),
+            "points": record["legacy"]["declaration"].get("totalPoint"),
+            "max": record["legacy"]["declaration"].get("totalPointCalculable"),
+            "indic1": record["legacy"]["indicateurUn"].get("noteFinale"),
+            "indic2": record["legacy"].get("indicateurDeux", {}).get("noteFinale"),
+            "indic2et3": record["legacy"]
             .get("indicateurDeuxTrois", {})
             .get("noteFinale"),
-            "indic3": record["data"].get("indicateurTrois", {}).get("noteFinale"),
-            "indic4": record["data"]["indicateurQuatre"].get("noteFinale"),
-            "indic5": record["data"]["indicateurCinq"].get("noteFinale"),
+            "indic3": record["legacy"].get("indicateurTrois", {}).get("noteFinale"),
+            "indic4": record["legacy"]["indicateurQuatre"].get("noteFinale"),
+            "indic5": record["legacy"]["indicateurCinq"].get("noteFinale"),
         }
-        data = models.Data(from_legacy(record["data"]))
+        data = models.Data(record["data"])
         compute_notes(data)
         current = {
-            "index": record["data"]["déclaration"].get("index"),
-            "points": record["data"]["déclaration"].get("points"),
-            "max": record["data"]["déclaration"].get("points_calculables"),
-            "indic1": record["data"]["indicateurs"]["rémunérations"].get("note"),
-            "indic2": record["data"]["indicateurs"]["augmentations"].get("note"),
-            "indic2et3": record["data"]["indicateurs"][
+            "index": data["déclaration"].get("index"),
+            "points": data["déclaration"].get("points"),
+            "max": data["déclaration"].get("points_calculables"),
+            "indic1": data["indicateurs"]["rémunérations"].get("note"),
+            "indic2": data["indicateurs"]["augmentations"].get("note"),
+            "indic2et3": data["indicateurs"][
                 "augmentations_et_promotions"
             ].get("note"),
-            "indic3": record["data"]["indicateurs"]["promotions"].get("note"),
-            "indic4": record["data"]["indicateurs"]["congés_maternité"].get("note"),
-            "indic5": record["data"]["indicateurs"]["hautes_rémunérations"].get("note"),
+            "indic3": data["indicateurs"]["promotions"].get("note"),
+            "indic4": data["indicateurs"]["congés_maternité"].get("note"),
+            "indic5": data["indicateurs"]["hautes_rémunérations"].get("note"),
         }
         if not legacy == current:
             sys.stdout.write("x")
@@ -255,18 +254,9 @@ async def migrate_schema(no_schema=False):
             data = from_legacy(data)
         date = data["déclaration"].get("date")
         declared_at = None
-        if date:
-            declared_at = datetime.fromisoformat(date)
-        try:
-            schema.validate(data)
-            schema.cross_validate(data)
-        except ValueError as err:
-            print(err)
-            data = None
-        except Exception as err:
-            print(err)
-            print(record)
-            raise
+        if not date:
+            continue
+        declared_at = datetime.fromisoformat(date)
         async with db.declaration.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE declaration "
