@@ -55,11 +55,13 @@ def from_legacy(data):
         # Make sure entreprise declarante is part of the list
         entreprises = {entreprise["siren"]: entreprise["raison_sociale"]}
         # Deduplicate on siren
-        entreprises |= {
-            e["siren"]: e.get("nom")
-            for e in entreprise.pop("entreprisesUES", [])
-            if e["siren"] not in entreprises
-        }
+        entreprises.update(
+            {
+                e["siren"]: e.get("nom")
+                for e in entreprise.pop("entreprisesUES", [])
+                if e["siren"] not in entreprises
+            }
+        )
         entreprises = [
             {"raison_sociale": nom, "siren": siren}
             for siren, nom in entreprises.items()
