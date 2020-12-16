@@ -208,5 +208,5 @@ def test_from_legacy_solen():
                 "résultat": 0.0,
             },
         },
-        "source": "solen-2019",
+        "source": "solen",
     }

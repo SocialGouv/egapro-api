@@ -34,7 +34,10 @@ def parse_date(v):
 
 
 def from_legacy(data):
-    source = data.get("source", "egapro")
+    source = data.get("source", "simulateur")
+    if source.startswith("solen"):
+        source = "solen"
+    data["source"] = source
     data["déclarant"] = data.pop("informationsDeclarant", {})
     clean_legacy(data["déclarant"])
 
@@ -85,7 +88,7 @@ def from_legacy(data):
         "hautes_rémunérations": data.pop("indicateurCinq", {}),
     }
     # Make sure we do not use motifNonCalculable for solen data when data is calculable.
-    if data.get("source", "").startswith("solen"):
+    if data.get("source", "") == "solen":
         for indicateur in data["indicateurs"].values():
             if not indicateur.get("nonCalculable"):
                 try:
@@ -111,7 +114,7 @@ def from_legacy(data):
     elif modalites:
         publication["modalités"] = modalites
     declaration["publication"] = publication
-    if source == "egapro":
+    if source == "simulateur":
         if declaration.get("formValidated") != "Valid":
             declaration["brouillon"] = True
     clean_legacy(declaration)
@@ -176,7 +179,7 @@ def from_legacy(data):
             ta = category["tranchesAges"][i]
             if "ecartTauxRemuneration" in ta:
                 tranches[key] = ta["ecartTauxRemuneration"]
-                if not source.startswith("solen"):
+                if not source == "solen":
                     tranches[key] *= 100
             elif (h := ta.get("remunerationAnnuelleBrutHommes")) and (
                 f := ta.get("remunerationAnnuelleBrutFemmes")

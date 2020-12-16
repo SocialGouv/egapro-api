@@ -21,7 +21,7 @@ async def test_basic_solen_import():
     declaration = await db.declaration.get("783247548", 2018)
     data = models.Data(declaration["data"])
     assert data.siren == "783247548"
-    assert data["source"] == "solen-2018"
+    assert data["source"] == "solen"
     assert declaration["modified_at"] == datetime(
         2020, 6, 2, 13, 20, tzinfo=timezone.utc
     )

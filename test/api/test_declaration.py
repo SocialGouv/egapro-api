@@ -12,6 +12,7 @@ pytestmark = pytest.mark.asyncio
 def body():
     return {
         "id": "1234",
+        "source": "formulaire",
         "déclaration": {
             "date": "2020-11-04T10:37:06+00:00",
             "année_indicateurs": 2019,
@@ -819,6 +820,7 @@ async def test_declare_with_legacy_schema(client, body):
     declaration = await db.declaration.get("514027945", 2019)
     expected = {
         "id": "5e41ad88-5dcc-491d-908a-93d5d2fae344",
+        "source": "simulateur",
         "déclarant": {
             "nom": "FOOBAR",
             "email": "foo@bar.org",
