@@ -45,7 +45,6 @@ async def test_solen_import_with_ues():
         {"raison_sociale": "BazBaz SA", "siren": "775701488"},
         {"raison_sociale": "BazBaz One", "siren": "423499322"},
         {"raison_sociale": "BazBaz Two", "siren": "344898355"},
-        {"raison_sociale": "BazBaz Three", "siren": "775701488"},
         {"raison_sociale": "BazBaz Four", "siren": "500425666"},
         {"raison_sociale": "BazBaz Five", "siren": "499203222"},
         {"raison_sociale": "BazBaz Six", "siren": "434044000"},
