@@ -42,8 +42,8 @@ id: string
   ues:
     nom: string
     entreprises:
-      - raison_sociale: string
-        siren: string
+      - +raison_sociale: string
+        +siren: string
 indicateurs:
   rémunérations:  # Indicateur 1 relatif à l'écart de rémunération entre les femmes et les hommes
     mode: csp|niveau_branche|niveau_autre

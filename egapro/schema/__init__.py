@@ -5,6 +5,7 @@ from pathlib import Path
 
 import fastjsonschema
 import ujson as json
+from stdnum.fr.siren import is_valid as siren_is_valid
 
 from egapro.utils import import_by_path
 from egapro.models import Data
@@ -87,6 +88,11 @@ def _cross_validate(data):
         if data.path(f"{path}.résultat") == 0:
             msg = f"{path}.population_favorable must be empty if résultat=0"
             assert not data.path(f"{path}.population_favorable"), msg
+
+    # Entreprise
+    for ues in data.path("entreprise.ues.entreprises") or []:
+        msg = f"Invalid siren: {ues['siren']}"
+        assert siren_is_valid(ues["siren"]), msg
 
     # Rémunérations
     base = "indicateurs.rémunérations"

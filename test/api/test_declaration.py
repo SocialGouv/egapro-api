@@ -533,6 +533,47 @@ async def test_date_consultation_cse_must_be_empty_if_mode_is_csp(client, body):
     )
 
 
+async def test_basic_declaration_with_ues(client, body):
+    body["entreprise"]["ues"] = {
+        "nom": "Nom UES",
+        "entreprises": [{"siren": "123456782", "raison_sociale": "Foobarbaz"}],
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    resp = await client.get("/declaration/514027945/2019")
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert "modified_at" in data
+    del data["modified_at"]
+    assert data["declared_at"]
+    del data["declared_at"]
+    del data["data"]["déclaration"]["date"]
+    del body["déclaration"]["date"]
+    assert data == {"data": body, "siren": "514027945", "year": 2019}
+
+
+async def test_basic_declaration_with_ues_and_invalid_siren(client, body):
+    body["entreprise"]["ues"] = {
+        "nom": "Nom UES",
+        "entreprises": [{"siren": "invalid", "raison_sociale": "Foobarbaz"}],
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {"error": "Invalid siren: invalid"}
+
+
+async def test_basic_declaration_with_ues_and_missing_siren(client, body):
+    body["entreprise"]["ues"] = {
+        "nom": "Nom UES",
+        "entreprises": [{"raison_sociale": "Foobarbaz"}],
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "data.entreprise.ues.entreprises[0] must contain ['raison_sociale', 'siren'] properties"
+    }
+
+
 async def test_declare_with_legacy_schema(client, body):
     legacy = {
         "id": "5e41ad88-5dcc-491d-908a-93d5d2fae344",

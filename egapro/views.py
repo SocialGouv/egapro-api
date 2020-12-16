@@ -2,7 +2,6 @@ import sys
 
 from functools import wraps
 
-import ujson as json
 from naf import DB as NAF
 from roll import Roll, HttpError
 from roll import Request as BaseRequest
