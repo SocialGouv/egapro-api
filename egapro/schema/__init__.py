@@ -93,7 +93,13 @@ def _cross_validate(data):
         elif data.path(path) is not None:
             resultat = data.path(f"{path}.résultat")
             msg = f"{path}.résultat must be set when indicateur is calculable"
-            assert resultat is not None, msg
+            if key != "rémunérations" or data.path(f"{path}.population_favorable"):
+                # The "rémunérations" indicator is sent through several steps
+                # on the "formulaire" frontend. The only way the "formulaire"
+                # sent all its data is if there's a `population_favorable`
+                # field. However, this latter field is only provided if the
+                # `résultat` is not `0`.
+                assert resultat is not None, msg
     keys = ["rémunérations", "augmentations", "promotions"]
     for key in keys:
         path = f"indicateurs.{key}"
