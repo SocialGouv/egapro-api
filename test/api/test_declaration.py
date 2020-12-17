@@ -597,7 +597,16 @@ async def test_basic_declaration_with_niveau_branche_without_cse(client, body):
 
 
 async def test_basic_declaration_without_resultat(client, body):
-    body["indicateurs"] = {"rémunérations": {"mode": "csp"}}
+    body["indicateurs"] = {"augmentations": {"catégories": [1, 2, 3, 4]}}
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "indicateurs.augmentations.résultat must be set when indicateur is calculable"
+    }
+
+
+async def test_remunerations_declaration_without_resultat(client, body):
+    body["indicateurs"] = {"rémunérations": {"mode": "csp", "population_favorable": "femmes"}}
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
