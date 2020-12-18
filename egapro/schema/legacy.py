@@ -56,7 +56,9 @@ def from_legacy(data):
     nom_ues = entreprise.pop("nomUES", entreprise.get("raison_sociale", ""))
     if "entreprisesUES" in entreprise or ues:
         # Make sure entreprise declarante is part of the list
-        entreprises = {entreprise["siren"]: entreprise["raison_sociale"]}
+        entreprises = {}
+        if "siren" in entreprise and "raison_sociale" in entreprise:
+            entreprises = {entreprise["siren"]: entreprise["raison_sociale"]}
         # Deduplicate on siren
         entreprises.update(
             {
