@@ -59,6 +59,182 @@ async def test_basic_simulation_should_save_data(client):
         "id": "12345678-1234-5678-9012-123456789012",
     }
 
+async def test_empty_simulation_should_save_data(client):
+    posted_data = {
+        "id": "03a50ee2-4138-11eb-b1b6-38f9d356f022",
+        "data": {
+            "informations": {
+                "formValidated": "None",
+                "nomEntreprise": "",
+                "trancheEffectifs": "50 à 250",
+                "debutPeriodeReference": "",
+                "finPeriodeReference": ""
+            },
+            "effectif": {
+                "formValidated": "None",
+                "nombreSalaries": [
+                    {
+                        "categorieSocioPro": 0,
+                        "tranchesAges": [
+                            {"trancheAge": 0},
+                            {"trancheAge": 1},
+                            {"trancheAge": 2},
+                            {"trancheAge": 3}
+                        ]
+                    },
+                    {
+                        "categorieSocioPro": 1,
+                        "tranchesAges": [
+                            {"trancheAge": 0},
+                            {"trancheAge": 1},
+                            {"trancheAge": 2},
+                            {"trancheAge": 3}
+                        ]
+                    },
+                    {
+                        "categorieSocioPro": 2,
+                        "tranchesAges": [
+                            {"trancheAge": 0},
+                            {"trancheAge": 1},
+                            {"trancheAge": 2},
+                            {"trancheAge": 3}
+                        ]
+                    },
+                    {
+                        "categorieSocioPro": 3,
+                        "tranchesAges": [
+                            {"trancheAge": 0},
+                            {"trancheAge": 1},
+                            {"trancheAge": 2},
+                            {"trancheAge": 3}
+                        ]
+                    }
+                ]
+            },
+            "indicateurUn": {
+                "formValidated": "None",
+                "csp": True,
+                "coef": False,
+                "autre": False,
+                "remunerationAnnuelle": [
+                    {
+                        "categorieSocioPro": 0,
+                        "tranchesAges": [
+                            {"trancheAge": 0},
+                            {"trancheAge": 1},
+                            {"trancheAge": 2},
+                            {"trancheAge": 3}
+                        ]
+                    },
+                    {
+                        "categorieSocioPro": 1,
+                        "tranchesAges": [
+                            {"trancheAge": 0},
+                            {"trancheAge": 1},
+                            {"trancheAge": 2},
+                            {"trancheAge": 3}
+                        ]
+                    },
+                    {
+                        "categorieSocioPro": 2,
+                        "tranchesAges": [
+                            {"trancheAge": 0},
+                            {"trancheAge": 1},
+                            {"trancheAge": 2},
+                            {"trancheAge": 3}
+                        ]
+                    },
+                    {
+                        "categorieSocioPro": 3,
+                        "tranchesAges": [
+                            {"trancheAge": 0},
+                            {"trancheAge": 1},
+                            {"trancheAge": 2},
+                            {"trancheAge": 3}
+                        ]
+                    }
+                ],
+                "coefficientGroupFormValidated": "None",
+                "coefficientEffectifFormValidated": "None",
+                "coefficient": []
+            },
+            "indicateurDeux": {
+                "formValidated": "None",
+                "presenceAugmentation": True,
+                "tauxAugmentation": [
+                    {"categorieSocioPro": 0},
+                    {"categorieSocioPro": 1},
+                    {"categorieSocioPro": 2},
+                    {"categorieSocioPro": 3}
+                ]
+            },
+            "indicateurTrois": {
+                "formValidated": "None",
+                "presencePromotion": True,
+                "tauxPromotion": [
+                    {"categorieSocioPro": 0},
+                    {"categorieSocioPro": 1},
+                    {"categorieSocioPro": 2},
+                    {"categorieSocioPro": 3}
+                ]
+            },
+            "indicateurDeuxTrois": {
+                "formValidated": "None",
+                "presenceAugmentationPromotion": True,
+                "periodeDeclaration": "unePeriodeReference"
+            },
+            "indicateurQuatre": {
+                "formValidated": "None",
+                "presenceCongeMat": True
+            },
+            "indicateurCinq": {
+                "formValidated": "None"
+            },
+            "informationsEntreprise": {
+                "formValidated": "None",
+                "nomEntreprise": "",
+                "siren": "",
+                "codeNaf": "",
+                "region": "",
+                "departement": "",
+                "adresse": "",
+                "codePostal": "",
+                "commune": "",
+                "structure": "Entreprise",
+                "nomUES": "",
+                "entreprisesUES": []
+            },
+            "informationsDeclarant": {
+                "formValidated": "None",
+                "nom": "",
+                "prenom": "",
+                "tel": "",
+                "email": "",
+                "acceptationCGU": False
+            },
+            "declaration": {
+                "formValidated": "None",
+                "mesuresCorrection": "",
+                "dateConsultationCSE": "",
+                "datePublication": "",
+                "lienPublication": "",
+                "dateDeclaration": "",
+                "totalPoint": 0,
+                "totalPointCalculable": 0
+            }
+        }
+    }
+    resp = await client.put(
+        "/simulation/03a50ee2-4138-11eb-b1b6-38f9d356f022",
+        body=posted_data,
+    )
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert "modified_at" in data
+    del data["modified_at"]
+    assert data == posted_data
+
+
 
 async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
     calls = 0
