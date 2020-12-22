@@ -23,29 +23,6 @@ async def test_request_token(client, monkeypatch):
     assert calls == 1
 
 
-async def test_stats_endpoint(client):
-    rows = [
-        ("12345671", ":1000"),
-        ("12345672", ":1000"),
-        ("12345673", "251:999"),
-        ("12345674", "50:250"),
-        ("12345675", "50:250"),
-        ("12345676", "50:250"),
-    ]
-    for siren, tranche in rows:
-        await db.declaration.put(
-            siren,
-            2019,
-            "foo@bar.org",
-            {
-                "entreprise": {"effectif": {"tranche": tranche}},
-            },
-        )
-    resp = await client.get("/stats")
-    assert resp.status == 200
-    assert json.loads(resp.body) == {":1000": 2, "251:999": 1, "50:250": 3}
-
-
 async def test_search_endpoint(client):
     await db.declaration.put(
         "12345671",
