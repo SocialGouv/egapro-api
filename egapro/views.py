@@ -40,6 +40,13 @@ class Request(BaseRequest):
             self._data = models.Data(data)
         return self._data
 
+    @property
+    def domain(self):
+        domain = self.origin or f"https://{self.host}"
+        if not domain.endswith("/"):
+            domain += "/"
+        return domain
+
 
 class App(Roll):
     Request = Request
@@ -129,9 +136,9 @@ async def declare(request, response, siren, year):
         # automatically sent, without any action from the user.)
         if not current or not current.data.validated:
             if data.id:  # Coming from simulation URL
-                url = f"{config.BASE_URL}/simulateur/{data.id}"
+                url = f"{request.domain}simulateur/{data.id}"
             else:
-                url = f"{config.BASE_URL}/declaration/{data.siren}/{data.year}"
+                url = f"{request.domain}declaration/?siren={data.siren}&year={data.year}"
             emails.success.send(declarant, url=url, **data)
 
 
@@ -209,10 +216,7 @@ async def send_token(request, response):
     if not email:
         raise HttpError(400, "Missing email key")
     token = tokens.create(email)
-    host = request.origin or f"https://{request.host}"
-    if not host.endswith("/"):
-        host += "/"
-    link = f"{host}declaration/?token={token.decode()}"
+    link = f"{request.domain}declaration/?token={token.decode()}"
     print(link)
     body = emails.ACCESS_GRANTED.format(link=link)
     emails.send(email, "Déclarer sur Egapro", body)

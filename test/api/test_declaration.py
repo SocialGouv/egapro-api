@@ -252,9 +252,10 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch, body
     del body["id"]
 
     def mock_send(to, subject, txt, html):
+        print(txt)
         assert to == "foo@bar.org"
-        assert "/declaration/514027945/2019" in txt
-        assert "/declaration/514027945/2019" in html
+        assert "/declaration/?siren=514027945&year=2019" in txt
+        assert "/declaration/?siren=514027945&year=2019" in html
         assert company in txt
         assert company in html
         nonlocal calls
