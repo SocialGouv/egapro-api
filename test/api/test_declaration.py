@@ -60,7 +60,7 @@ async def test_invalid_year_should_raise(client, body):
     resp = await client.put("/declaration/514027945/2017", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
-        "error": "Il est possible de déclarer seulement pour les années 2018, 2019"
+        "error": "Il est possible de déclarer seulement pour les années 2018, 2019, 2020"
     }
 
 
