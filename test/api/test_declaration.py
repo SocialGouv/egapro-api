@@ -195,6 +195,9 @@ async def test_cannot_load_not_owned_declaration(client, monkeypatch):
     client.login("other@email.com")
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 403
+    assert json.loads(resp.body) == {
+        "error": "Cette déclaration a été créée par un autre utilisateur"
+    }
 
 
 async def test_staff_can_load_not_owned_declaration(client, monkeypatch, declaration):
@@ -217,6 +220,9 @@ async def test_cannot_put_not_owned_declaration(client, monkeypatch):
     client.login("other@email.com")
     resp = await client.put("/declaration/514027945/2019")
     assert resp.status == 403
+    assert json.loads(resp.body) == {
+        "error": "Cette déclaration a déjà été créée par un autre utilisateur"
+    }
 
 
 async def test_owner_check_is_lower_case(client, body):
@@ -607,7 +613,9 @@ async def test_basic_declaration_without_resultat(client, body):
 
 
 async def test_remunerations_declaration_without_resultat(client, body):
-    body["indicateurs"] = {"rémunérations": {"mode": "csp", "population_favorable": "femmes"}}
+    body["indicateurs"] = {
+        "rémunérations": {"mode": "csp", "population_favorable": "femmes"}
+    }
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {

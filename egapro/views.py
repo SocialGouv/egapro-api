@@ -94,7 +94,11 @@ def ensure_owner(view):
                     year,
                 )
                 if declarant not in config.STAFF:
-                    raise HttpError(403, "You are not owner of this resource")
+                    if request.method == "PUT":
+                        msg = "Cette déclaration a déjà été créée par un autre utilisateur"
+                    else:
+                        msg = "Cette déclaration a été créée par un autre utilisateur"
+                    raise HttpError(403, msg)
         if request._body:  # This is a PUT.
             request.data.setdefault("déclarant", {})
             # Make sure we set the email used for token as owner.
@@ -138,7 +142,9 @@ async def declare(request, response, siren, year):
             if data.id:  # Coming from simulation URL
                 url = f"{request.domain}simulateur/{data.id}"
             else:
-                url = f"{request.domain}declaration/?siren={data.siren}&year={data.year}"
+                url = (
+                    f"{request.domain}declaration/?siren={data.siren}&year={data.year}"
+                )
             emails.success.send(declarant, url=url, **data)
 
 
