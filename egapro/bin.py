@@ -238,7 +238,7 @@ async def migrate_schema(no_schema=False):
         async with db.table.pool.acquire() as conn:
             await conn.execute(
                 """
-                DROP INDEX idx_effectifs;
+                DROP INDEX IF EXISTS idx_effectifs;
                 ALTER TABLE declaration RENAME COLUMN last_modified TO modified_at;
                 ALTER TABLE simulation RENAME COLUMN last_modified TO modified_at;
                 ALTER TABLE declaration ADD COLUMN declared_at TIMESTAMP WITH TIME ZONE;
