@@ -24,17 +24,17 @@ class Request(BaseRequest):
         data = super().json
         if "data" in data:
             data = data["data"]
+        # Legacy identifier, be defensive and try hard to find it.
+        if "id" not in data:
+            id_ = super().json.get("id")
+            if id_:
+                data["id"] = id_
         return data
 
     @property
     def data(self):
         if self._data is None:
             data = self.json
-            # Legacy identifier, be defensive and try hard to find it.
-            if "id" not in data:
-                id_ = self.json.get("id")
-                if id_:
-                    data["id"] = id_
             if data and "déclaration" not in data:
                 data = from_legacy(data)
             self._data = models.Data(data)

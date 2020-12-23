@@ -1018,3 +1018,12 @@ async def test_declare_with_legacy_schema(client, body):
     declared_at = declaration["data"]["déclaration"].pop("date")
     assert declared_at
     assert declaration["data"] == expected
+
+    # Make sure we support {"data": {"data": {}}} and "id" at root level
+    id_ = legacy.pop("id")
+    resp = await client.put(
+        "/declaration/514027945/2019", body={"data": legacy, "id": id_}
+    )
+    assert resp.status == 204
+    declaration = await db.declaration.get("514027945", 2019)
+    assert declaration.data["id"] == "5e41ad88-5dcc-491d-908a-93d5d2fae344"

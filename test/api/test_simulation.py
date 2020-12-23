@@ -59,6 +59,7 @@ async def test_basic_simulation_should_save_data(client):
         "id": "12345678-1234-5678-9012-123456789012",
     }
 
+
 async def test_empty_simulation_should_save_data(client):
     posted_data = {
         "id": "03a50ee2-4138-11eb-b1b6-38f9d356f022",
@@ -68,7 +69,7 @@ async def test_empty_simulation_should_save_data(client):
                 "nomEntreprise": "",
                 "trancheEffectifs": "50 à 250",
                 "debutPeriodeReference": "",
-                "finPeriodeReference": ""
+                "finPeriodeReference": "",
             },
             "effectif": {
                 "formValidated": "None",
@@ -79,8 +80,8 @@ async def test_empty_simulation_should_save_data(client):
                             {"trancheAge": 0},
                             {"trancheAge": 1},
                             {"trancheAge": 2},
-                            {"trancheAge": 3}
-                        ]
+                            {"trancheAge": 3},
+                        ],
                     },
                     {
                         "categorieSocioPro": 1,
@@ -88,8 +89,8 @@ async def test_empty_simulation_should_save_data(client):
                             {"trancheAge": 0},
                             {"trancheAge": 1},
                             {"trancheAge": 2},
-                            {"trancheAge": 3}
-                        ]
+                            {"trancheAge": 3},
+                        ],
                     },
                     {
                         "categorieSocioPro": 2,
@@ -97,8 +98,8 @@ async def test_empty_simulation_should_save_data(client):
                             {"trancheAge": 0},
                             {"trancheAge": 1},
                             {"trancheAge": 2},
-                            {"trancheAge": 3}
-                        ]
+                            {"trancheAge": 3},
+                        ],
                     },
                     {
                         "categorieSocioPro": 3,
@@ -106,10 +107,10 @@ async def test_empty_simulation_should_save_data(client):
                             {"trancheAge": 0},
                             {"trancheAge": 1},
                             {"trancheAge": 2},
-                            {"trancheAge": 3}
-                        ]
-                    }
-                ]
+                            {"trancheAge": 3},
+                        ],
+                    },
+                ],
             },
             "indicateurUn": {
                 "formValidated": "None",
@@ -123,8 +124,8 @@ async def test_empty_simulation_should_save_data(client):
                             {"trancheAge": 0},
                             {"trancheAge": 1},
                             {"trancheAge": 2},
-                            {"trancheAge": 3}
-                        ]
+                            {"trancheAge": 3},
+                        ],
                     },
                     {
                         "categorieSocioPro": 1,
@@ -132,8 +133,8 @@ async def test_empty_simulation_should_save_data(client):
                             {"trancheAge": 0},
                             {"trancheAge": 1},
                             {"trancheAge": 2},
-                            {"trancheAge": 3}
-                        ]
+                            {"trancheAge": 3},
+                        ],
                     },
                     {
                         "categorieSocioPro": 2,
@@ -141,8 +142,8 @@ async def test_empty_simulation_should_save_data(client):
                             {"trancheAge": 0},
                             {"trancheAge": 1},
                             {"trancheAge": 2},
-                            {"trancheAge": 3}
-                        ]
+                            {"trancheAge": 3},
+                        ],
                     },
                     {
                         "categorieSocioPro": 3,
@@ -150,13 +151,13 @@ async def test_empty_simulation_should_save_data(client):
                             {"trancheAge": 0},
                             {"trancheAge": 1},
                             {"trancheAge": 2},
-                            {"trancheAge": 3}
-                        ]
-                    }
+                            {"trancheAge": 3},
+                        ],
+                    },
                 ],
                 "coefficientGroupFormValidated": "None",
                 "coefficientEffectifFormValidated": "None",
-                "coefficient": []
+                "coefficient": [],
             },
             "indicateurDeux": {
                 "formValidated": "None",
@@ -165,8 +166,8 @@ async def test_empty_simulation_should_save_data(client):
                     {"categorieSocioPro": 0},
                     {"categorieSocioPro": 1},
                     {"categorieSocioPro": 2},
-                    {"categorieSocioPro": 3}
-                ]
+                    {"categorieSocioPro": 3},
+                ],
             },
             "indicateurTrois": {
                 "formValidated": "None",
@@ -175,21 +176,16 @@ async def test_empty_simulation_should_save_data(client):
                     {"categorieSocioPro": 0},
                     {"categorieSocioPro": 1},
                     {"categorieSocioPro": 2},
-                    {"categorieSocioPro": 3}
-                ]
+                    {"categorieSocioPro": 3},
+                ],
             },
             "indicateurDeuxTrois": {
                 "formValidated": "None",
                 "presenceAugmentationPromotion": True,
-                "periodeDeclaration": "unePeriodeReference"
+                "periodeDeclaration": "unePeriodeReference",
             },
-            "indicateurQuatre": {
-                "formValidated": "None",
-                "presenceCongeMat": True
-            },
-            "indicateurCinq": {
-                "formValidated": "None"
-            },
+            "indicateurQuatre": {"formValidated": "None", "presenceCongeMat": True},
+            "indicateurCinq": {"formValidated": "None"},
             "informationsEntreprise": {
                 "formValidated": "None",
                 "nomEntreprise": "",
@@ -202,7 +198,7 @@ async def test_empty_simulation_should_save_data(client):
                 "commune": "",
                 "structure": "Entreprise",
                 "nomUES": "",
-                "entreprisesUES": []
+                "entreprisesUES": [],
             },
             "informationsDeclarant": {
                 "formValidated": "None",
@@ -210,7 +206,7 @@ async def test_empty_simulation_should_save_data(client):
                 "prenom": "",
                 "tel": "",
                 "email": "",
-                "acceptationCGU": False
+                "acceptationCGU": False,
             },
             "declaration": {
                 "formValidated": "None",
@@ -220,9 +216,9 @@ async def test_empty_simulation_should_save_data(client):
                 "lienPublication": "",
                 "dateDeclaration": "",
                 "totalPoint": 0,
-                "totalPointCalculable": 0
-            }
-        }
+                "totalPointCalculable": 0,
+            },
+        },
     }
     resp = await client.put(
         "/simulation/03a50ee2-4138-11eb-b1b6-38f9d356f022",
@@ -232,8 +228,9 @@ async def test_empty_simulation_should_save_data(client):
     data = json.loads(resp.body)
     assert "modified_at" in data
     del data["modified_at"]
+    assert "id" in data["data"]
+    del data["data"]["id"]
     assert data == posted_data
-
 
 
 async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
@@ -265,19 +262,20 @@ async def test_put_simulation_should_redirect_to_declaration_if_validated(client
         "/simulation/12345678-1234-5678-9012-123456789012",
         body={
             "data": {
+                "id": "12345678-1234-5678-9012-123456789012",
                 "informationsDeclarant": {"email": "foo@bar.org"},
                 "declaration": {
                     "formValidated": "Valid",
                     "dateDeclaration": "04/11/2019 10:10",
                 },
-                "informationsEntreprise": {"siren": "12345678"},
+                "informationsEntreprise": {"siren": "123456782"},
                 "informations": {"anneeDeclaration": 2019},
             },
         },
     )
     assert resp.status == 307
-    assert resp.headers["Location"] == "/declaration/12345678/2019"
-    # Simulation should have been saved too
+    assert resp.headers["Location"] == "/declaration/123456782/2019"
+    # Simulation should have been saved anyway
     assert await db.simulation.get("12345678-1234-5678-9012-123456789012")
 
 
