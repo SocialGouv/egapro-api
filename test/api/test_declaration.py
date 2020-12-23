@@ -326,7 +326,9 @@ async def test_invalid_declaration_data_should_raise_on_put(client):
         body={"foo": "bar"},
     )
     assert resp.status == 422
-    assert json.loads(resp.body) == {"error": "data.déclaration.date must be string"}
+    assert json.loads(resp.body) == {
+        "error": "data.déclaration.année_indicateurs must be integer"
+    }
 
 
 async def test_cannot_set_augmentations_if_tranche_is_not_50_250(client, body):

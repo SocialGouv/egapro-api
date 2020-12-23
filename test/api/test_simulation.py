@@ -48,14 +48,24 @@ async def test_get_simulation_with_invalid_uuid(client):
 async def test_basic_simulation_should_save_data(client):
     resp = await client.put(
         "/simulation/12345678-1234-5678-9012-123456789012",
-        body={"data": {"foo": "bar"}},
+        body={
+            "data": {
+                "informations": {"anneeDeclaration": 2018},
+                "informationsDeclarant": {"email": "foo@bar.org"},
+                "informationsEntreprise": {"siren": "123456782"},
+            }
+        },
     )
     assert resp.status == 200
     data = json.loads(resp.body)
     assert "modified_at" in data
     del data["modified_at"]
     assert data == {
-        "data": {"foo": "bar"},
+        "data": {
+            "informations": {"anneeDeclaration": 2018},
+            "informationsDeclarant": {"email": "foo@bar.org"},
+            "informationsEntreprise": {"siren": "123456782"},
+        },
         "id": "12345678-1234-5678-9012-123456789012",
     }
 
@@ -70,6 +80,7 @@ async def test_empty_simulation_should_save_data(client):
                 "trancheEffectifs": "50 à 250",
                 "debutPeriodeReference": "",
                 "finPeriodeReference": "",
+                "anneeDeclaration": 2018,
             },
             "effectif": {
                 "formValidated": "None",
@@ -263,12 +274,25 @@ async def test_put_simulation_should_redirect_to_declaration_if_validated(client
         body={
             "data": {
                 "id": "12345678-1234-5678-9012-123456789012",
-                "informationsDeclarant": {"email": "foo@bar.org"},
+                "informationsDeclarant": {
+                    "email": "foo@bar.org",
+                    "prénom": "Gérard",
+                    "nom": "Lambert",
+                    "téléphone": "+33671795348",
+                },
                 "declaration": {
                     "formValidated": "Valid",
                     "dateDeclaration": "04/11/2019 10:10",
                 },
-                "informationsEntreprise": {"siren": "123456782"},
+                "informationsEntreprise": {
+                    "siren": "123456782",
+                    "region": "Hauts-de-France",
+                    "departement": "Nord",
+                    "commune": "Wambrechies",
+                    "code_postal": "59118",
+                    "adresse": "Quelque part",
+                    "code_naf": "47.11F",
+                },
                 "informations": {"anneeDeclaration": 2019},
             },
         },

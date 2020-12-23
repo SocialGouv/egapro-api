@@ -100,9 +100,10 @@ def from_legacy(data):
     declaration = data["déclaration"] = data.pop("declaration", {})
     informations = data.pop("informations", {})
     declaration["année_indicateurs"] = informations.pop("anneeDeclaration", None)
-    declaration["fin_période_référence"] = parse_date(
-        informations.get("finPeriodeReference")
-    )
+    if informations.get("finPeriodeReference"):
+        declaration["fin_période_référence"] = parse_date(
+            informations["finPeriodeReference"]
+        )
     if "mesuresCorrection" in declaration:
         value = declaration.pop("mesuresCorrection")
         if value not in (None, ""):
@@ -119,6 +120,8 @@ def from_legacy(data):
     if source == "simulateur":
         if declaration.get("formValidated") != "Valid":
             declaration["brouillon"] = True
+    if declaration.get("dateDeclaration"):
+        declaration["date"] = parse_datetime(declaration.pop("dateDeclaration"))
     clean_legacy(declaration)
     index = declaration.get("index") or 0
     if not index or index >= 75:
@@ -126,7 +129,6 @@ def from_legacy(data):
     elif not declaration.get("mesures_correctives"):
         # Fallback for declarations from 2019
         declaration["mesures_correctives"] = "me"
-    declaration["date"] = parse_datetime(declaration.get("date"))
 
     effectif = data.pop("effectif", {})
     clean_legacy(effectif)
@@ -145,7 +147,8 @@ def from_legacy(data):
             tranche = "251:999"
     else:
         tranche = TRANCHES.get(tranche)
-    effectif["tranche"] = tranche
+    if tranche:
+        effectif["tranche"] = tranche
     entreprise["effectif"] = effectif
 
     # Un
@@ -201,12 +204,12 @@ def from_legacy(data):
 
     # Deux
     deux = data["indicateurs"]["augmentations"]
-    if not deux.get("nonCalculable"):
+    if not deux.get("nonCalculable") and deux.get("tauxAugmentation"):
         deux["catégories"] = [
-            c.get("ecartTauxAugmentation") for c in deux.get("tauxAugmentation", [])
+            c.get("ecartTauxAugmentation") for c in deux["tauxAugmentation"]
         ]
     clean_legacy(deux)
-    if effectif["tranche"] == "50:250":
+    if effectif.get("tranche") == "50:250":
         deux.clear()
     if deux.get("résultat") == 0:
         deux.pop("population_favorable", None)
@@ -214,7 +217,7 @@ def from_legacy(data):
     # # DeuxTrois
     deux_trois = data["indicateurs"]["augmentations_et_promotions"]
     clean_legacy(deux_trois)
-    if effectif["tranche"] != "50:250":
+    if effectif.get("tranche") != "50:250":
         deux_trois.clear()
     if (
         deux_trois.get("résultat") == 0
@@ -243,12 +246,12 @@ def from_legacy(data):
 
     # Trois
     trois = data["indicateurs"]["promotions"]
-    if not trois.get("nonCalculable"):
+    if not trois.get("nonCalculable") and trois.get("tauxPromotion"):
         trois["catégories"] = [
-            c.get("ecartTauxPromotion") for c in trois.get("tauxPromotion", [])
+            c.get("ecartTauxPromotion") for c in trois["tauxPromotion"]
         ]
     clean_legacy(trois)
-    if effectif["tranche"] == "50:250":
+    if effectif.get("tranche") == "50:250":
         trois.clear()
     if trois.get("résultat") == 0:
         trois.pop("population_favorable", None)
@@ -282,7 +285,6 @@ def clean_legacy(legacy):
         "noteNombreSalaries": "note_nombre_salariés",
         "noteEcart": "note_en_pourcentage",
         "dateConsultationCSE": "date_consultation_cse",
-        "dateDeclaration": "date",
         "totalPoint": "points",
         "totalPointCalculable": "points_calculables",
         "nombreSalariesTotal": "total",
@@ -332,6 +334,7 @@ def clean_legacy(legacy):
         "nombreSalarieesPeriodeAugmentation",
         "nombreSalariesFemmes",
         "nombreSalariesHommes",
+        "dateDeclaration",
     ]
     for k in to_delete:
         try:

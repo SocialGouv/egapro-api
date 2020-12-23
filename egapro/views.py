@@ -188,7 +188,13 @@ async def send_simulation_code(request, response, uuid):
 class SimulationResource:
     async def on_put(self, request, response, uuid):
         await db.simulation.put(uuid, request.json)
-        if self.is_declaration(response, request.data):
+        data = request.data
+        # Egapro does not send data in the order we except, so for now only try to
+        # validate when we have the basic.
+        if data.siren and data.year and data.email:
+            schema.validate(data.raw)
+            schema.cross_validate(data.raw)
+        if self.is_declaration(response, data):
             return
         response.json = db.simulation.as_resource(await db.simulation.get(uuid))
         response.status = 200

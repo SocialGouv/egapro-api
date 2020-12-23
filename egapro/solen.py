@@ -8,7 +8,7 @@ import sys
 import minicli
 import ujson as json
 from collections import OrderedDict
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 from itertools import islice
 from jsonschema import Draft7Validator
 from jsonschema.exceptions import ValidationError
