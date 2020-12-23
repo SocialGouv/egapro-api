@@ -22,13 +22,12 @@ class Request(BaseRequest):
     @property
     def json(self):
         data = super().json
+        id_ = data.get("id")
         if "data" in data:
             data = data["data"]
         # Legacy identifier, be defensive and try hard to find it.
-        if "id" not in data:
-            id_ = super().json.get("id")
-            if id_:
-                data["id"] = id_
+        if "id" not in data and id_:
+            data["id"] = id_
         return data
 
     @property
