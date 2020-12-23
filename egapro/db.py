@@ -113,7 +113,6 @@ class declaration(table):
         if not declared_at and not data.is_draft():
             declared_at = modified_at
         if declared_at:
-            print("setting date")
             data["déclaration"]["date"] = declared_at.isoformat()
         if data.is_draft():
             query = sql.insert_draft_declaration
