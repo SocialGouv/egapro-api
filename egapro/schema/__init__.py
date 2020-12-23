@@ -56,43 +56,43 @@ def _cross_validate(data):
             "déclarant.téléphone",
         ]
         for path in required:
-            assert data.path(path), f"{path} must not be empty"
+            assert data.path(path), f"Le champ {path} doit être défini"
         dep = data.path("entreprise.département")
         region = data.path("entreprise.région")
         cp = data.path("entreprise.code_postal")
-        msg = "entreprise.département and entreprise.région do not match"
+        msg = "Le département et la région ne correspondent pas"
         assert dep in constants.REGIONS_TO_DEPARTEMENTS[region], msg
-        msg = "entreprise.département and entreprise.code_postal do not match"
+        msg = "Le département et le code postal ne correspondent pas"
         assert cp[:2] == dep or (dep in ["2A", "2B"] and cp[:2] == "20"), msg
         index = data.path("déclaration.index") or 0
         mesures_correctives = data.path("déclaration.mesures_correctives")
         if index and index >= 75:
-            msg = "déclaration.mesures_correctives must not be set when déclaration.index >= 75"
+            msg = "Les mesures correctives ne doivent pas être définies pour un index de 75 ou plus"
             assert not mesures_correctives, msg
         elif index:
-            msg = "déclaration.mesures_correctives must not be null when déclaration.index < 75"
+            msg = "Les mesures correctives doivent être définies pour un index inférieur à 75"
             assert mesures_correctives, msg
         elif not index:
-            msg = "déclaration.mesures_correctives must not be set when déclaration.index is 'non calculable'"
+            msg = "Les mesures correctives ne doivent pas être définies si l'index n'est pas calculable"
             assert not mesures_correctives, msg
     tranche = data.path("entreprise.effectif.tranche")
     if tranche == "50:250":
         paths = ("indicateurs.promotions", "indicateurs.augmentations")
         for path in paths:
-            msg = f"{path} cannot be set if entreprise.effectif.tranche='50:250'"
+            msg = f"L'indicateur {path} ne doit pas être défini pour la tranche 50 à 250"
             assert not data.path(path), msg
     else:
         path = "indicateurs.augmentations_et_promotions"
-        msg = f"{path} cannot be set if entreprise.effectif.tranche is not '50:250'"
+        msg = f"L'indicateur {path } ne peut être défini que pour la tranche 50 à 250"
         assert not data.path(path), msg
     for key in SCHEMA["properties"]["indicateurs"]["properties"].keys():
         path = f"indicateurs.{key}"
         if data.path(f"{path}.non_calculable"):
-            msg = f"{path} must not contain other key when set to non_calculable"
+            msg = f"L'indicateur {path} doit être vide s'il n'est pas calculable"
             assert list(data.path(path).keys()) == ["non_calculable"], msg
         elif data.path(path) is not None:
             resultat = data.path(f"{path}.résultat")
-            msg = f"{path}.résultat must be set when indicateur is calculable"
+            msg = f"{path}.résultat doit être défini si l'indicateur est calculable"
             if key != "rémunérations" or data.path(f"{path}.population_favorable"):
                 # The "rémunérations" indicator is sent through several steps
                 # on the "formulaire" frontend. The only way the "formulaire"
@@ -104,7 +104,7 @@ def _cross_validate(data):
     for key in keys:
         path = f"indicateurs.{key}"
         if data.path(f"{path}.résultat") == 0:
-            msg = f"{path}.population_favorable must be empty if résultat=0"
+            msg = f"{path}.population_favorable doit être vide si le résultat est 0"
             assert not data.path(f"{path}.population_favorable"), msg
 
     # Entreprise
@@ -118,10 +118,10 @@ def _cross_validate(data):
         date_consultation_cse = data.path(f"{base}.date_consultation_cse")
         mode = data.path(f"{base}.mode")
         if mode == "csp":
-            msg = f"{base}.date_consultation_cse must be empty if indicateurs.rémunérations.mode='csp'"
+            msg = f"{base}.date_consultation_cse ne doit pas être défini si indicateurs.rémunérations.mode vaut 'csp'"
             assert not date_consultation_cse, msg
         elif mode in ["niveau_autre", "niveau_branche"]:
-            msg = f"{base}.date_consultation_cse must be set if indicateurs.rémunérations.mode!='csp'"
+            msg = f"{base}.date_consultation_cse doit être défini si indicateurs.rémunérations.mode est différent de 'csp'"
             assert date_consultation_cse, msg
 
     # Augmentations et promotions
@@ -131,13 +131,13 @@ def _cross_validate(data):
         and data.path(f"{base}.résultat_nombre_salariés") == 0
     ):
         path = f"{base}.population_favorable"
-        msg = f"{path} must be empty if résultat=0 and résultat_nombre_salariés=0"
+        msg = f"{path} ne doit pas être défini si résultat=0 et résultat_nombre_salariés=0"
         assert not data.path(path), msg
 
     # Hautes rémunérations
     base = "indicateurs.hautes_rémunérations"
     if data.path(f"{base}.résultat") == 5:
-        msg = f"{base}.population_favorable must be empty if résultat=5"
+        msg = f"{base}.population_favorable ne doit pas être défini si résultat vaut 5"
         assert not data.path(f"{base}.population_favorable"), msg
 
 

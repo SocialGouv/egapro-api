@@ -115,7 +115,7 @@ async def declare(request, response, siren, year):
     try:
         year = int(year)
     except ValueError:
-        raise HttpError(f"Invalid value for year: {year}")
+        raise HttpError(f"Ce n'est pas une année valide: `{year}`")
     if not siren_is_valid(siren):
         raise HttpError(422, f"Numéro SIREN invalide: {siren}")
     if year not in constants.YEARS:
@@ -189,7 +189,7 @@ class SimulationResource:
     async def on_put(self, request, response, uuid):
         await db.simulation.put(uuid, request.json)
         data = request.data
-        # Egapro does not send data in the order we except, so for now only try to
+        # Egapro does not send data in the order we expect, so for now only try to
         # validate when we have the basic.
         if data.siren and data.year and data.email:
             schema.validate(data.raw)

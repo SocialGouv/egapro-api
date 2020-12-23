@@ -312,7 +312,7 @@ async def test_confirmed_declaration_should_raise_if_missing_entreprise_data(
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     body = json.loads(resp.body)
-    assert body == {"error": "entreprise.région must not be empty"}
+    assert body == {"error": "Le champ entreprise.région doit être défini"}
 
 
 async def test_with_unknown_siren_or_year(client):
@@ -348,7 +348,7 @@ async def test_cannot_set_augmentations_if_tranche_is_not_50_250(client, body):
     assert resp.status == 422
     assert (
         json.loads(resp.body)["error"]
-        == "indicateurs.augmentations_et_promotions cannot be set if entreprise.effectif.tranche is not '50:250'"
+        == "L'indicateur indicateurs.augmentations_et_promotions ne peut être défini que pour la tranche 50 à 250"
     )
 
 
@@ -369,7 +369,7 @@ async def test_population_favorable_must_be_empty_if_resultat_is_zero(client, bo
     assert resp.status == 422
     assert (
         json.loads(resp.body)["error"]
-        == "indicateurs.rémunérations.population_favorable must be empty if résultat=0"
+        == "indicateurs.rémunérations.population_favorable doit être vide si le résultat est 0"
     )
 
 
@@ -386,7 +386,7 @@ async def test_population_favorable_must_be_empty_if_resultat_is_0_on2et3(client
     assert resp.status == 422
     assert (
         json.loads(resp.body)["error"]
-        == "indicateurs.augmentations_et_promotions.population_favorable must be empty if résultat=0 and résultat_nombre_salariés=0"
+        == "indicateurs.augmentations_et_promotions.population_favorable ne doit pas être défini si résultat=0 et résultat_nombre_salariés=0"
     )
 
 
@@ -406,7 +406,7 @@ async def test_population_favorable_must_be_empty_if_resultat_is_five(client, bo
     assert resp.status == 422
     assert (
         json.loads(resp.body)["error"]
-        == "indicateurs.hautes_rémunérations.population_favorable must be empty if résultat=5"
+        == "indicateurs.hautes_rémunérations.population_favorable ne doit pas être défini si résultat vaut 5"
     )
 
 
@@ -426,7 +426,7 @@ async def test_mesures_correctives_must_be_set_if_index_below_75(client, body):
     assert resp.status == 422
     assert (
         json.loads(resp.body)["error"]
-        == "déclaration.mesures_correctives must not be null when déclaration.index < 75"
+        == "Les mesures correctives doivent être définies pour un index inférieur à 75"
     )
 
 
@@ -446,7 +446,7 @@ async def test_mesures_correctives_must_not_be_set_if_index_above_75(client, bod
     assert resp.status == 422
     assert (
         json.loads(resp.body)["error"]
-        == "déclaration.mesures_correctives must not be set when déclaration.index >= 75"
+        == "Les mesures correctives ne doivent pas être définies pour un index de 75 ou plus"
     )
 
 
@@ -468,7 +468,7 @@ async def test_cannot_set_promotions_if_tranche_is_50_250(client, body):
     assert resp.status == 422
     assert (
         json.loads(resp.body)["error"]
-        == "indicateurs.promotions cannot be set if entreprise.effectif.tranche='50:250'"
+        == "L'indicateur indicateurs.promotions ne doit pas être défini pour la tranche 50 à 250"
     )
 
 
@@ -538,8 +538,8 @@ async def test_date_consultation_cse_must_be_empty_if_mode_is_csp(client, body):
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body)["error"] == (
-        "indicateurs.rémunérations.date_consultation_cse must be empty "
-        "if indicateurs.rémunérations.mode='csp'"
+        "indicateurs.rémunérations.date_consultation_cse ne doit pas être défini si "
+        "indicateurs.rémunérations.mode vaut 'csp'"
     )
 
 
@@ -601,7 +601,7 @@ async def test_basic_declaration_with_niveau_branche_without_cse(client, body):
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
-        "error": "indicateurs.rémunérations.date_consultation_cse must be set if indicateurs.rémunérations.mode!='csp'"
+        "error": "indicateurs.rémunérations.date_consultation_cse doit être défini si indicateurs.rémunérations.mode est différent de 'csp'"
     }
 
 
@@ -610,7 +610,7 @@ async def test_basic_declaration_without_resultat(client, body):
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
-        "error": "indicateurs.augmentations.résultat must be set when indicateur is calculable"
+        "error": "indicateurs.augmentations.résultat doit être défini si l'indicateur est calculable"
     }
 
 
@@ -621,7 +621,7 @@ async def test_remunerations_declaration_without_resultat(client, body):
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
-        "error": "indicateurs.rémunérations.résultat must be set when indicateur is calculable"
+        "error": "indicateurs.rémunérations.résultat doit être défini si l'indicateur est calculable"
     }
 
 
@@ -637,7 +637,7 @@ async def test_put_declaration_with_departement_and_region_mismatch(client, body
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
-        "error": "entreprise.département and entreprise.région do not match"
+        "error": "Le département et la région ne correspondent pas"
     }
 
 
@@ -647,7 +647,7 @@ async def test_put_declaration_with_code_postal_and_region_mismatch(client, body
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
-        "error": "entreprise.département and entreprise.code_postal do not match"
+        "error": "Le département et le code postal ne correspondent pas"
     }
 
 
