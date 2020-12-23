@@ -584,6 +584,22 @@ async def test_basic_declaration_with_ues_and_missing_siren(client, body):
     }
 
 
+async def test_declaration_with_ues_and_duplicate_siren(client, body):
+    body["entreprise"]["ues"] = {
+        "nom": "Nom UES",
+        "entreprises": [
+            {"siren": "123456782", "raison_sociale": "Foobarbaz"},
+            {"siren": "987654321", "raison_sociale": "Barbar"},
+            {"siren": "123456782", "raison_sociale": "Bazbaz"},
+        ],
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "Valeur de siren en double: 123456782"
+    }
+
+
 async def test_basic_declaration_with_niveau_branche(client, body):
     body["indicateurs"] = {
         "rémunérations": {

@@ -1,5 +1,5 @@
 import sys
-from collections import namedtuple
+from collections import Counter, namedtuple
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -108,7 +108,11 @@ def _cross_validate(data):
             assert not data.path(f"{path}.population_favorable"), msg
 
     # Entreprise
-    for ues in data.path("entreprise.ues.entreprises") or []:
+    entreprises = data.path("entreprise.ues.entreprises") or []
+    all_siren = [e["siren"] for e in entreprises]
+    duplicates = [v for v, c in Counter(all_siren).items() if c > 1]
+    assert not duplicates, f"Valeur de siren en double: {','.join(duplicates)}"
+    for ues in entreprises:
         msg = f"Invalid siren: {ues['siren']}"
         assert siren_is_valid(ues["siren"]), msg
 
