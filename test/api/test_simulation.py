@@ -268,41 +268,6 @@ async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
     assert data["id"] in email_body
 
 
-async def test_put_simulation_should_redirect_to_declaration_if_validated(client):
-    resp = await client.put(
-        "/simulation/12345678-1234-5678-9012-123456789012",
-        body={
-            "data": {
-                "id": "12345678-1234-5678-9012-123456789012",
-                "informationsDeclarant": {
-                    "email": "foo@bar.org",
-                    "prénom": "Gérard",
-                    "nom": "Lambert",
-                    "téléphone": "+33671795348",
-                },
-                "declaration": {
-                    "formValidated": "Valid",
-                    "dateDeclaration": "04/11/2019 10:10",
-                },
-                "informationsEntreprise": {
-                    "siren": "123456782",
-                    "region": "Hauts-de-France",
-                    "departement": "Nord",
-                    "commune": "Wambrechies",
-                    "code_postal": "59118",
-                    "adresse": "Quelque part",
-                    "code_naf": "47.11F",
-                },
-                "informations": {"anneeDeclaration": 2019},
-            },
-        },
-    )
-    assert resp.status == 307
-    assert resp.headers["Location"] == "/declaration/123456782/2019"
-    # Simulation should have been saved anyway
-    assert await db.simulation.get("12345678-1234-5678-9012-123456789012")
-
-
 async def test_send_code_endpoint(client, monkeypatch, body):
     calls = 0
     email_body = ""

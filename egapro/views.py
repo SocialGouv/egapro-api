@@ -188,13 +188,9 @@ class SimulationResource:
     async def on_put(self, request, response, uuid):
         await db.simulation.put(uuid, request.json)
         data = request.data
-        # Egapro does not send data in the order we expect, so for now only try to
-        # validate when we have the basic.
-        if data.siren and data.year and data.email:
-            schema.validate(data.raw)
-            schema.cross_validate(data.raw)
-        if self.is_declaration(response, data):
-            return
+        if not data.is_draft() and data.email:
+            token = tokens.create(data.email)
+            response.cookies.set(name="api-key", value=token.decode())
         response.json = db.simulation.as_resource(await db.simulation.get(uuid))
         response.status = 200
 
@@ -205,19 +201,6 @@ class SimulationResource:
         except db.NoData:
             raise HttpError(404, f"No simulation found with uuid {uuid}")
         response.status = 200
-
-    def is_declaration(self, response, data):
-        """This is an old fashioned declaration. Let's redirect for now."""
-        if data.is_draft():
-            return
-        if not data.email:
-            raise HttpError(400, "Anonymous declaration")
-        token = tokens.create(data.email)
-        response.cookies.set(name="api-key", value=token.decode())
-        location = f"{config.BASE_URL}/declaration/{data.siren}/{data.year}"
-        # https://tools.ietf.org/html/rfc7231#section-6.4.7
-        response.redirect = location, 307
-        return True
 
 
 @app.route("/token", methods=["POST"])
