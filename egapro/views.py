@@ -193,12 +193,16 @@ async def send_simulation_code(request, response, uuid):
 class SimulationResource:
     async def on_put(self, request, response, uuid):
         await db.simulation.put(uuid, request.json)
-        data = request.data
-        if not data.is_draft() and data.email:
-            token = tokens.create(data.email)
-            response.cookies.set(name="api-key", value=token.decode())
         response.json = db.simulation.as_resource(await db.simulation.get(uuid))
         response.status = 200
+        data = request.data
+        if not data.is_draft() and data.email:
+            token = request.cookies.get("api-key")
+            try:
+                tokens.read(token)
+            except ValueError:
+                token = tokens.create(data.email)
+                response.cookies.set(name="api-key", value=token.decode())
 
     async def on_get(self, request, response, uuid):
         record = await db.simulation.get(uuid)
