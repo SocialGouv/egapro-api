@@ -322,3 +322,24 @@ async def test_send_code_endpoint(client, monkeypatch, body):
     assert resp.status == 204
     assert uid in email_body
     assert recipient == "foo@bar.org"
+
+
+async def test_put_simulation_set_cookie_if_email_is_given(client, monkeypatch):
+    resp = await client.put(
+        "/simulation/12345678-1234-5678-9012-123456789012", body={"foo": "bar"}
+    )
+    assert resp.status == 200
+    assert not resp.cookies
+
+    body = {
+        "data": {
+            "informationsDeclarant": {"email": "foo@bar.org"},
+            "declaration": {"formValidated": "Valid"},
+        }
+    }
+    resp = await client.put(
+        "/simulation/12345678-1234-5678-9012-123456789012",
+        body=body,
+    )
+    assert resp.status == 200
+    assert resp.cookies["api-key"]
