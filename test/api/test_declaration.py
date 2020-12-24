@@ -233,7 +233,6 @@ async def test_owner_check_is_lower_case(client, body):
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     record = await db.declaration.get("514027945", 2019)
-    assert record["data"]["déclarant"]["email"] == "foo@bar.com"
     assert record["data"]["entreprise"]["raison_sociale"] == "newnew"
 
 
@@ -957,7 +956,7 @@ async def test_declare_with_legacy_schema(client, body):
         "source": "simulateur",
         "déclarant": {
             "nom": "FOOBAR",
-            "email": "foo@bar.org",
+            "email": "foobar@foobar.fr",
             "prénom": "CAROLINE",
             "téléphone": "0238295999",
         },

@@ -100,8 +100,9 @@ def ensure_owner(view):
                     raise HttpError(403, msg)
         if request._body:  # This is a PUT.
             request.data.setdefault("déclarant", {})
-            # Make sure we set the email used for token as owner.
-            request.data["déclarant"]["email"] = declarant
+            # Use token email as default for declarant email.
+            if not request.data["déclarant"].get("email"):
+                request.data["déclarant"]["email"] = declarant
         return await view(request, response, siren, year, *args, **kwargs)
 
     return wrapper
