@@ -17,8 +17,7 @@ def naf():
 def years():
     return {
         "type": "integer",
-        "minimum": constants.YEARS[0],
-        "maximum": constants.YEARS[-1],
+        "enum": constants.YEARS,
     }
 
 
