@@ -1,14 +1,13 @@
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
-import asyncpg
 import minicli
 import progressist
 import ujson as json
 from openpyxl import load_workbook
 
-from egapro import config, db, dgt, exporter, models, schema
+from egapro import config, db, dgt, exporter, models, schema, tokens
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro.solen import *  # noqa: expose to minicli
 from egapro.utils import json_dumps
@@ -211,9 +210,7 @@ async def compare_index(pdb=False, verbose=False):
             "max": data["déclaration"].get("points_calculables"),
             "indic1": data["indicateurs"]["rémunérations"].get("note"),
             "indic2": data["indicateurs"]["augmentations"].get("note"),
-            "indic2et3": data["indicateurs"][
-                "augmentations_et_promotions"
-            ].get("note"),
+            "indic2et3": data["indicateurs"]["augmentations_et_promotions"].get("note"),
             "indic3": data["indicateurs"]["promotions"].get("note"),
             "indic4": data["indicateurs"]["congés_maternité"].get("note"),
             "indic5": data["indicateurs"]["hautes_rémunérations"].get("note"),
@@ -320,6 +317,13 @@ async def explore(*siren_year):
         print(sep)
         for key in ["modified_at", "declared_at", "owner"]:
             print(f"{key:<20} | {record[key]}")
+
+
+@minicli.cli
+def read_token(token):
+    print("—" * 20)
+    print(tokens.read(token))
+    print("—" * 20)
 
 
 @minicli.cli
