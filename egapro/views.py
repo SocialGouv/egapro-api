@@ -192,16 +192,18 @@ async def send_simulation_code(request, response, uuid):
 @app.route("/simulation/{uuid}")
 class SimulationResource:
     async def on_put(self, request, response, uuid):
-        await db.simulation.put(uuid, request.json)
+        data = request.json
+        await db.simulation.put(uuid, data)
         response.json = db.simulation.as_resource(await db.simulation.get(uuid))
         response.status = 200
-        data = request.data
-        if not data.is_draft() and data.email:
+        draft = data.get("declaration", {}).get("formValidated") != "Valid"
+        email = data.get("informationsDeclarant", {}).get("email")
+        if email and not draft:
             token = request.cookies.get("api-key")
             try:
                 tokens.read(token)
             except ValueError:
-                token = tokens.create(data.email)
+                token = tokens.create(email)
                 response.cookies.set(name="api-key", value=token.decode())
 
     async def on_get(self, request, response, uuid):
