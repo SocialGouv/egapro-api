@@ -103,3 +103,15 @@ async def test_validate_siren(client):
     assert resp.status == 422
     resp = await client.get("/validate-siren?siren=123456782")
     assert resp.status == 204
+
+
+async def test_me(client):
+    resp = await client.get("/me")
+    assert resp.status == 200
+    assert json.loads(resp.body) == {"email": "foo@bar.org"}
+
+
+async def test_me_without_token(client):
+    client.logout()
+    resp = await client.get("/me")
+    assert resp.status == 401

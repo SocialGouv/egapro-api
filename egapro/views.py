@@ -160,6 +160,12 @@ async def get_declaration(request, response, siren, year):
     response.status = 200
 
 
+@app.route("/me", methods=["GET"])
+@tokens.require
+async def me(request, response):
+    response.json = {"email": request["email"]}
+
+
 @app.route("/simulation", methods=["POST"])
 async def start_simulation(request, response):
     data = request.json
