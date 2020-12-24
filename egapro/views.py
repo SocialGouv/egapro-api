@@ -199,12 +199,8 @@ class SimulationResource:
         draft = data.get("declaration", {}).get("formValidated") != "Valid"
         email = data.get("informationsDeclarant", {}).get("email")
         if email and not draft:
-            token = request.cookies.get("api-key")
-            try:
-                tokens.read(token)
-            except ValueError:
-                token = tokens.create(email)
-                response.cookies.set(name="api-key", value=token.decode())
+            token = tokens.create(email)
+            response.cookies.set(name="api-key", value=token.decode())
 
     async def on_get(self, request, response, uuid):
         record = await db.simulation.get(uuid)
