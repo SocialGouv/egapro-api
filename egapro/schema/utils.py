@@ -14,6 +14,14 @@ def naf():
     return {"type": "string", "enum": NAF.keys()}
 
 
+def years():
+    return {
+        "type": "integer",
+        "minimum": constants.YEARS[0],
+        "maximum": constants.YEARS[-1],
+    }
+
+
 def clean_readonly(data, schema):
     if not data:
         return

@@ -14,7 +14,7 @@ id: string
     date: date # Date de publication du niveau de résultat de l'entreprise ou de l'UES
     url: string
     modalités: string
-  +année_indicateurs: "2018:2019"
+  +année_indicateurs: python:egapro.schema.utils.years
   fin_période_référence: date # Date de fin de la période de référence considérée pour le calcul des indicateurs
   =points: integer # Nombre total de points obtenus
   =points_calculables: integer # Nombre total de points pouvant être obtenus
