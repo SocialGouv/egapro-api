@@ -314,6 +314,18 @@ async def test_confirmed_declaration_should_raise_if_missing_entreprise_data(
     assert body == {"error": "Le champ entreprise.région doit être défini"}
 
 
+async def test_confirmed_declaration_should_raise_if_missing_fin_periode_reference(
+    client, monkeypatch, body
+):
+    del body["déclaration"]["fin_période_référence"]
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    body = json.loads(resp.body)
+    assert body == {
+        "error": "Le champ déclaration.fin_période_référence doit être défini"
+    }
+
+
 async def test_with_unknown_siren_or_year(client):
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 404
@@ -594,9 +606,7 @@ async def test_declaration_with_ues_and_duplicate_siren(client, body):
     }
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
-    assert json.loads(resp.body) == {
-        "error": "Valeur de siren en double: 123456782"
-    }
+    assert json.loads(resp.body) == {"error": "Valeur de siren en double: 123456782"}
 
 
 async def test_basic_declaration_with_niveau_branche(client, body):

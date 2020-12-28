@@ -75,6 +75,8 @@ def _cross_validate(data):
         elif not index:
             msg = "Les mesures correctives ne doivent pas être définies si l'index n'est pas calculable"
             assert not mesures_correctives, msg
+        periode_reference = data.path("déclaration.fin_période_référence")
+        assert periode_reference, "Le champ déclaration.fin_période_référence doit être défini"
     tranche = data.path("entreprise.effectif.tranche")
     if tranche == "50:250":
         paths = ("indicateurs.promotions", "indicateurs.augmentations")
