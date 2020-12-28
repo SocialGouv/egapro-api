@@ -8,7 +8,7 @@ import ujson as json
 from stdnum.fr.siren import is_valid as siren_is_valid
 
 from egapro import constants
-from egapro.utils import import_by_path
+from egapro.utils import import_by_path, check_dep_and_cp
 from egapro.models import Data
 
 SCHEMA = None
@@ -63,7 +63,7 @@ def _cross_validate(data):
         msg = "Le département et la région ne correspondent pas"
         assert dep in constants.REGIONS_TO_DEPARTEMENTS[region], msg
         msg = "Le département et le code postal ne correspondent pas"
-        assert cp[:2] == dep or (dep in ["2A", "2B"] and cp[:2] == "20"), msg
+        assert check_dep_and_cp(dep, cp), msg
         index = data.path("déclaration.index") or 0
         mesures_correctives = data.path("déclaration.mesures_correctives")
         if index and index >= 75:

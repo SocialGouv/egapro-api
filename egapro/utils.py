@@ -88,3 +88,9 @@ def official_round(i):
     So for example, 0.01 should be rounded to 0, while 0.1 should be rounded to 1.
     """
     return round(float(i) + 0.5 - 0.049)
+
+
+def check_dep_and_cp(dep, cp):
+    if dep in ["2A", "2B"]:
+        return cp.startswith("20")
+    return cp.startswith(dep)

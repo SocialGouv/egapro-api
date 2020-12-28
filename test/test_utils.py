@@ -62,3 +62,11 @@ def test_flatten_should_flatten_lists():
 )
 def test_remove_one_year(input, output):
     assert utils.remove_one_year(date(*input)) == date(*output)
+
+
+@pytest.mark.parametrize(
+    "dep,cp,expected",
+    [("77", "77480", True), ("974", "97480", True), ("2A", "20123", True)],
+)
+def test_check_dep_and_cp(dep, cp, expected):
+    assert utils.check_dep_and_cp(dep, cp) == expected
