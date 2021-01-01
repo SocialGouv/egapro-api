@@ -1,12 +1,13 @@
 import sys
 
 from functools import wraps
+from traceback import print_exc
 
 from naf import DB as NAF
 from roll import Roll, HttpError
 from roll import Request as BaseRequest
 from asyncpg.exceptions import DataError
-from roll.extensions import cors, options, traceback
+from roll.extensions import cors, options
 from stdnum.fr.siren import is_valid as siren_is_valid
 
 from . import config, constants, db, emails, helpers, models, tokens, schema
@@ -54,7 +55,6 @@ class App(Roll):
 
 
 app = App()
-traceback(app)
 cors(app, methods="*", headers=["*", "Content-Type"], credentials=True)
 options(app)
 
@@ -74,6 +74,7 @@ async def json_error_response(request, response, error):
             response.status = 422
             loggers.sentry.message(request, str(error.__context__))
         else:
+            print_exc()
             loggers.sentry.error(request)
     if isinstance(error.message, (str, bytes)):
         error.message = {"error": error.message}
