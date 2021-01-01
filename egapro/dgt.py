@@ -97,7 +97,7 @@ async def get_headers_columns():
         [
             ("source", "source"),
             ("URL_declaration", "URL_declaration"),  # Built from /data/id, see below
-            ("Date_reponse", "déclaration.date", isoformat),
+            ("Date_declaration", "déclaration.date", isoformat),
             ("Date_modification", "modified_at"),
             ("Email_declarant", "déclarant.email"),
             ("Nom", "déclarant.nom"),
@@ -133,7 +133,7 @@ async def get_headers_columns():
                 isoformat,
             ),
             ("Site_internet_publication", "déclaration.publication.url"),
-            ("Modalités_publication", "déclaration.publication.modalités"),
+            ("Modalites_publication", "déclaration.publication.modalités"),
             (
                 "Indic1_calculable",
                 "indicateurs.rémunérations.non_calculable",
@@ -303,8 +303,8 @@ async def as_xlsx(max_rows=None, debug=False):
             "Commune",
             "Tranche_effectif",
             "Nom_UES",
-            "Siren entreprise déclarante",
-            "Nom entreprise déclarante",
+            "Siren_entreprise_declarante",
+            "Nom_entreprise_declarante",
             "Nom_entreprise",
             "Siren",
         ]
