@@ -11,7 +11,7 @@ from stdnum.fr.siren import is_valid as siren_is_valid
 
 from . import config, constants, db, emails, helpers, models, tokens, schema
 from .schema.legacy import from_legacy
-from .loggers import logger
+from . import loggers
 
 
 class Request(BaseRequest):
@@ -22,6 +22,8 @@ class Request(BaseRequest):
     @property
     def json(self):
         data = super().json
+        if not isinstance(data, dict):
+            raise HttpError(400, "`data` doit être de type objet JSON")
         id_ = data.get("id")
         if "data" in data:
             data = data["data"]
@@ -70,6 +72,9 @@ async def json_error_response(request, response, error):
             error.message = f"Resource not found: {error.__context__}"
         elif isinstance(error.__context__, ValueError):
             response.status = 422
+            loggers.sentry.message(request, str(error.__context__))
+        else:
+            loggers.sentry.error(request)
     if isinstance(error.message, (str, bytes)):
         error.message = {"error": error.message}
     response.json = error.message
@@ -85,7 +90,7 @@ def ensure_owner(view):
             pass
         else:
             if owner != declarant:
-                logger.info(
+                loggers.logger.info(
                     "Non owner (%s instead of %s) accessing resource %s %s",
                     declarant,
                     owner,
@@ -220,7 +225,8 @@ async def send_token(request, response):
         raise HttpError(400, "Missing email key")
     token = tokens.create(email)
     link = f"{request.domain}declaration/?token={token.decode()}"
-    print(link)
+    if "localhost" in link or "127.0.0.1" in link:
+        print(link)
     body = emails.ACCESS_GRANTED.format(link=link)
     emails.send(email, "Déclarer sur Egapro", body)
     response.status = 204
@@ -275,6 +281,7 @@ async def on_shutdown():
 
 async def init():
     config.init()
+    loggers.init()
     try:
         await db.init()
     except RuntimeError as err:

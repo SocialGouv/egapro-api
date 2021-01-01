@@ -23,6 +23,8 @@ LEGACY_PSQL = "postgresql://postgres@localhost/legacy_egapro"
 BASE_URL = ""
 ALLOW_ORIGIN = "*"
 STAFF = []
+SENTRY_DSN = ""
+FLAVOUR = "local"
 
 
 def init():

@@ -1,4 +1,5 @@
 import json
+from unittest import mock
 
 import pytest
 
@@ -76,6 +77,17 @@ async def test_put_declaration_with_invalid_json(client):
 
 async def test_put_declaration_with_empty_json(client):
     resp = await client.put("/declaration/514027945/2019", body="{}")
+    assert resp.status == 422
+
+
+async def test_put_declaration_with_json_list(client):
+    resp = await client.put("/declaration/514027945/2019", body="[{}]")
+    assert resp.status == 400
+    assert json.loads(resp.body) == {"error": "`data` doit être de type objet JSON"}
+
+
+async def test_put_declaration_with_json_list_and_namespace(client):
+    resp = await client.put("/declaration/514027945/2019", body='{"data": []}')
     assert resp.status == 422
 
 
@@ -331,7 +343,9 @@ async def test_with_unknown_siren_or_year(client):
     assert resp.status == 404
 
 
-async def test_invalid_declaration_data_should_raise_on_put(client):
+async def test_invalid_declaration_data_should_raise_on_put(client, monkeypatch):
+    capture_message = mock.Mock()
+    monkeypatch.setattr("sentry_sdk.capture_message", capture_message)
     resp = await client.put(
         "/declaration/514027945/2019",
         body={"foo": "bar"},
@@ -340,6 +354,20 @@ async def test_invalid_declaration_data_should_raise_on_put(client):
     assert json.loads(resp.body) == {
         "error": "data.déclaration.année_indicateurs must be integer"
     }
+    assert capture_message.called_once
+
+
+async def test_uncaught_error_is_sent_to_sentry(client, monkeypatch, body):
+    capture_exception = mock.Mock()
+    monkeypatch.setattr("sentry_sdk.capture_exception", capture_exception)
+
+    def mock_validate():
+        raise AttributeError
+
+    monkeypatch.setattr("egapro.schema.validate", mock_validate)
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 500
+    assert capture_exception.called_once
 
 
 async def test_cannot_set_augmentations_if_tranche_is_not_50_250(client, body):

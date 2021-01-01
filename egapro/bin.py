@@ -346,6 +346,7 @@ def shell():
 
 @minicli.wrap
 async def wrapper():
+    config.init()
     try:
         await db.init()
     except RuntimeError as err:
