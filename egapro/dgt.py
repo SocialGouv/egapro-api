@@ -362,15 +362,9 @@ def prepare_record(data):
         indic1_categories = []
     indic1_nv_niveaux = len(indic1_categories) or None
     nombre_ues = len(data["entreprise"].get("ues", {}).get("entreprises", []))
+    data["URL_declaration"] = f"'https://index-egapro.travail.gouv.fr/{data.uri}"
 
     data = flatten(data, flatten_lists=True)
-    source = data.get("source")
-    if source in ("solen-2019", "solen-2020"):
-        url = f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={data['id']}"
-    else:
-        data["source"] = "egapro"
-        url = f"'https://index-egapro.travail.gouv.fr/simulateur/{data['id']}"
-    data["URL_declaration"] = url
     data["Structure"] = (
         "Unité Economique et Sociale (UES)" if nombre_ues else "Entreprise"
     )

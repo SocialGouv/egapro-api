@@ -173,7 +173,7 @@ async def test_dgt_dump(declaration):
     assert sheet["B1"].value == "URL_declaration"
     assert (
         sheet["B2"].value
-        == "'https://index-egapro.travail.gouv.fr/simulateur/12345678-1234-5678-9012-123456789012"
+        == "'https://index-egapro.travail.gouv.fr/declaration/?siren=12345678&year=2020"
     )
 
     # Indicateurs rémunérations
@@ -383,7 +383,7 @@ async def test_dgt_dump_should_compute_declaration_url_for_solen_data(declaratio
     assert sheet["B1"].value == "URL_declaration"
     assert (
         sheet["B2"].value
-        == "'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P=123456781234-123456789012"
+        == "'https://index-egapro.travail.gouv.fr/declaration/?siren=12345678&year=2020"
     )
 
 

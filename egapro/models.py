@@ -85,6 +85,12 @@ class Data(dict):
     def grade(self):
         return self.path("déclaration.index")
 
+    @property
+    def uri(self):
+        if self.get("source") == "simulateur":
+            return f"simulateur/{self.id}"
+        return f"declaration/?siren={self.siren}&year={self.year}"
+
     def path(self, path):
         data = self
         for sub in path.split("."):

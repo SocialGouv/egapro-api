@@ -145,12 +145,7 @@ async def declare(request, response, siren, year):
         # are unwanted, mainly because when someone loads the frontend app a PUT is
         # automatically sent, without any action from the user.)
         if not current or not current.data.validated:
-            if data.id:  # Coming from simulation URL
-                url = f"{request.domain}simulateur/{data.id}"
-            else:
-                url = (
-                    f"{request.domain}declaration/?siren={data.siren}&year={data.year}"
-                )
+            url = request.domain + data.uri
             emails.success.send(declarant, url=url, **data)
 
 

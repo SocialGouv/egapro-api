@@ -295,6 +295,7 @@ async def test_confirmed_declaration_should_send_email_for_legacy_call(
     calls = 0
     id = "1234"
     company = "FooBar"
+    body["source"] = "simulateur"
 
     def mock_send(to, subject, txt, html):
         assert to == "foo@bar.org"
