@@ -195,6 +195,8 @@ async def send_simulation_code(request, response, uuid):
 class SimulationResource:
     async def on_put(self, request, response, uuid):
         data = request.json
+        if not isinstance(data, dict):
+            raise HttpError(400, "JSON invalide")
         await db.simulation.put(uuid, data)
         response.json = db.simulation.as_resource(await db.simulation.get(uuid))
         response.status = 200

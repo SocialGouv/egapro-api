@@ -343,3 +343,22 @@ async def test_put_simulation_set_cookie_if_email_is_given(client, monkeypatch):
     )
     assert resp.status == 200
     assert resp.cookies["api-key"]
+
+
+async def test_put_simulation_with_empty_body(client):
+    resp = await client.put("/simulation/12345678-1234-5678-9012-123456789012", body="")
+    assert resp.status == 400
+
+
+async def test_put_simulation_with_invalid_json(client):
+    resp = await client.put(
+        "/simulation/12345678-1234-5678-9012-123456789012", body="<foo>bar</foo>"
+    )
+    assert resp.status == 400
+
+
+async def test_put_simulation_with_non_dict_json(client):
+    resp = await client.put(
+        "/simulation/12345678-1234-5678-9012-123456789012", body='"bar"'
+    )
+    assert resp.status == 400
