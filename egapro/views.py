@@ -256,7 +256,7 @@ async def get_config(request, response):
 
 @app.route("/jsonschema.json")
 async def get_jsonschema(request, response):
-    response.json = schema.SCHEMA
+    response.json = schema.SCHEMA.raw
 
 
 @app.route("/validate-siren")

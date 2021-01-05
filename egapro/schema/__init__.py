@@ -17,10 +17,10 @@ JSON_SCHEMA = None
 
 def init():
     path = Path(__file__).parent / "raw.yml"
-    schema = Schema(path.read_text()).raw
+    schema = Schema(path.read_text())
     globals()["SCHEMA"] = schema
     try:
-        globals()["JSON_SCHEMA"] = fastjsonschema.compile(schema)
+        globals()["JSON_SCHEMA"] = fastjsonschema.compile(schema.raw)
     except ValueError as err:
         print(json.dumps(schema))
         sys.exit(err)
@@ -76,18 +76,22 @@ def _cross_validate(data):
             msg = "Les mesures correctives ne doivent pas être définies si l'index n'est pas calculable"
             assert not mesures_correctives, msg
         periode_reference = data.path("déclaration.fin_période_référence")
-        assert periode_reference, "Le champ déclaration.fin_période_référence doit être défini"
+        assert (
+            periode_reference
+        ), "Le champ déclaration.fin_période_référence doit être défini"
     tranche = data.path("entreprise.effectif.tranche")
     if tranche == "50:250":
         paths = ("indicateurs.promotions", "indicateurs.augmentations")
         for path in paths:
-            msg = f"L'indicateur {path} ne doit pas être défini pour la tranche 50 à 250"
+            msg = (
+                f"L'indicateur {path} ne doit pas être défini pour la tranche 50 à 250"
+            )
             assert not data.path(path), msg
     else:
         path = "indicateurs.augmentations_et_promotions"
         msg = f"L'indicateur {path } ne peut être défini que pour la tranche 50 à 250"
         assert not data.path(path), msg
-    for key in SCHEMA["properties"]["indicateurs"]["properties"].keys():
+    for key in SCHEMA.indicateurs_keys:
         path = f"indicateurs.{key}"
         if data.path(f"{path}.non_calculable"):
             msg = f"L'indicateur {path} doit être vide s'il n'est pas calculable"
@@ -285,6 +289,12 @@ class Schema:
     def __init__(self, raw):
         self.raw = json.loads(json.dumps(self.load(raw.splitlines())))
 
+    def __getattr__(self, attr):
+        return getattr(self.raw, attr)
+
+    def __getitem__(self, item):
+        return self.raw.__getitem__(item)
+
     @staticmethod
     def iter_lines(iterable):
         previous = Node(0, 0)
@@ -367,6 +377,17 @@ class Schema:
                         raise
                     continue  # We are on the right level.
         return parent
+
+    @property
+    def sub_keys(self):
+        keys = list(self["properties"].keys())
+        keys.remove("indicateurs")
+        keys += [f"indicateurs.{k}" for k in self.indicateurs_keys]
+        return keys
+
+    @property
+    def indicateurs_keys(self):
+        return list(self["properties"]["indicateurs"]["properties"].keys())
 
 
 init()

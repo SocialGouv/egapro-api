@@ -3,7 +3,7 @@ from importlib import metadata
 
 import sentry_sdk
 
-from . import config
+from . import config, schema
 from .utils import json_dumps
 
 
@@ -28,16 +28,20 @@ class Sentry:
         )
 
     def _set_context(self, request):
+        extra = {}
         try:
             data = request.data
         except:
-            data = {}
+            pass
+        else:
+            for key in schema.SCHEMA.sub_keys:
+                extra[key] = json_dumps(data.path(key))
         sentry_sdk.set_context(
             "request",
             {
                 "path": request.path,
                 "source": data.get("source"),
-                "data": json_dumps(data),
+                **extra,
             },
         )
 
