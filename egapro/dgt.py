@@ -398,48 +398,26 @@ def prepare_record(data):
     return data
 
 
-async def duplicates(current_export, legacy, *solen_data):  # pragma: no cover
+async def duplicates(current_export, *solen_data):  # pragma: no cover
     before = time.perf_counter()
     headers, columns = await get_headers_columns()
+    columns = [c for c, _ in columns]
     reversed_headers = dict(zip(headers, columns))
-    raw = list(load_workbook(legacy, read_only=True, data_only=True).active.values)
-    timer, before = time.perf_counter() - before, time.perf_counter()
-    print(f"Done reading old data ({timer})")
     data = defaultdict(list)
-    own_headers = raw[0]
-    for row in raw[1:]:
-        if row[0].startswith("solen"):
-            continue
-        year = row[12]
-        if not year:
-            year = row[16][-4:]
-        siren = row[19]
-        key = f"{year}.{siren}"
-        # Align to current headers (which change according to data in DB)
-        record = {
-            reversed_headers[own_headers[i]]: row[i]
-            for i in range(len(row))
-            if own_headers[i] in reversed_headers
-        }
-        data[key].append(record)
-    timer, before = time.perf_counter() - before, time.perf_counter()
-    print(f"Done filtering old data ({timer})")
     raw = list(
         load_workbook(current_export, read_only=True, data_only=True).active.values
     )
     timer, before = time.perf_counter() - before, time.perf_counter()
     print(f"Done reading current data ({timer})")
     own_headers = raw[0]
+    year_idx = own_headers.index("Annee_indicateurs")
+    siren_idx = own_headers.index("SIREN")
     for row in raw[1:]:
         if row[0].startswith("solen"):
             continue
-        year = row[12]
-        if not year:
-            year = row[16][-4:]
-        siren = row[19]
+        year = row[year_idx]
+        siren = row[siren_idx]
         key = f"{year}.{siren}"
-        if data[key]:  # We only want to import new records from new database.
-            continue
         # Align to current headers (which change according to data in DB)
         record = {
             reversed_headers[own_headers[i]]: row[i]
@@ -460,10 +438,10 @@ async def duplicates(current_export, legacy, *solen_data):  # pragma: no cover
                     row,
                 ).run()["data"]
             )
-            url = f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={record['/id']}"
+            url = f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={record['id']}"
             record["URL_declaration"] = url
             siren = record["entreprise.siren"]
-            year = record["informations.anneeDeclaration"]
+            year = record["déclaration.année_indicateurs"]
             key = f"{year}.{siren}"
             data[key].append(record)
     timer, before = time.perf_counter() - before, time.perf_counter()

@@ -22,8 +22,6 @@ test:
 .PHONY: test
 
 download-data:
-	scp egapro.prod:/tmp/solen-2019.xlsx tmp/
-	scp egapro.prod:/tmp/solen-2020.xlsx tmp/
 	scp egapro.prod:/srv/egapro/data/dgt.xlsx tmp/
 
 download-db:
