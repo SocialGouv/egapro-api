@@ -650,6 +650,21 @@ async def test_basic_declaration_with_niveau_branche(client, body):
     assert resp.status == 204
 
 
+async def test_basic_declaration_with_wrong_date_consultation_cse_format(client, body):
+    body["indicateurs"] = {
+        "rémunérations": {
+            "mode": "niveau_branche",
+            "date_consultation_cse": "12/12/2020",
+            "résultat": 35,
+        }
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "data.indicateurs.rémunérations.date_consultation_cse must be date"
+    }
+
+
 async def test_basic_declaration_with_niveau_branche_without_cse(client, body):
     body["indicateurs"] = {"rémunérations": {"mode": "niveau_branche", "résultat": 15}}
     resp = await client.put("/declaration/514027945/2019", body=body)
