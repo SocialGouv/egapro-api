@@ -165,9 +165,9 @@ async def test_dgt_dump(declaration):
     assert sheet["N1"].value == "Annee_indicateurs"
     assert sheet["N2"].value == 2020
     assert sheet["O1"].value == "Date_debut_periode"
-    assert sheet["O2"].value == datetime(2019, 1, 1)
+    assert sheet["O2"].value == date(2019, 1, 1)
     assert sheet["P1"].value == "Date_fin_periode"
-    assert sheet["P2"].value == datetime(2019, 12, 31)
+    assert sheet["P2"].value == date(2019, 12, 31)
 
     # URL
     assert sheet["B1"].value == "URL_declaration"

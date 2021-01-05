@@ -2,8 +2,9 @@
 
 import time
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, date
 
+import arrow
 from naf import DB as NAF
 from openpyxl import Workbook, load_workbook
 from progressist import ProgressBar
@@ -31,10 +32,18 @@ def falsy(val):
     return not truthy(val)
 
 
-def isoformat(val):
+def isodatetime(val):
     if not val:
         return None
-    return datetime.fromisoformat(val)
+    # Excel doesn't know nothing about timezone, so let's transpose.
+    when = arrow.get(val).to("Europe/Paris").naive
+    return when
+
+
+def isodate(val):
+    if not val:
+        return None
+    return date.fromisoformat(val)
 
 
 def code_naf(code):
@@ -97,7 +106,7 @@ async def get_headers_columns():
         [
             ("source", "source"),
             ("URL_declaration", "URL_declaration"),  # Built from /data/id, see below
-            ("Date_declaration", "déclaration.date", isoformat),
+            ("Date_declaration", "déclaration.date", isodatetime),
             ("Date_modification", "modified_at"),
             ("Email_declarant", "déclarant.email"),
             ("Nom", "déclarant.nom"),
@@ -116,7 +125,7 @@ async def get_headers_columns():
             (
                 "Date_fin_periode",
                 "déclaration.fin_période_référence",
-                isoformat,
+                isodate,
             ),
             ("Structure", "Structure"),
             ("Tranche_effectif", "entreprise.effectif.tranche", EFFECTIF.get),
@@ -130,7 +139,7 @@ async def get_headers_columns():
             (
                 "Date_publication",
                 "déclaration.publication.date",
-                isoformat,
+                isodate,
             ),
             ("Site_internet_publication", "déclaration.publication.url"),
             ("Modalites_publication", "déclaration.publication.modalités"),
@@ -147,7 +156,7 @@ async def get_headers_columns():
             (
                 "Indic1_date_consult_CSE",
                 "indicateurs.rémunérations.date_consultation_cse",
-                isoformat,
+                isodate,
             ),
             ("Indic1_nb_coef_niv", "Indic1_nb_coef_niv"),
             ("Indic1_Ouv", "Indic1_Ouv"),
@@ -370,7 +379,7 @@ def prepare_record(data):
     )
     data["nombre_ues"] = nombre_ues or None
     data["Date_debut_periode"] = remove_one_year(
-        datetime.fromisoformat(data["déclaration.fin_période_référence"])
+        date.fromisoformat(data["déclaration.fin_période_référence"])
     )
 
     # Indicateur 1
@@ -438,7 +447,9 @@ async def duplicates(current_export, *solen_data):  # pragma: no cover
                     row,
                 ).run()["data"]
             )
-            url = f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={record['id']}"
+            url = (
+                f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={record['id']}"
+            )
             record["URL_declaration"] = url
             siren = record["entreprise.siren"]
             year = record["déclaration.année_indicateurs"]
