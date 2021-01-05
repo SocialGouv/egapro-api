@@ -40,7 +40,6 @@ class Sentry:
             "request",
             {
                 "path": request.path,
-                "source": data.get("source"),
                 **extra,
             },
         )
