@@ -705,6 +705,15 @@ async def test_put_declaration_with_code_postal_and_region_mismatch(client, body
     }
 
 
+async def test_put_declaration_without_source(client, body):
+    del body["source"]
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "data must contain ['source', 'déclaration', 'déclarant', 'entreprise'] properties"
+    }
+
+
 async def test_declare_with_legacy_schema(client, body):
     legacy = {
         "id": "5e41ad88-5dcc-491d-908a-93d5d2fae344",
