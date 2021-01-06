@@ -36,17 +36,14 @@ class Sentry:
         else:
             for key in schema.SCHEMA.sub_keys:
                 extra[key] = json_dumps(data.path(key))
-        sentry_sdk.set_context(
-            "request",
-            {
-                "path": request.path,
-                **extra,
-            },
-        )
+        context = {"path": request.path, **extra}
+        sentry_sdk.set_context("request", context)
+        logger.info(context)
 
     def message(self, request, message):
         self._set_context(request)
         sentry_sdk.capture_message(message)
+        logger.info(message)
 
     def error(self, request, error=None):
         self._set_context(request)
