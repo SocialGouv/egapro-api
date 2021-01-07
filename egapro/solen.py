@@ -883,8 +883,9 @@ class App:
             )
         return records
 
-    async def run(self, init_collection=False, dryRun=False):
-        failed = []
+    async def run(self, force=False):
+        missing_owner = []
+        skipped = []
         bar = ProgressBar(prefix="Import…", total=len(self.records), throttle=100)
         for record in bar.iter(self.records):
             id_ = record["id"]
@@ -898,7 +899,7 @@ class App:
             modified_at = datetime.fromisoformat(record["data"].path("déclaration.date"))
             # fmt: on
             if not owner:
-                failed.append(record)
+                missing_owner.append((siren, year))
                 continue
             try:
                 declaration = await db.declaration.get(siren, year)
@@ -907,12 +908,16 @@ class App:
             else:
                 current = declaration["modified_at"]
             # Allow to compare aware datetimes.
-            if not current or modified_at > current:
+            if not current or modified_at > current or force:
                 await db.declaration.put(
                     siren, year, owner, record["data"], modified_at
                 )
-        print("Failed rows:")
-        print(failed)
+            else:
+                skipped.append((siren, year))
+        print("Missing owner:")
+        print(missing_owner)
+        print("Skipped:")
+        print(skipped)
 
 
 @minicli.cli(name="import-solen")
@@ -929,6 +934,7 @@ async def main(
     progress=False,
     siren=None,
     json_schema=None,
+    force=False,
 ):
     """Import des données Solen.
 
@@ -994,7 +1000,7 @@ async def main(
 
         if not dry_run:
             logger.info("Import en base (cela peut prendre plusieurs minutes)...")
-            await app.run()
+            await app.run(force)
             logger.success("Import effectué.")
 
     except AppError as err:
