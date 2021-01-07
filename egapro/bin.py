@@ -320,6 +320,24 @@ async def explore(*siren_year):
 
 
 @minicli.cli
+async def dump_one(path: Path, siren, year):
+    declaration = await db.declaration.get(siren, year)
+    path.write_text(json.dumps(declaration))
+    print("Done!")
+
+
+@minicli.cli
+async def load_one(path: Path):
+    record = json.loads(path.read_text())
+    siren = record["siren"]
+    year = record["year"]
+    owner = record["owner"]
+    data = record["data"]
+    await db.declaration.put(siren, year, owner, data)
+    print("Done!")
+
+
+@minicli.cli
 def read_token(token):
     print("—" * 20)
     print(tokens.read(token))
