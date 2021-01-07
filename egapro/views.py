@@ -138,6 +138,9 @@ async def declare(request, response, siren, year):
         current = await db.declaration.get(siren, year)
     except db.NoData:
         current = None
+    else:
+        # Do not force new declarant, in case this is a staff person editing
+        declarant = current["owner"]
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:

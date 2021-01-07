@@ -224,6 +224,20 @@ async def test_staff_can_load_not_owned_declaration(client, monkeypatch, declara
     assert resp.status == 200
 
 
+async def test_staff_can_put_not_owned_declaration(
+    client, monkeypatch, declaration, body
+):
+    await declaration(siren="514027945", year=2019, owner="foo@bar.baz")
+    monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
+    client.login("Staff@email.com")
+    body["entreprise"]["raison_sociale"] = "New Name"
+    resp = await client.put("/declaration/514027945/2019", body)
+    assert resp.status == 204
+    saved = await db.declaration.get(siren="514027945", year=2019)
+    assert saved["owner"] == "foo@bar.baz"
+    assert saved["data"]["entreprise"]["raison_sociale"] == "New Name"
+
+
 async def test_cannot_put_not_owned_declaration(client, monkeypatch):
     async def mock_owner(*args, **kwargs):
         return "foo@bar.baz"

@@ -4,7 +4,6 @@ from importlib import metadata
 import sentry_sdk
 
 from . import config, schema
-from .utils import json_dumps
 
 
 logger = logging.getLogger("egapro")
@@ -35,7 +34,7 @@ class Sentry:
             pass
         else:
             for key in schema.SCHEMA.sub_keys:
-                extra[key] = json_dumps(data.path(key))
+                extra[key] = str(data.path(key))
         context = {"path": request.path, **extra}
         sentry_sdk.set_context("request", context)
         logger.info(context)
