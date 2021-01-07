@@ -72,10 +72,11 @@ async def json_error_response(request, response, error):
             error.message = f"Resource not found: {error.__context__}"
         elif isinstance(error.__context__, ValueError):
             response.status = 422
-            loggers.sentry.message(request, str(error.__context__))
+            loggers.log_request(request)
+            loggers.logger.error(str(error.__context__))
         else:
+            loggers.log_request(request)
             print_exc()
-            loggers.sentry.error(request)
     if isinstance(error.message, (str, bytes)):
         error.message = {"error": error.message}
     response.json = error.message
@@ -91,7 +92,7 @@ def ensure_owner(view):
             pass
         else:
             if owner != declarant:
-                loggers.logger.info(
+                loggers.logger.debug(
                     "Non owner (%s instead of %s) accessing resource %s %s",
                     declarant,
                     owner,
