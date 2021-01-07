@@ -17,6 +17,7 @@ from xlrd.biffh import XLRDError
 
 from . import db, models
 from .schema.legacy import from_legacy
+from . import schema
 
 # Configuration de l'import CSV
 
@@ -901,6 +902,12 @@ class App:
             if not owner:
                 missing_owner.append((siren, year))
                 continue
+            try:
+                schema.validate(record["data"].raw)
+                schema.cross_validate(record["data"].raw)
+            except ValueError as err:
+                print(siren, year, err)
+                sys.exit(err)
             try:
                 declaration = await db.declaration.get(siren, year)
             except db.NoData:

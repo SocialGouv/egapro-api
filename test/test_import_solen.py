@@ -36,21 +36,21 @@ async def test_basic_solen_import():
 async def test_solen_import_with_ues():
     await solen.main(Path(__file__).parent / "data/solen_ues.xlsx", year=2018)
     assert await db.declaration.fetchval("SELECT COUNT(*) FROM declaration") == 1
-    declaration = await db.declaration.get("775701488", 2018)
+    declaration = await db.declaration.get("775701485", 2018)
     data = models.Data(declaration["data"])
-    assert data.siren == "775701488"
+    assert data.siren == "775701485"
     assert data.path("entreprise.ues.nom") == "BazBaz"
     assert data.path("entreprise.raison_sociale") == "BazBaz SA"
     assert data.path("entreprise.ues.entreprises") == [
-        {"raison_sociale": "BazBaz SA", "siren": "775701488"},
-        {"raison_sociale": "BazBaz One", "siren": "423499322"},
-        {"raison_sociale": "BazBaz Two", "siren": "344898355"},
-        {"raison_sociale": "BazBaz Four", "siren": "500425666"},
+        {"raison_sociale": "BazBaz SA", "siren": "775701485"},
+        {"raison_sociale": "BazBaz One", "siren": "423499326"},
+        {"raison_sociale": "BazBaz Two", "siren": "344898358"},
+        {"raison_sociale": "BazBaz Four", "siren": "500425665"},
         {"raison_sociale": "BazBaz Five", "siren": "499203222"},
-        {"raison_sociale": "BazBaz Six", "siren": "434044000"},
-        {"raison_sociale": "BazBaz Seven", "siren": "487597555"},
-        {"raison_sociale": "BazBaz eight", "siren": "493147000"},
+        {"raison_sociale": "BazBaz Six", "siren": "434044004"},
+        {"raison_sociale": "BazBaz Seven", "siren": "487597551"},
+        {"raison_sociale": "BazBaz eight", "siren": "493147003"},
         {"raison_sociale": "BazBaz Nine", "siren": "434243333"},
-        {"raison_sociale": "BazBaz Ten", "siren": "513866666"},
+        {"raison_sociale": "BazBaz Ten", "siren": "513866665"},
     ]
     print(data)
