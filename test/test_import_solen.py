@@ -16,7 +16,7 @@ async def init_db():
 
 
 async def test_basic_solen_import():
-    await solen.main(Path(__file__).parent / "data/solen.xlsx", year=2018)
+    await solen.main(Path(__file__).parent / "data/solen.xlsx")
     assert await db.declaration.fetchval("SELECT COUNT(*) FROM declaration") == 1
     declaration = await db.declaration.get("783247548", 2018)
     data = models.Data(declaration["data"])
@@ -34,7 +34,7 @@ async def test_basic_solen_import():
 
 
 async def test_solen_import_with_ues():
-    await solen.main(Path(__file__).parent / "data/solen_ues.xlsx", year=2018)
+    await solen.main(Path(__file__).parent / "data/solen_ues.xlsx")
     assert await db.declaration.fetchval("SELECT COUNT(*) FROM declaration") == 1
     declaration = await db.declaration.get("775701485", 2018)
     data = models.Data(declaration["data"])

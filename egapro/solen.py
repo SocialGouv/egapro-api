@@ -10,8 +10,6 @@ import ujson as json
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
 from itertools import islice
-from jsonschema import Draft7Validator
-from jsonschema.exceptions import ValidationError
 from progressist import ProgressBar
 from xlrd.biffh import XLRDError
 
@@ -196,13 +194,12 @@ class RowProcessorError(RuntimeError):
 class RowProcessor:
     READ_FIELDS = set({})
 
-    def __init__(self, logger, row, validator=None, debug=False):
+    def __init__(self, logger, row, debug=False):
         self.logger = logger
         if row is None:
             raise RowProcessorError("Échec d'import d'une ligne vide.")
         self.debug = debug
         self.row = row
-        self.validator = validator
         self.record = {}
 
     def log(self, msg):
@@ -284,21 +281,7 @@ class RowProcessor:
             return value
 
     def as_record(self):
-        record = {"id": self.get("id"), "data": models.Data(from_legacy(self.record))}
-        if self.validator:
-            try:
-                self.validator.validate(record)
-            except ValidationError as err:
-                raise RowProcessorError(
-                    "\n   ".join(
-                        [
-                            f"Validation JSON échouée pour la directive '{err.validator}' :",
-                            f"Message: {err.message}",
-                            f"Chemin: {'.'.join(list(err.path))}",
-                        ]
-                    )
-                )
-        return record
+        return {"id": self.get("id"), "data": models.Data(from_legacy(self.record))}
 
     def importPeriodeDeReference(self):
         # Année et périmètre retenus pour le calcul et la publication des indicateurs
@@ -730,11 +713,6 @@ class RowProcessor:
         return self.as_record()
 
 
-def initValidator(jsonschema_path):
-    with open(jsonschema_path, "r") as schema_file:
-        return Draft7Validator(json.load(schema_file))
-
-
 class ExcelData:
     def __init__(self, pathToExcelFile, logger=None):
         self.logger = logger
@@ -809,7 +787,6 @@ class App:
         debug=False,
         progress=False,
         logger=None,
-        json_schema=None,
     ):
         # arguments positionnels requis
         self.xls_path = xls_path
@@ -822,9 +799,6 @@ class App:
         # initialisation des flags de lecture des champs CSV
         RowProcessor.READ_FIELDS = set({})
         # propriétés calculées de l'instance
-        self.validator = None
-        if json_schema:
-            self.validator = initValidator(json_schema)
         try:
             self.excelData = ExcelData(self.xls_path, self.logger)
         except ExcelDataError as err:
@@ -863,7 +837,6 @@ class App:
                     RowProcessor(
                         self.logger,
                         rows[id],
-                        self.validator,
                         self.debug,
                     ).run()
                 )
@@ -880,7 +853,7 @@ class App:
             )
         return records
 
-    async def run(self, force=False):
+    async def run(self, force=False, validate=True):
         missing_owner = []
         skipped = []
         bar = ProgressBar(prefix="Import…", total=len(self.records), throttle=100)
@@ -898,12 +871,13 @@ class App:
             if not owner:
                 missing_owner.append((siren, year))
                 continue
-            try:
-                schema.validate(record["data"].raw)
-                schema.cross_validate(record["data"].raw)
-            except ValueError as err:
-                print(siren, year, err)
-                continue
+            if validate:
+                try:
+                    schema.validate(record["data"].raw)
+                    schema.cross_validate(record["data"].raw)
+                except ValueError as err:
+                    print(siren, year, err)
+                    continue
             try:
                 declaration = await db.declaration.get(siren, year)
             except db.NoData:
@@ -935,8 +909,8 @@ async def main(
     dry_run=False,
     progress=False,
     siren=None,
-    json_schema=None,
     force=False,
+    skip_validate=False
 ):
     """Import des données Solen.
 
@@ -950,7 +924,7 @@ async def main(
     :dry_run:       ne pas procéder à l'import dans la base de données
     :progress:      afficher une barre de progression
     :siren:         importer le SIREN spécifié uniquement
-    :json_schema:   chemin vers le schema json à utiliser pour la validation
+    :skip_validate: forcer l'import des déclarations invalides
     """
 
     logger = ConsoleLogger()
@@ -962,7 +936,6 @@ async def main(
             debug=debug,
             progress=progress,
             logger=logger,
-            json_schema=json_schema,
         )
 
         if show_json:
@@ -1000,7 +973,7 @@ async def main(
 
         if not dry_run:
             logger.info("Import en base (cela peut prendre plusieurs minutes)...")
-            await app.run(force)
+            await app.run(force, validate=not skip_validate)
             logger.success("Import effectué.")
 
     except AppError as err:
