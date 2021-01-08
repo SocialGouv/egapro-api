@@ -58,39 +58,6 @@ def value_or_nc(val):
     return val
 
 
-async def get_ues_cols():
-    """Return a list of `nom` and `siren` cols for the max number of UES columns."""
-    try:
-        max_num_ues = await db.declaration.fetchval(
-            "SELECT "
-            "jsonb_array_length(data->'entreprise'->'ues'->'entreprises') AS length "
-            "FROM declaration WHERE data->'entreprise'->'ues' ? 'entreprises' "
-            "ORDER BY length DESC LIMIT 1;"
-        )
-    except db.NoData:
-        max_num_ues = 0
-    # # The entreprise that made the declaration is counted in the number of UES,
-    # # but its nom/siren is given elsewhere.
-    # max_num_ues -= 1
-    # This is a list of size max_num_ues of pairs of nom/siren cols.
-    ues_cols_name_and_siren = [
-        [
-            (
-                f"UES_{index_ues}_Nom_Entreprise",
-                f"entreprise.ues.entreprises.{index_ues}.raison_sociale",
-            ),
-            (
-                f"UES_{index_ues}_Siren",
-                f"entreprise.ues.entreprises.{index_ues}.siren",
-            ),
-        ]
-        for index_ues in range(1, max_num_ues)
-    ]
-    # This is a list of 2*max_num_ues of cols (ues 0 > nom, ues 0 > siren, ues 1 > nom, ues 1 > siren...)
-    flattened_cols = [col for ues_cols in ues_cols_name_and_siren for col in ues_cols]
-    return flattened_cols
-
-
 async def get_headers_columns():
     """Return a tuple of lists of (header_names, column_names) that we want in the export."""
     try:
