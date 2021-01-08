@@ -321,12 +321,14 @@ async def explore(*siren_year):
 
 
 @minicli.cli
-async def dump_one(path: Path, siren, year):
+async def dump_one(siren, year, destination: Path = None):
     declaration = await db.declaration.get(siren, year)
-    path.write_text(
-        yaml.dump(dict(declaration), default_flow_style=False, allow_unicode=True)
-    )
-    print("Done!")
+    blob = yaml.dump(dict(declaration), default_flow_style=False, allow_unicode=True)
+    if destination:
+        destination.write_text(blob)
+        print(f"Saved to {destination}!")
+    else:
+        print(blob)
 
 
 @minicli.cli
