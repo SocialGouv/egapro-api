@@ -4,6 +4,7 @@ from pathlib import Path
 
 import minicli
 import progressist
+import yaml
 import ujson as json
 from openpyxl import load_workbook
 
@@ -322,17 +323,19 @@ async def explore(*siren_year):
 @minicli.cli
 async def dump_one(path: Path, siren, year):
     declaration = await db.declaration.get(siren, year)
-    path.write_text(json.dumps(declaration))
+    path.write_text(
+        yaml.dump(dict(declaration), default_flow_style=False, allow_unicode=True)
+    )
     print("Done!")
 
 
 @minicli.cli
 async def load_one(path: Path):
-    record = json.loads(path.read_text())
+    record = yaml.safe_load(path.read_text())
     siren = record["siren"]
     year = record["year"]
     owner = record["owner"]
-    data = record["data"]
+    data = record.get("draft") or record["data"]
     await db.declaration.put(siren, year, owner, data)
     print("Done!")
 
