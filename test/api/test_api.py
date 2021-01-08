@@ -76,6 +76,13 @@ async def test_search_endpoint(client):
     assert len(json.loads(resp.body)["data"]) == 1
 
 
+async def test_invalid_search_query(client):
+    resp = await client.get("/search?q=")
+    assert resp.status == 400
+    resp = await client.get("/search?q= ")
+    assert resp.status == 400
+
+
 async def test_config_endpoint(client):
     resp = await client.get("/config")
     assert resp.status == 200

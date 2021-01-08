@@ -236,8 +236,8 @@ async def send_token(request, response):
 
 @app.route("/search")
 async def search(request, response):
-    q = request.query.get("q")
-    if not q:
+    q = request.query.get("q") or ""
+    if not q.strip():
         raise HttpError(400, "Empty search")
     limit = request.query.int("limit", 10)
     results = await db.declaration.search(q, limit=limit)
