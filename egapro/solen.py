@@ -196,8 +196,7 @@ class RowProcessorError(RuntimeError):
 class RowProcessor:
     READ_FIELDS = set({})
 
-    def __init__(self, solen_year, logger, row, validator=None, debug=False):
-        self.solen_year = solen_year
+    def __init__(self, logger, row, validator=None, debug=False):
         self.logger = logger
         if row is None:
             raise RowProcessorError("Échec d'import d'une ligne vide.")
@@ -708,7 +707,7 @@ class RowProcessor:
         self.importField("mesures_correction", "declaration/mesuresCorrection")
 
     def run(self):
-        self.set("source", f"solen-{self.solen_year}")
+        self.set("source", "solen")
         self.importDateField(
             "Date réponse > Valeur date",
             "declaration/dateDeclaration",
@@ -805,7 +804,6 @@ class App:
     def __init__(
         self,
         xls_path,
-        solen_year,
         max=0,
         siren=None,
         debug=False,
@@ -815,7 +813,6 @@ class App:
     ):
         # arguments positionnels requis
         self.xls_path = xls_path
-        self.solen_year = solen_year
         # options
         self.max = max
         self.siren = siren
@@ -864,7 +861,6 @@ class App:
             try:
                 records.append(
                     RowProcessor(
-                        self.solen_year,
                         self.logger,
                         rows[id],
                         self.validator,
@@ -907,7 +903,7 @@ class App:
                 schema.cross_validate(record["data"].raw)
             except ValueError as err:
                 print(siren, year, err)
-                sys.exit(err)
+                continue
             try:
                 declaration = await db.declaration.get(siren, year)
             except db.NoData:
@@ -930,7 +926,6 @@ class App:
 @minicli.cli(name="import-solen")
 async def main(
     path,
-    year,
     debug=False,
     indent=None,
     max=0,
@@ -946,7 +941,6 @@ async def main(
     """Import des données Solen.
 
     :path:          chemin vers l'export Excel Solen
-    :year:          année correspondant à l'export solen
     :debug:         afficher les messages de debug
     :indent:        niveau d'indentation JSON
     :max:           nombre maximum de lignes à importer
@@ -963,7 +957,6 @@ async def main(
     try:
         app = App(
             path,
-            year,
             max=max,
             siren=siren,
             debug=debug,
