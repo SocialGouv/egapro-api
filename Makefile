@@ -29,3 +29,6 @@ download-db:
 
 restore-db:
 	pg_restore -d egapro -S postgres --clean --table declaration --table simulation tmp/dump.psql
+
+deploy-docs:
+	mkdocs gh-deploy
