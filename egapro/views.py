@@ -234,9 +234,12 @@ async def send_token(request, response):
     link = f"{request.domain}declaration/?token={token}"
     if "localhost" in link or "127.0.0.1" in link:
         print(link)
-    body = emails.ACCESS_GRANTED.format(link=link)
-    emails.send(email, "Déclarer sur Egapro", body)
-    response.status = 204
+    if request.ip in config.ALLOWED_IPS:
+        response.json = {"token": token}
+    else:
+        body = emails.ACCESS_GRANTED.format(link=link)
+        emails.send(email, "Déclarer sur Egapro", body)
+        response.status = 204
 
 
 @app.route("/search")
