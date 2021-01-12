@@ -91,9 +91,14 @@ async def test_put_declaration_with_json_list_and_namespace(client):
     assert resp.status == 422
 
 
-async def test_basic_declaration_should_save_data(client, body):
-    resp = await client.put("/declaration/514027945/2019", body=body)
+async def test_basic_declaration_should_save_data(client, body, monkeypatch):
+    logger = mock.Mock()
+    monkeypatch.setattr("egapro.loggers.logger.info", logger)
+    resp = await client.put(
+        "/declaration/514027945/2019", body=body, headers={"X-REAL-IP": "1.1.1.1"}
+    )
     assert resp.status == 204
+    logger.assert_called_with("514027945/2019 BY foo@bar.org FROM 1.1.1.1")
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 200
     data = json.loads(resp.body)

@@ -49,6 +49,10 @@ class Request(BaseRequest):
             domain += "/"
         return domain
 
+    @property
+    def ip(self):
+        return self.headers.get("X-REAL-IP")
+
 
 class App(Roll):
     Request = Request
@@ -148,6 +152,7 @@ async def declare(request, response, siren, year):
         # Do not send the success email on update for now (we send too much emails that
         # are unwanted, mainly because when someone loads the frontend app a PUT is
         # automatically sent, without any action from the user.)
+        loggers.logger.info(f"{siren}/{year} BY {declarant} FROM {request.ip}")
         if not current or not current.data.validated:
             url = request.domain + data.uri
             emails.success.send(declarant, url=url, **data)
