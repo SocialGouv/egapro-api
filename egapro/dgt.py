@@ -2,7 +2,7 @@
 
 import time
 from collections import defaultdict
-from datetime import datetime, date
+from datetime import date
 
 import arrow
 from naf import DB as NAF
@@ -74,7 +74,7 @@ async def get_headers_columns():
             ("source", "source"),
             ("URL_declaration", "URL_declaration"),  # Built from /data/id, see below
             ("Date_declaration", "déclaration.date", isodatetime),
-            ("Date_modification", "modified_at"),
+            ("Date_modification", "modified_at", isodatetime),
             ("Email_declarant", "déclarant.email"),
             ("Nom", "déclarant.nom"),
             ("Prenom", "déclarant.prénom"),
