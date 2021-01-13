@@ -1,6 +1,6 @@
 import io
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -500,3 +500,88 @@ async def test_export_ues_public_data(declaration):
         "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
         "Mirabar;87654321;2020;26;Unité Economique et Sociale (UES);MiraFoo;MiraBaz (315710251),MiraPouet (315710251);Auvergne-Rhône-Alpes;Drôme\r\n"
     )
+
+
+async def test_digdash_dump(declaration):
+    await declaration(
+        company="Mirabar",
+        siren="87654321",
+        entreprise={"effectif": {"tranche": "1000:"}},
+        modified_at=datetime(2021, 1, 12, 13, 14, tzinfo=timezone.utc),
+        uid="44d247cc-55bf-11eb-9104-4485000df3ef",
+    )
+    await declaration(
+        company="FooBar",
+        siren="87654322",
+        year=2018,
+        entreprise={"effectif": {"tranche": "1000:", "total": 1000}},
+        modified_at=datetime(2020, 12, 13, 14, 15, 16, tzinfo=timezone.utc),
+        uid="7ffde748-55bf-11eb-b460-4485000df3ef",
+    )
+    # Small entreprise, should not be exported.
+    await declaration(
+        company="MiniBar",
+        siren="87654323",
+        entreprise={"effectif": {"tranche": "251:999"}},
+        modified_at=datetime(2021, 1, 2, 3, 4, 5, tzinfo=timezone.utc),
+        uid="a42ea404-55ba-11eb-a347-4485000df3ef",
+    )
+    out = io.StringIO()
+    await exporter.digdash(out)
+    out.seek(0)
+    assert [json.loads(s) for s in out.read().split("\n") if s] == [
+        {
+            "id": "44d247cc-55bf-11eb-9104-4485000df3ef",
+            "entreprise": {
+                "siren": "87654321",
+                "région": "84",
+                "effectif": {"tranche": "1000:"},
+                "département": "26",
+                "raison_sociale": "Mirabar",
+            },
+            "indicateurs": {"rémunérations": {"mode": "csp"}},
+            "déclaration": {
+                "date": "2021-01-12T13:14:00+00:00",
+                "index": 26,
+                "statut": "final",
+                "année_indicateurs": 2020,
+                "fin_période_référence": "2019-12-31",
+            },
+        },
+        {
+            "id": "a42ea404-55ba-11eb-a347-4485000df3ef",
+            "entreprise": {
+                "siren": "87654323",
+                "région": "84",
+                "effectif": {"tranche": "251:999"},
+                "département": "26",
+                "raison_sociale": "MiniBar",
+            },
+            "indicateurs": {"rémunérations": {"mode": "csp"}},
+            "déclaration": {
+                "date": "2021-01-02T03:04:05+00:00",
+                "index": 26,
+                "statut": "final",
+                "année_indicateurs": 2020,
+                "fin_période_référence": "2019-12-31",
+            },
+        },
+        {
+            "id": "7ffde748-55bf-11eb-b460-4485000df3ef",
+            "entreprise": {
+                "siren": "87654322",
+                "région": "84",
+                "effectif": {"total": 1000, "tranche": "1000:"},
+                "département": "26",
+                "raison_sociale": "FooBar",
+            },
+            "indicateurs": {"rémunérations": {"mode": "csp"}},
+            "déclaration": {
+                "date": "2020-12-13T14:15:16+00:00",
+                "index": 26,
+                "statut": "final",
+                "année_indicateurs": 2018,
+                "fin_période_référence": "2019-12-31",
+            },
+        },
+    ]

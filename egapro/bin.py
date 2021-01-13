@@ -118,6 +118,14 @@ async def export_public_data(path: Path):
 
 
 @minicli.cli
+async def dump_digdash(path: Path):
+    print("Writing to", path)
+    with path.open("w") as f:
+        await exporter.digdash(f)
+    print("Done")
+
+
+@minicli.cli
 async def create_db():
     """Create PostgreSQL database."""
     await db.create()

@@ -68,6 +68,7 @@ def declaration():
         grade=26,
         uid=str(uuid.uuid1()),
         compute_notes=False,
+        modified_at=None,
         **data,
     ):
         data.setdefault("entreprise", {})
@@ -82,9 +83,6 @@ def declaration():
         data["entreprise"].setdefault("effectif", {"tranche": "50:250", "total": 149})
         data["déclaration"].setdefault("année_indicateurs", year)
         data["déclaration"].setdefault("index", grade)
-        data["déclaration"].setdefault(
-            "date", datetime(2020, 11, 4, 10, 37, 6).isoformat()
-        )
         data["déclaration"].setdefault("statut", "final")
         data["déclaration"].setdefault("fin_période_référence", "2019-12-31")
         data["déclarant"].setdefault("email", owner)
@@ -93,7 +91,7 @@ def declaration():
         data["indicateurs"].setdefault("rémunérations", {"mode": "csp"})
         if compute_notes:
             helpers.compute_notes(models.Data(data))
-        await db.declaration.put(siren, year, owner, data)
+        await db.declaration.put(siren, year, owner, data, modified_at=modified_at)
         return data
 
     return factory

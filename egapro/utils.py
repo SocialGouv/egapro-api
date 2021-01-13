@@ -11,7 +11,7 @@ def default_json(v):
 
 
 def json_dumps(v):
-    return json.dumps(v, default=default_json)
+    return json.dumps(v, default=default_json, indent=None)
 
 
 def utcnow():

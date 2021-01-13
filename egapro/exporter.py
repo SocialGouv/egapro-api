@@ -3,13 +3,11 @@
 import csv
 from pathlib import Path
 
-import minicli
 import ujson as json
 
-from egapro import constants, db, sql
+from egapro import constants, db, sql, utils
 
 
-@minicli.cli
 async def dump(path: Path):
     """Export des données Egapro.
 
@@ -22,7 +20,6 @@ async def dump(path: Path):
         json.dump([r["data"] for r in records], f, ensure_ascii=False)
 
 
-@minicli.cli
 async def public_data(path: Path):
     """Export des données Egapro publiques au format CSV.
 
@@ -67,3 +64,11 @@ async def public_data(path: Path):
             ]
         )
     writer.writerows(rows)
+
+
+async def digdash(dest):
+    records = await db.declaration.completed()
+    for record in records:
+        data = record.data.raw
+        del data["déclarant"]
+        dest.write(utils.json_dumps(data) + "\n")
