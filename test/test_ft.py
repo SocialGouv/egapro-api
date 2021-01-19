@@ -69,3 +69,29 @@ async def test_search(client):
     assert len(results) == 3
     results = await db.declaration.search("bio", limit=1)
     assert len(results) == 1
+
+
+async def test_small_companies_are_not_searchable(declaration):
+    await declaration(
+        company="Mala Bar",
+        siren="87654321",
+        entreprise={"effectif": {"tranche": "1000:"}},
+    )
+    # Small entreprise, should not be exported.
+    await declaration(
+        company="Mini Bar",
+        siren="87654323",
+        entreprise={"effectif": {"tranche": "251:999"}},
+        year=2019,
+    )
+    # Starting from 2020, 251:999 companies index are public.
+    await declaration(
+        company="Karam Bar",
+        siren="87654324",
+        entreprise={"effectif": {"tranche": "251:999"}},
+        year=2020,
+    )
+    results = await db.declaration.search("bar")
+    assert len(results) == 2
+    names = {r["informationsEntreprise"]["nomEntreprise"] for r in results}
+    assert names == {"Mala Bar", "Karam Bar"}
