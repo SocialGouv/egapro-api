@@ -52,12 +52,6 @@ def code_naf(code):
     return f"{code} - {NAF[code]}"
 
 
-def value_or_nc(val):
-    if val is None:
-        return "nc"
-    return val
-
-
 async def get_headers_columns():
     """Return a tuple of lists of (header_names, column_names) that we want in the export."""
     try:
@@ -88,13 +82,9 @@ async def get_headers_columns():
                 "Annee_indicateurs",
                 "déclaration.année_indicateurs",
             ),
-            ("Date_debut_periode", "Date_debut_periode"),
-            (
-                "Date_fin_periode",
-                "déclaration.fin_période_référence",
-                isodate,
-            ),
-            ("Structure", "Structure"),
+            ("Date_debut_periode", "déclaration.début_période_référence"),
+            ("Date_fin_periode", "déclaration.fin_période_référence"),
+            ("Structure", "entreprise.structure"),
             ("Tranche_effectif", "entreprise.effectif.tranche", EFFECTIF.get),
             ("Nb_salaries", "entreprise.effectif.total"),
             ("Nom_Entreprise", "entreprise.raison_sociale"),
@@ -102,7 +92,7 @@ async def get_headers_columns():
             ("Code_NAF", "entreprise.code_naf", code_naf),
             ("Nom_UES", "entreprise.ues.nom"),
             # Inclure entreprise déclarante
-            ("Nb_ets_UES", "nombre_ues"),
+            ("Nb_ets_UES", "entreprise.nombre_ues"),
             (
                 "Date_publication",
                 "déclaration.publication.date",
@@ -110,11 +100,7 @@ async def get_headers_columns():
             ),
             ("Site_internet_publication", "déclaration.publication.url"),
             ("Modalites_publication", "déclaration.publication.modalités"),
-            (
-                "Indic1_calculable",
-                "indicateurs.rémunérations.non_calculable",
-                falsy,
-            ),
+            ("Indic1_calculable", "indicateurs.rémunérations.non_calculable_bool"),
             (
                 "Indic1_motif_non_calculable",
                 "indicateurs.rémunérations.non_calculable",
@@ -125,11 +111,11 @@ async def get_headers_columns():
                 "indicateurs.rémunérations.date_consultation_cse",
                 isodate,
             ),
-            ("Indic1_nb_coef_niv", "Indic1_nb_coef_niv"),
-            ("Indic1_Ouv", "Indic1_Ouv"),
-            ("Indic1_Emp", "Indic1_Emp"),
-            ("Indic1_TAM", "Indic1_TAM"),
-            ("Indic1_IC", "Indic1_IC"),
+            ("Indic1_nb_coef_niv", "indicateurs.rémunérations.len_categories"),
+            ("Indic1_Ouv", "indicateurs.rémunérations.Indic1_Ouv"),
+            ("Indic1_Emp", "indicateurs.rémunérations.Indic1_Emp"),
+            ("Indic1_TAM", "indicateurs.rémunérations.Indic1_TAM"),
+            ("Indic1_IC", "indicateurs.rémunérations.Indic1_IC"),
         ]
         + [
             (
@@ -144,7 +130,7 @@ async def get_headers_columns():
                 "Indic1_population_favorable",
                 "indicateurs.rémunérations.population_favorable",
             ),
-            ("Indic2_calculable", "indicateurs.augmentations.non_calculable", falsy),
+            ("Indic2_calculable", "indicateurs.augmentations.non_calculable_bool"),
             (
                 "Indic2_motif_non_calculable",
                 "indicateurs.augmentations.non_calculable",
@@ -163,7 +149,7 @@ async def get_headers_columns():
                 "Indic2_population_favorable",
                 "indicateurs.augmentations.population_favorable",
             ),
-            ("Indic3_calculable", "indicateurs.promotions.non_calculable", falsy),
+            ("Indic3_calculable", "indicateurs.promotions.non_calculable_bool"),
             ("Indic3_motif_non_calculable", "indicateurs.promotions.non_calculable"),
         ]
         + [
@@ -181,8 +167,7 @@ async def get_headers_columns():
             ),
             (
                 "Indic2et3_calculable",
-                "indicateurs.augmentations_et_promotions.non_calculable",
-                falsy,
+                "indicateurs.augmentations_et_promotions.non_calculable_bool",
             ),
             (
                 "Indic2et3_motif_non_calculable",
@@ -200,11 +185,7 @@ async def get_headers_columns():
                 "Indic2et3_population_favorable",
                 "indicateurs.augmentations_et_promotions.population_favorable",
             ),
-            (
-                "Indic4_calculable",
-                "indicateurs.congés_maternité.non_calculable",
-                falsy,
-            ),
+            ("Indic4_calculable", "indicateurs.congés_maternité.non_calculable_bool"),
             (
                 "Indic4_motif_non_calculable",
                 "indicateurs.congés_maternité.non_calculable",
@@ -215,32 +196,26 @@ async def get_headers_columns():
                 "Indic5_sexe_sur_represente",
                 "indicateurs.hautes_rémunérations.population_favorable",
             ),
-            ("Indicateur_1", "indicateurs.rémunérations.note", value_or_nc),
-            ("Indicateur_2", "indicateurs.augmentations.note", value_or_nc),
-            ("Indicateur_3", "indicateurs.promotions.note", value_or_nc),
-            (
-                "Indicateur_2et3",
-                "indicateurs.augmentations_et_promotions.note",
-                value_or_nc,
-            ),
+            ("Indicateur_1", "indicateurs.rémunérations.note"),
+            ("Indicateur_2", "indicateurs.augmentations.note"),
+            ("Indicateur_3", "indicateurs.promotions.note"),
+            ("Indicateur_2et3", "indicateurs.augmentations_et_promotions.note"),
             (
                 "Indicateur_2et3_PourCent",
                 "indicateurs.augmentations_et_promotions.note_en_pourcentage",
-                value_or_nc,
             ),
             (
                 "Indicateur_2et3_ParSal",
                 "indicateurs.augmentations_et_promotions.note_nombre_salariés",
-                value_or_nc,
             ),
-            ("Indicateur_4", "indicateurs.congés_maternité.note", value_or_nc),
-            ("Indicateur_5", "indicateurs.hautes_rémunérations.note", value_or_nc),
+            ("Indicateur_4", "indicateurs.congés_maternité.note"),
+            ("Indicateur_5", "indicateurs.hautes_rémunérations.note"),
             ("Nombre_total_points obtenus", "déclaration.points"),
             (
                 "Nombre_total_points_pouvant_etre_obtenus",
                 "déclaration.points_calculables",
             ),
-            ("Resultat_final_sur_100_points", "déclaration.index", value_or_nc),
+            ("Resultat_final_sur_100_points", "déclaration.index"),
             ("Mesures_correction", "déclaration.mesures_correctives"),
         ]
     )
@@ -332,33 +307,53 @@ def ues_data(sheet, data):
 def prepare_record(data):
 
     # Before flattening.
-    try:
-        indic1_categories = data["indicateurs"]["rémunérations"]["catégories"]
-    except KeyError:
-        indic1_categories = []
-    indic1_nv_niveaux = len(indic1_categories) or None
-    nombre_ues = len(data["entreprise"].get("ues", {}).get("entreprises", []))
     data["URL_declaration"] = f"'https://index-egapro.travail.gouv.fr/{data.uri}"
+    effectif = data["entreprise"]["effectif"]["tranche"]
+    prepare_entreprise(data["entreprise"])
+    prepare_declaration(data["déclaration"])
+    prepare_remunerations(data["indicateurs"]["rémunérations"])
+    prepare_conges_maternite(data["indicateurs"]["congés_maternité"])
+    if effectif == "50:250":
+        prepare_augmentations_et_promotions(
+            data["indicateurs"]["augmentations_et_promotions"]
+        )
+    else:
+        prepare_augmentations(data["indicateurs"]["augmentations"])
+        prepare_promotions(data["indicateurs"]["promotions"])
 
-    data = flatten(data, flatten_lists=True)
-    data["Structure"] = (
+    return flatten(data, flatten_lists=True)
+
+
+def prepare_entreprise(data):
+    nombre_ues = len(data.get("ues", {}).get("entreprises", []))
+    data["structure"] = (
         "Unité Economique et Sociale (UES)" if nombre_ues else "Entreprise"
     )
     data["nombre_ues"] = nombre_ues or None
-    data["Date_debut_periode"] = remove_one_year(
-        date.fromisoformat(data["déclaration.fin_période_référence"])
-    )
 
-    # Indicateur 1
-    indic1_mode = data.get("indicateurs.rémunérations.mode")
-    data["Indic1_nb_coef_niv"] = indic1_nv_niveaux if indic1_mode != "csp" else None
-    indic1_calculable = not data.get("indicateurs.rémunérations.non_calculable")
-    if indic1_calculable:
+
+def prepare_declaration(data):
+    data["début_période_référence"] = remove_one_year(
+        date.fromisoformat(data["fin_période_référence"])
+    )
+    data["fin_période_référence"] = date.fromisoformat(data["fin_période_référence"])
+
+
+def prepare_remunerations(data):
+    try:
+        indic1_categories = data["catégories"]
+    except KeyError:
+        indic1_categories = []
+    indic1_nv_niveaux = len(indic1_categories) or None
+    indic1_mode = data.get("mode")
+    data["len_categories"] = indic1_nv_niveaux if indic1_mode != "csp" else None
+    calculable = not data.get("non_calculable")
+    if calculable:
         # DGT want data to be in different columns whether its csp or any coef.
         csp_names = ["Ouv", "Emp", "TAM", "IC"]
         for idx, category in enumerate(indic1_categories):
             tranches = category.get("tranches", {})
-            key = f"indicateurs.rémunérations.catégories.{idx}"
+            key = f"catégories.{idx}"
             if indic1_mode == "csp":
                 key = f"Indic1_{csp_names[idx]}"
             values = [
@@ -371,7 +366,37 @@ def prepare_record(data):
             values = [int(v) if v is not None and v % 1 == 0 else v for v in values]
             values = [str(round(v, 2) + 0) if v is not None else "nc" for v in values]
             data[key] = ";".join(values)
-    return data
+    else:
+        data["note"] = "nc"
+    data["non_calculable_bool"] = calculable
+
+
+def prepare_promotions(data):
+    calculable = not data.get("non_calculable")
+    data["non_calculable_bool"] = calculable
+    if not calculable:
+        data["note"] = "nc"
+
+
+def prepare_augmentations(data):
+    calculable = not data.get("non_calculable")
+    data["non_calculable_bool"] = calculable
+    if not calculable:
+        data["note"] = "nc"
+
+
+def prepare_augmentations_et_promotions(data):
+    calculable = not data.get("non_calculable")
+    data["non_calculable_bool"] = calculable
+    if not calculable:
+        data["note"] = "nc"
+
+
+def prepare_conges_maternite(data):
+    calculable = not data.get("non_calculable")
+    data["non_calculable_bool"] = calculable
+    if not calculable:
+        data["note"] = "nc"
 
 
 async def duplicates(current_export, *solen_data):  # pragma: no cover

@@ -168,6 +168,8 @@ async def test_dgt_dump(declaration):
     assert sheet["O2"].value == date(2019, 1, 1)
     assert sheet["P1"].value == "Date_fin_periode"
     assert sheet["P2"].value == date(2019, 12, 31)
+    assert sheet["Q1"].value == "Structure"
+    assert sheet["Q2"].value == "Entreprise"
 
     # URL
     assert sheet["B1"].value == "URL_declaration"
@@ -194,11 +196,11 @@ async def test_dgt_dump(declaration):
     assert sheet["BS1"].value == "Indicateur_3"
     assert sheet["BS2"].value == 15
     assert sheet["BT1"].value == "Indicateur_2et3"
-    assert sheet["BT2"].value == "nc"
+    assert sheet["BT2"].value is None
     assert sheet["BU1"].value == "Indicateur_2et3_PourCent"
-    assert sheet["BU2"].value == "nc"
+    assert sheet["BU2"].value is None
     assert sheet["BV1"].value == "Indicateur_2et3_ParSal"
-    assert sheet["BV2"].value == "nc"
+    assert sheet["BV2"].value is None
     assert sheet["BW1"].value == "Indicateur_4"
     assert sheet["BW2"].value == 0
     assert sheet["BX1"].value == "Indicateur_5"
@@ -371,6 +373,152 @@ async def test_dgt_dump_with_coef_mode(declaration):
     assert sheet["AW2"].value == "0;0;7.5;20.9"
 
 
+async def test_dgt_dump_with_effectif_50_250(declaration):
+    await declaration(
+        siren="12345678",
+        year=2020,
+        uid="12345678-1234-5678-9012-123456789012",
+        entreprise={
+            "code_naf": "47.25Z",
+            "région": "11",
+            "département": "77",
+            "effectif": {"tranche": "50:250", "total": 173},
+        },
+        indicateurs={
+            "promotions": {},
+            "augmentations": {},
+            "rémunérations": {
+                "mode": "niveau_autre",
+                "note": 36,
+                "résultat": 3.0781,
+                "catégories": [
+                    {"nom": "tranche 0", "tranches": {"50:": -3.7963161277}},
+                    {"nom": "tranche 1", "tranches": {"50:": 17.649030204}},
+                    {"nom": "tranche 2", "tranches": {}},
+                    {"nom": "tranche 3", "tranches": {}},
+                    {"nom": "tranche 4", "tranches": {}},
+                ],
+                "population_favorable": "hommes",
+                "date_consultation_cse": "2020-01-27",
+            },
+            "congés_maternité": {"non_calculable": "absrcm"},
+            "hautes_rémunérations": {"note": 10, "résultat": 5},
+            "augmentations_et_promotions": {
+                "note": 35,
+                "résultat": 3.7625,
+                "note_en_pourcentage": 25,
+                "population_favorable": "hommes",
+                "note_nombre_salariés": 35,
+                "résultat_nombre_salariés": 1.4,
+            },
+        },
+        déclaration={
+            "date": "2020-02-07T13:27:00+00:00",
+            "index": 95,
+            "points": 81,
+            "publication": {
+                "date": "2020-02-07",
+                "modalités": "Affichage dans les locaux",
+            },
+            "année_indicateurs": 2019,
+            "points_calculables": 85,
+            "fin_période_référence": "2019-12-31",
+        },
+    )
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook.active
+
+    # Calculable
+    assert sheet["AB1"].value == "Indic1_calculable"
+    assert sheet["AB2"].value is True
+    assert sheet["AD1"].value == "Indic1_modalite_calcul"
+    assert sheet["AD2"].value == "niveau_autre"
+
+    # Indicateurs rémunérations for CSP should be empty
+    assert sheet["AG1"].value == "Indic1_Ouv"
+    assert sheet["AG2"].value is None
+    assert sheet["AH1"].value == "Indic1_Emp"
+    assert sheet["AH2"].value is None
+    assert sheet["AI1"].value == "Indic1_TAM"
+    assert sheet["AI2"].value is None
+    assert sheet["AJ1"].value == "Indic1_IC"
+    assert sheet["AJ2"].value is None
+    assert sheet["AK1"].value == "Indic1_Niv0"
+    assert sheet["AK2"].value == "nc;nc;nc;-3.8"
+    assert sheet["AL1"].value == "Indic1_Niv1"
+    assert sheet["AL2"].value == "nc;nc;nc;17.65"
+    assert sheet["AM1"].value == "Indic1_Niv2"
+    assert sheet["AM2"].value == "nc;nc;nc;nc"
+    assert sheet["AN1"].value == "Indic1_Niv3"
+    assert sheet["AN2"].value == "nc;nc;nc;nc"
+    assert sheet["AO1"].value == "Indic1_Niv4"
+    assert sheet["AO2"].value == "nc;nc;nc;nc"
+    assert sheet["AP1"].value == "Indic1_resultat"
+    assert sheet["AP2"].value == 3.0781
+    assert sheet["AQ1"].value == "Indic1_population_favorable"
+    assert sheet["AQ2"].value == "hommes"
+    assert sheet["AR1"].value == "Indic2_calculable"
+    assert sheet["AR2"].value is None
+    assert sheet["AS1"].value == "Indic2_motif_non_calculable"
+    assert sheet["AS2"].value is None
+    assert sheet["AX1"].value == "Indic2_resultat"
+    assert sheet["AX2"].value is None
+    assert sheet["AY1"].value == "Indic2_population_favorable"
+    assert sheet["AY2"].value is None
+    assert sheet["AZ1"].value == "Indic3_calculable"
+    assert sheet["AZ2"].value is None
+    assert sheet["BA1"].value == "Indic3_motif_non_calculable"
+    assert sheet["BA2"].value is None
+    assert sheet["BF1"].value == "Indic3_resultat"
+    assert sheet["BF2"].value is None
+    assert sheet["BG1"].value == "Indic3_population_favorable"
+    assert sheet["BG2"].value is None
+    assert sheet["BH1"].value == "Indic2et3_calculable"
+    assert sheet["BH2"].value is True
+    assert sheet["BI1"].value == "Indic2et3_motif_non_calculable"
+    assert sheet["BI2"].value is None
+    assert sheet["BJ1"].value == "Indic2et3_resultat_pourcent"
+    assert sheet["BJ2"].value == 3.7625
+    assert sheet["BK1"].value == "Indic2et3_resultat_nb_sal"
+    assert sheet["BK2"].value == 1.4
+    assert sheet["BL1"].value == "Indic2et3_population_favorable"
+    assert sheet["BL2"].value == "hommes"
+    assert sheet["BM1"].value == "Indic4_calculable"
+    assert sheet["BM2"].value is False
+    assert sheet["BN1"].value == "Indic4_motif_non_calculable"
+    assert sheet["BN2"].value == "absrcm"
+    assert sheet["BO1"].value == "Indic4_resultat"
+    assert sheet["BO2"].value is None
+    assert sheet["BP1"].value == "Indic5_resultat"
+    assert sheet["BP2"].value == 5
+    assert sheet["BQ1"].value == "Indic5_sexe_sur_represente"
+    assert sheet["BQ2"].value is None
+    assert sheet["BR1"].value == "Indicateur_1"
+    assert sheet["BR2"].value == 36
+    assert sheet["BS1"].value == "Indicateur_2"
+    assert sheet["BS2"].value is None
+    assert sheet["BT1"].value == "Indicateur_3"
+    assert sheet["BT2"].value is None
+    assert sheet["BU1"].value == "Indicateur_2et3"
+    assert sheet["BU2"].value == 35
+    assert sheet["BV1"].value == "Indicateur_2et3_PourCent"
+    assert sheet["BV2"].value == 25
+    assert sheet["BW1"].value == "Indicateur_2et3_ParSal"
+    assert sheet["BW2"].value == 35
+    assert sheet["BX1"].value == "Indicateur_4"
+    assert sheet["BX2"].value == "nc"
+    assert sheet["BY1"].value == "Indicateur_5"
+    assert sheet["BY2"].value == 10
+    assert sheet["BZ1"].value == "Nombre_total_points obtenus"
+    assert sheet["BZ2"].value == 81
+    assert sheet["CA1"].value == "Nombre_total_points_pouvant_etre_obtenus"
+    assert sheet["CA2"].value == 85
+    assert sheet["CB1"].value == "Resultat_final_sur_100_points"
+    assert sheet["CB2"].value == 95
+    assert sheet["CC1"].value == "Mesures_correction"
+    assert sheet["CC2"].value is None
+
+
 async def test_dgt_dump_should_compute_declaration_url_for_solen_data(declaration):
     await declaration(
         siren="12345678",
@@ -401,8 +549,20 @@ async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
             },
             "effectif": {"tranche": "1000:"},
         },
+        indicateurs={
+            "promotions": {
+                "note": 15,
+                "résultat": 0.5,
+                "catégories": [None, 0.1, -0.3, -0.4],
+                "population_favorable": "femmes",
+            },
+            "augmentations": {},
+        },
     )
     workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook["BDD REPONDANTS"]
+    assert sheet["Q1"].value == "Structure"
+    assert sheet["Q2"].value == "Unité Economique et Sociale (UES)"
     sheet = workbook["BDD UES détail entreprises"]
     assert list(sheet.values) == [
         (
@@ -548,11 +708,14 @@ async def test_digdash_dump(declaration):
                 "département": "26",
                 "raison_sociale": "Mirabar",
             },
-            "indicateurs": {"rémunérations": {"mode": "csp"}},
+            "indicateurs": {
+                "rémunérations": {"mode": "csp"},
+                "augmentations_et_promotions": {},
+                "congés_maternité": {},
+            },
             "déclaration": {
                 "date": "2021-01-12T13:14:00+00:00",
                 "index": 26,
-                "statut": "final",
                 "année_indicateurs": 2020,
                 "fin_période_référence": "2019-12-31",
             },
@@ -566,11 +729,14 @@ async def test_digdash_dump(declaration):
                 "département": "26",
                 "raison_sociale": "MiniBar",
             },
-            "indicateurs": {"rémunérations": {"mode": "csp"}},
+            "indicateurs": {
+                "rémunérations": {"mode": "csp"},
+                "augmentations_et_promotions": {},
+                "congés_maternité": {},
+            },
             "déclaration": {
                 "date": "2021-01-02T03:04:05+00:00",
                 "index": 26,
-                "statut": "final",
                 "année_indicateurs": 2020,
                 "fin_période_référence": "2019-12-31",
             },
@@ -584,11 +750,14 @@ async def test_digdash_dump(declaration):
                 "département": "26",
                 "raison_sociale": "FooBar",
             },
-            "indicateurs": {"rémunérations": {"mode": "csp"}},
+            "indicateurs": {
+                "rémunérations": {"mode": "csp"},
+                "augmentations_et_promotions": {},
+                "congés_maternité": {},
+            },
             "déclaration": {
                 "date": "2020-12-13T14:15:16+00:00",
                 "index": 26,
-                "statut": "final",
                 "année_indicateurs": 2018,
                 "fin_période_référence": "2019-12-31",
             },
