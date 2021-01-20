@@ -10,7 +10,7 @@ from asyncpg.exceptions import DataError
 from roll.extensions import cors, options
 from stdnum.fr.siren import is_valid as siren_is_valid
 
-from . import config, constants, db, emails, helpers, models, tokens, schema
+from . import config, constants, db, emails, helpers, models, tokens, schema, session
 from .schema.legacy import from_legacy
 from . import loggers
 
@@ -149,6 +149,7 @@ async def declare(request, response, siren, year):
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:
+        await db.archive.put(siren, year, data, by=declarant, ip=request.ip)
         # Do not send the success email on update for now (we send too much emails that
         # are unwanted, mainly because when someone loads the frontend app a PUT is
         # automatically sent, without any action from the user.)
@@ -283,6 +284,11 @@ async def validate_siren(request, response):
     if not siren_is_valid(siren):
         raise HttpError(422, f"Numéro SIREN invalide: {siren}")
     response.status = 204
+
+
+@app.listen("request")
+async def on_request(request, response):
+    session.ip.set(request.ip)
 
 
 @app.listen("startup")
