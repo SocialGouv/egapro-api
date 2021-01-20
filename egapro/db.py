@@ -214,6 +214,14 @@ class simulation(table):
         return await cls.create(data)
 
 
+class archive(table):
+
+    @classmethod
+    async def put(cls, siren, year, data, by=None, ip=None):
+        async with cls.pool.acquire() as conn:
+            await conn.execute(sql.insert_archive, siren, year, data, by, ip)
+
+
 async def set_type_codecs(conn):
     await conn.set_type_codec(
         "jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog"
@@ -240,6 +248,7 @@ async def init():
         await conn.execute(sql.create_ftdict)
         await conn.execute(sql.create_declaration_table)
         await conn.execute(sql.create_simulation_table)
+        await conn.execute(sql.create_archive_table)
 
 
 async def create_indexes():
