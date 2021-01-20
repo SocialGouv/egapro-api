@@ -4,7 +4,7 @@ import asyncpg
 from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
 import ujson as json
 
-from . import config, models, sql, utils
+from . import config, models, sql, utils, helpers
 from .schema.legacy import from_legacy
 
 
@@ -108,7 +108,7 @@ class declaration(table):
         data["déclaration"]["année_indicateurs"] = year
         data.setdefault("entreprise", {})
         data["entreprise"]["siren"] = siren
-        ft = data.get("entreprise", {}).get("raison_sociale")
+        ft = helpers.extract_ft(data)
         declared_at = await cls.get_declared_at(siren, year)
         if not declared_at and not data.is_draft():
             declared_at = modified_at
@@ -169,7 +169,7 @@ class declaration(table):
                 "region": data.path("entreprise.région"),
                 "departement": data.path("entreprise.département"),
                 "structure": data.structure,
-                "nomUES": data.path("entreprise.ues.raison_sociale"),
+                "nomUES": data.path("entreprise.ues.nom"),
                 "entreprisesUES": [
                     {"nom": e["raison_sociale"], "siren": e["siren"]}
                     for e in data.path("entreprise.ues.entreprises") or []

@@ -198,3 +198,11 @@ def compute_notes(data):
         # Make sure to round up halway
         # cf https://stackoverflow.com/a/33019698/
         data["déclaration"]["index"] = math.floor((points / maximum * 100) + 0.5)
+
+
+def extract_ft(data):
+    candidates = [
+        data.path("entreprise.raison_sociale"),
+        data.path("entreprise.ues.nom"),
+    ] + [e["raison_sociale"] for e in data.path("entreprise.ues.entreprises") or []]
+    return " ".join(c for c in candidates if c)

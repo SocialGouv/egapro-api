@@ -36,7 +36,7 @@ async def test_search(client):
                     "département": "77",
                     "région": "11",
                     "ues": {
-                        "raison_sociale": "Nom UES",
+                        "nom": "Nom UES",
                         "entreprises": [
                             {"siren": "987654321", "raison_sociale": "foobabar"}
                         ],
@@ -95,3 +95,81 @@ async def test_small_companies_are_not_searchable(declaration):
     assert len(results) == 2
     names = {r["informationsEntreprise"]["nomEntreprise"] for r in results}
     assert names == {"Mala Bar", "Karam Bar"}
+
+
+async def test_search_from_ues_name(client):
+    await db.declaration.put(
+        "12345671",
+        2020,
+        "foo@bar.org",
+        {
+            "entreprise": {
+                "raison_sociale": "Babar",
+                "effectif": {"tranche": "1000:"},
+                "département": "77",
+                "région": "11",
+                "ues": {
+                    "nom": "Nom UES",
+                    "entreprises": [
+                        {"siren": "987654321", "raison_sociale": "foobabar"}
+                    ],
+                },
+            },
+            "déclaration": {"date": datetime.now()},
+        },
+    )
+    results = await db.declaration.search("ues")
+    assert len(results) == 1
+    assert results[0] == {
+        "declaration": {"noteIndex": None},
+        "id": None,
+        "informationsEntreprise": {
+            "nomEntreprise": "Babar",
+            "nomUES": "Nom UES",
+            "departement": "77",
+            "region": "11",
+            "siren": "12345671",
+            "structure": "Unité Economique et Sociale (UES)",
+            "entreprisesUES": [{"nom": "foobabar", "siren": "987654321"}],
+        },
+        "informations": {"anneeDeclaration": 2020},
+    }
+
+
+async def test_search_from_ues_member_name(client):
+    await db.declaration.put(
+        "12345671",
+        2020,
+        "foo@bar.org",
+        {
+            "entreprise": {
+                "raison_sociale": "Babar",
+                "effectif": {"tranche": "1000:"},
+                "département": "77",
+                "région": "11",
+                "ues": {
+                    "nom": "Nom UES",
+                    "entreprises": [
+                        {"siren": "987654321", "raison_sociale": "foobabar"}
+                    ],
+                },
+            },
+            "déclaration": {"date": datetime.now()},
+        },
+    )
+    results = await db.declaration.search("foo")
+    assert len(results) == 1
+    assert results[0] == {
+        "declaration": {"noteIndex": None},
+        "id": None,
+        "informationsEntreprise": {
+            "nomEntreprise": "Babar",
+            "nomUES": "Nom UES",
+            "departement": "77",
+            "region": "11",
+            "siren": "12345671",
+            "structure": "Unité Economique et Sociale (UES)",
+            "entreprisesUES": [{"nom": "foobabar", "siren": "987654321"}],
+        },
+        "informations": {"anneeDeclaration": 2020},
+    }

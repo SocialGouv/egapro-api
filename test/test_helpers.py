@@ -149,3 +149,26 @@ def test_compute_augmentations_hp_note_with_correction_measures_but_equality():
     )
     helpers.compute_notes(data)
     assert data["indicateurs"]["augmentations"]["note"] == 10
+
+
+def test_extract_ft():
+    data = {"entreprise": {"raison_sociale": "blablabar"}}
+    assert helpers.extract_ft(models.Data(data)) == "blablabar"
+    data = {"entreprise": {"raison_sociale": "blablabar", "ues": {"nom": "nom ues"}}}
+    assert helpers.extract_ft(models.Data(data)) == "blablabar nom ues"
+    data = {
+        "entreprise": {
+            "raison_sociale": "blablabar",
+            "ues": {
+                "nom": "nom ues",
+                "entreprises": [
+                    {"siren": "123456789", "raison_sociale": "entreprise une"},
+                    {"siren": "123456780", "raison_sociale": "entreprise deux"},
+                ],
+            },
+        }
+    }
+    assert (
+        helpers.extract_ft(models.Data(data))
+        == "blablabar nom ues entreprise une entreprise deux"
+    )
