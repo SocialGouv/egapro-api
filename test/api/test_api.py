@@ -46,7 +46,7 @@ async def test_search_endpoint(client):
             "id": "12345678-1234-5678-9012-123456789012",
             "entreprise": {
                 "raison_sociale": "Biocoop",
-                "effectif": {"tranche": "251:999"},
+                "effectif": {"tranche": "50:250"},
             },
         },
     )

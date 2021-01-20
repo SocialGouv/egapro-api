@@ -81,7 +81,7 @@ async def test_small_companies_are_not_searchable(declaration):
     await declaration(
         company="Mini Bar",
         siren="87654323",
-        entreprise={"effectif": {"tranche": "251:999"}},
+        entreprise={"effectif": {"tranche": "50:250"}},
         year=2019,
     )
     # Starting from 2020, 251:999 companies index are public.

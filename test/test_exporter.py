@@ -626,7 +626,7 @@ async def test_export_public_data(declaration):
     await declaration(
         company="MiniBar",
         siren="87654323",
-        entreprise={"effectif": {"tranche": "251:999"}},
+        entreprise={"effectif": {"tranche": "50:250"}},
         year=2019,
     )
     # Starting from 2020, 251:999 companies index are public.
