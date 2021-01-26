@@ -698,7 +698,7 @@ async def test_digdash_dump(declaration):
     out = io.StringIO()
     await exporter.digdash(out)
     out.seek(0)
-    assert [json.loads(s) for s in out.read().split("\n") if s] == [
+    assert json.loads(out.read()) == [
         {
             "id": "44d247cc-55bf-11eb-9104-4485000df3ef",
             "entreprise": {

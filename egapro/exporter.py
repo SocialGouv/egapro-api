@@ -67,8 +67,14 @@ async def public_data(path: Path):
 
 
 async def digdash(dest):
-    records = await db.declaration.completed()
-    for record in records:
+    # Don't put all data in memory.
+    dest.write("[")
+    first = True
+    for record in await db.declaration.completed():
+        if not first:
+            dest.write(",")
+        first = False
         data = record.data.raw
         del data["déclarant"]
-        dest.write(utils.json_dumps(data) + "\n")
+        dest.write(utils.json_dumps(data))
+    dest.write("]")
