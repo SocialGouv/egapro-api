@@ -719,6 +719,7 @@ async def test_digdash_dump(declaration):
                 "année_indicateurs": 2020,
                 "fin_période_référence": "2019-12-31",
             },
+            "déclarant": {"email": "foo@bar.com", "nom": "Martine", "prénom": "Martin"},
         },
         {
             "id": "a42ea404-55ba-11eb-a347-4485000df3ef",
@@ -740,6 +741,7 @@ async def test_digdash_dump(declaration):
                 "année_indicateurs": 2020,
                 "fin_période_référence": "2019-12-31",
             },
+            "déclarant": {"email": "foo@bar.com", "nom": "Martine", "prénom": "Martin"},
         },
         {
             "id": "7ffde748-55bf-11eb-b460-4485000df3ef",
@@ -761,5 +763,6 @@ async def test_digdash_dump(declaration):
                 "année_indicateurs": 2018,
                 "fin_période_référence": "2019-12-31",
             },
+            "déclarant": {"email": "foo@bar.com", "nom": "Martine", "prénom": "Martin"},
         },
     ]

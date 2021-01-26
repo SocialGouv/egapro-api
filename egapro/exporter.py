@@ -75,6 +75,5 @@ async def digdash(dest):
             dest.write(",")
         first = False
         data = record.data.raw
-        del data["déclarant"]
         dest.write(utils.json_dumps(data))
     dest.write("]")
