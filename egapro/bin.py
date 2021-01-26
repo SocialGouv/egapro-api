@@ -8,7 +8,7 @@ import yaml
 import ujson as json
 from openpyxl import load_workbook
 
-from egapro import config, db, dgt, exporter, models, schema, tokens
+from egapro import config, db, dgt, exporter, models, schema, tokens, loggers
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro.solen import *  # noqa: expose to minicli
 from egapro.utils import json_dumps
@@ -123,6 +123,47 @@ async def dump_digdash(path: Path):
     with path.open("w") as f:
         await exporter.digdash(f)
     print("Done")
+
+
+@minicli.cli
+async def migrate_ecart():
+    records = await db.declaration.fetch(
+        "SELECT * FROM declaration WHERE data->>'source'='simulateur' "
+        "AND modified_at>='2020-12-25' AND declared_at IS NOT NULL"
+    )
+    for record in records:
+        data = record.data.raw
+        siren = record.data.siren
+        year = record.data.year
+        loggers.logger.info(f"Migrating {siren}/{year}")
+        categories = record.data.path("indicateurs.rémunérations.catégories") or []
+        for category in categories:
+            tranches = category.get("tranches")
+            for name, value in tranches.items():
+                tranches[name] = value * 100
+        try:
+            categories = data["indicateurs"]["augmentations"]["catégories"]
+        except KeyError:
+            pass
+        else:
+            for idx, value in enumerate(categories):
+                if value:
+                    categories[idx] = value * 100
+        try:
+            categories = data["indicateurs"]["promotions"]["catégories"]
+        except KeyError:
+            pass
+        else:
+            for idx, value in enumerate(categories):
+                if value:
+                    categories[idx] = value * 100
+        await db.declaration.put(
+            siren,
+            year,
+            owner=record["owner"],
+            data=data,
+            modified_at=record["modified_at"],
+        )
 
 
 @minicli.cli
@@ -377,6 +418,7 @@ def shell():
 
 @minicli.wrap
 async def wrapper():
+    loggers.init()
     config.init()
     try:
         await db.init()
