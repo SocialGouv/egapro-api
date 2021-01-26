@@ -16,7 +16,8 @@ def pytest_configure(config):
         await db.init()
         async with db.declaration.pool.acquire() as conn:
             await conn.execute("DROP TABLE IF EXISTS declaration")
-            await conn.execute("DROP TABLE IF EXISTS simulation")
+            await conn.execute("DROP TABLE IF EXISTS declaration")
+            await conn.execute("DROP TABLE IF EXISTS search")
         await db.init()
 
     loop = asyncio.get_event_loop()
@@ -35,6 +36,7 @@ def pytest_runtest_setup(item):
         async with db.declaration.pool.acquire() as conn:
             await conn.execute("TRUNCATE TABLE declaration;")
             await conn.execute("TRUNCATE TABLE simulation;")
+            await conn.execute("TRUNCATE TABLE search;")
         await db.terminate()
 
     asyncio.get_event_loop().run_until_complete(setup())

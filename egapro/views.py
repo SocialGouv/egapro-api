@@ -245,8 +245,12 @@ async def search(request, response):
     if not q.strip():
         raise HttpError(400, "Empty search")
     limit = request.query.int("limit", 10)
-    results = await db.declaration.search(q, limit=limit)
-    response.json = {"data": results, "total": len(results)}
+    code_naf = request.query.get("code_naf", None)
+    departement = request.query.get("departement", None)
+    results = await db.search.run(
+        q, limit=limit, code_naf=code_naf, departement=departement
+    )
+    response.json = {"data": [r.data for r in results], "total": len(results)}
 
 
 @app.route("/config")

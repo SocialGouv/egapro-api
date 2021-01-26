@@ -45,9 +45,9 @@ async def test_search(client):
                 "déclaration": {"date": datetime.now()},
             },
         )
-    results = await db.declaration.search("total")
+    results = await db.search.run("total")
     assert len(results) == 1
-    assert results[0] == {
+    assert results[0].data == {
         "declaration": {"noteIndex": None},
         "id": None,
         "informationsEntreprise": {
@@ -61,13 +61,13 @@ async def test_search(client):
         },
         "informations": {"anneeDeclaration": 2020},
     }
-    results = await db.declaration.search("pyrenées")
+    results = await db.search.run("pyrenées")
     assert len(results) == 1
-    results = await db.declaration.search("décathlon")
+    results = await db.search.run("décathlon")
     assert len(results) == 1
-    results = await db.declaration.search("bio")
+    results = await db.search.run("bio")
     assert len(results) == 3
-    results = await db.declaration.search("bio", limit=1)
+    results = await db.search.run("bio", limit=1)
     assert len(results) == 1
 
 
@@ -91,9 +91,9 @@ async def test_small_companies_are_not_searchable(declaration):
         entreprise={"effectif": {"tranche": "251:999"}},
         year=2020,
     )
-    results = await db.declaration.search("bar")
+    results = await db.search.run("bar")
     assert len(results) == 2
-    names = {r["informationsEntreprise"]["nomEntreprise"] for r in results}
+    names = {r.data["informationsEntreprise"]["nomEntreprise"] for r in results}
     assert names == {"Mala Bar", "Karam Bar"}
 
 
@@ -118,9 +118,9 @@ async def test_search_from_ues_name(client):
             "déclaration": {"date": datetime.now()},
         },
     )
-    results = await db.declaration.search("ues")
+    results = await db.search.run("ues")
     assert len(results) == 1
-    assert results[0] == {
+    assert results[0].data == {
         "declaration": {"noteIndex": None},
         "id": None,
         "informationsEntreprise": {
@@ -157,9 +157,9 @@ async def test_search_from_ues_member_name(client):
             "déclaration": {"date": datetime.now()},
         },
     )
-    results = await db.declaration.search("foo")
+    results = await db.search.run("foo")
     assert len(results) == 1
-    assert results[0] == {
+    assert results[0].data == {
         "declaration": {"noteIndex": None},
         "id": None,
         "informationsEntreprise": {
@@ -172,4 +172,51 @@ async def test_search_from_ues_member_name(client):
             "entreprisesUES": [{"nom": "foobabar", "siren": "987654321"}],
         },
         "informations": {"anneeDeclaration": 2020},
+    }
+
+
+async def test_search_with_filters(client):
+    await db.declaration.put(
+        "12345671",
+        2020,
+        "foo@bar.org",
+        {
+            "entreprise": {
+                "raison_sociale": "Oran Bar",
+                "effectif": {"tranche": "1000:"},
+                "département": "77",
+                "région": "11",
+            },
+            "déclaration": {"date": datetime.now()},
+        },
+    )
+    await db.declaration.put(
+        "987654321",
+        2020,
+        "foo@bar.org",
+        {
+            "entreprise": {
+                "raison_sociale": "Open Bar",
+                "effectif": {"tranche": "1000:"},
+                "département": "78",
+                "région": "11",
+            },
+            "déclaration": {"date": datetime.now()},
+        },
+    )
+    results = await db.search.run("bar", departement="78", region="11")
+    assert len(results) == 1
+    assert results[0].data == {
+        "declaration": {"noteIndex": None},
+        "id": None,
+        "informations": {"anneeDeclaration": 2020},
+        "informationsEntreprise": {
+            "departement": "78",
+            "entreprisesUES": [],
+            "nomEntreprise": "Open Bar",
+            "nomUES": None,
+            "region": "11",
+            "siren": "987654321",
+            "structure": "Entreprise",
+        },
     }

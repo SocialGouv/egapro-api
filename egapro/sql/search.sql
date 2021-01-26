@@ -1,5 +1,5 @@
-SELECT data FROM declaration
+SELECT data FROM search
 WHERE
-    ft @@ to_tsquery('ftdict', $1)
-    AND data->'entreprise'->'effectif'->>'tranche' IN ('1000:', '251:999')
+    ft @@ to_tsquery('ftdict', $1){filters}
+ORDER BY declared_at DESC
 LIMIT $2
