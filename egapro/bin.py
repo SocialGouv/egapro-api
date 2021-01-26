@@ -1,5 +1,6 @@
 import sys
 from datetime import datetime
+from importlib import import_module
 from pathlib import Path
 
 import minicli
@@ -126,44 +127,20 @@ async def dump_digdash(path: Path):
 
 
 @minicli.cli
-async def migrate_ecart():
-    records = await db.declaration.fetch(
-        "SELECT * FROM declaration WHERE data->>'source'='simulateur' "
-        "AND modified_at>='2020-12-25' AND declared_at IS NOT NULL"
-    )
-    for record in records:
-        data = record.data.raw
-        siren = record.data.siren
-        year = record.data.year
-        loggers.logger.info(f"Migrating {siren}/{year}")
-        categories = record.data.path("indicateurs.rémunérations.catégories") or []
-        for category in categories:
-            tranches = category.get("tranches")
-            for name, value in tranches.items():
-                tranches[name] = value * 100
-        try:
-            categories = data["indicateurs"]["augmentations"]["catégories"]
-        except KeyError:
-            pass
-        else:
-            for idx, value in enumerate(categories):
-                if value:
-                    categories[idx] = value * 100
-        try:
-            categories = data["indicateurs"]["promotions"]["catégories"]
-        except KeyError:
-            pass
-        else:
-            for idx, value in enumerate(categories):
-                if value:
-                    categories[idx] = value * 100
-        await db.declaration.put(
-            siren,
-            year,
-            owner=record["owner"],
-            data=data,
-            modified_at=record["modified_at"],
-        )
+async def migrate(*migrations):
+    ROOT = Path(__file__).parent / "migrations"
+
+    if migrations and migrations[0] == "list":
+        for path in sorted(ROOT.iterdir()):
+            if path.stem[0].isdigit():
+                print(path.stem)
+        sys.exit()
+
+    for name in migrations:
+        module = import_module(f"egapro.migrations.{name}")
+        print(f"Running {name}")
+        await module.main(db, loggers.logger)
+        print(f"Done {name}")
 
 
 @minicli.cli
