@@ -52,6 +52,10 @@ def code_naf(code):
     return f"{code} - {NAF[code]}"
 
 
+def value_or_nc(value):
+    return value or "nc"
+
+
 async def get_headers_columns():
     """Return a tuple of lists of (header_names, column_names) that we want in the export."""
     try:
@@ -215,7 +219,7 @@ async def get_headers_columns():
                 "Nombre_total_points_pouvant_etre_obtenus",
                 "déclaration.points_calculables",
             ),
-            ("Resultat_final_sur_100_points", "déclaration.index"),
+            ("Resultat_final_sur_100_points", "déclaration.index", value_or_nc),
             ("Mesures_correction", "déclaration.mesures_correctives"),
         ]
     )
