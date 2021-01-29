@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -124,3 +124,28 @@ async def test_declaration_data():
         },
         "entreprise": {"siren": "123456789"},
     }
+
+
+async def test_put_declaration_should_not_update_declared_at():
+    modified_at = datetime(2020, 10, 5, 4, 3, 2, tzinfo=timezone.utc)
+    await db.declaration.put(
+        "123456782",
+        2020,
+        "foo@bar.com",
+        {},
+        modified_at=modified_at
+    )
+    record = await db.declaration.get("123456782", 2020)
+    assert record["modified_at"] == modified_at
+    assert record["declared_at"] == modified_at
+    assert record.data.path("déclaration.date") == modified_at.isoformat()
+    await db.declaration.put(
+        "123456782",
+        2020,
+        "foo@bar.com",
+        {"source": "foo"}
+    )
+    record = await db.declaration.get("123456782", 2020)
+    assert record["modified_at"] != modified_at
+    assert record["declared_at"] == modified_at
+    assert record.data.path("déclaration.date") == modified_at.isoformat()
