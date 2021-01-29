@@ -28,10 +28,13 @@ async def main(db, logger):
             for tranche in tranches:
                 if "ecartTauxAugmentation" in tranche:
                     categories.append(tranche["ecartTauxAugmentation"])
-                elif (h := tranche.get("tauxAugmentationHommes")) and (
-                    f := tranche.get("tauxAugmentationFemmes")
+                elif (
+                    "tauxAugmentationHommes" in tranche
+                    and "tauxAugmentationFemmes" in tranche
                 ):
-                    categories.append(1 - f / h)
+                    hommes = tranche["tauxAugmentationHommes"]
+                    femmes = tranche["tauxAugmentationFemmes"]
+                    categories.append(hommes - femmes)
                 else:
                     categories.append(None)
         if any(c is not None for c in categories):
