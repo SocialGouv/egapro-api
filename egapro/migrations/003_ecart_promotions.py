@@ -1,6 +1,7 @@
-"""Data migration from 2020-12-25 did not compute missing ecartTauxAugmentation."""
+"""Data migration from 2020-12-25 did not compute missing ecartTauxPromotion."""
 
 import progressist
+
 
 async def main(db, logger):
 
@@ -27,10 +28,13 @@ async def main(db, logger):
             for tranche in tranches:
                 if "ecartTauxPromotion" in tranche:
                     categories.append(tranche["ecartTauxPromotion"])
-                elif (h := tranche.get("tauxPromotionHommes")) and (
-                    f := tranche.get("tauxPromotionFemmes")
+                elif (
+                    "tauxPromotionHommes" in tranche
+                    and "tauxPromotionFemmes" in tranche
                 ):
-                    categories.append(1 - f / h)
+                    hommes = tranche["tauxPromotionHommes"]
+                    femmes = tranche["tauxPromotionFemmes"]
+                    categories.append(hommes - femmes)
                 else:
                     categories.append(None)
         if any(c is not None for c in categories):
