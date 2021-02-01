@@ -64,17 +64,17 @@ def _cross_validate(data):
         assert dep in constants.REGIONS_TO_DEPARTEMENTS[region], msg
         msg = "Le département et le code postal ne correspondent pas"
         assert check_dep_and_cp(dep, cp), msg
-        index = data.path("déclaration.index") or 0
+        index = data.path("déclaration.index")
         mesures_correctives = data.path("déclaration.mesures_correctives")
-        if index and index >= 75:
-            msg = "Les mesures correctives ne doivent pas être définies pour un index de 75 ou plus"
-            assert not mesures_correctives, msg
-        elif index:
-            msg = "Les mesures correctives doivent être définies pour un index inférieur à 75"
-            assert mesures_correctives, msg
-        elif not index:
+        if index is None:
             msg = "Les mesures correctives ne doivent pas être définies si l'index n'est pas calculable"
             assert not mesures_correctives, msg
+        elif index >= 75:
+            msg = "Les mesures correctives ne doivent pas être définies pour un index de 75 ou plus"
+            assert not mesures_correctives, msg
+        else:
+            msg = "Les mesures correctives doivent être définies pour un index inférieur à 75"
+            assert mesures_correctives, msg
         periode_reference = data.path("déclaration.fin_période_référence")
         assert (
             periode_reference
