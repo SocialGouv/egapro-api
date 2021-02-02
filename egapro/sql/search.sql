@@ -1,5 +1,6 @@
 SELECT data FROM search
 WHERE
-    ft @@ to_tsquery('ftdict', $1){filters}
+    {filters}
 ORDER BY declared_at DESC
-LIMIT $2
+LIMIT $1
+OFFSET $2

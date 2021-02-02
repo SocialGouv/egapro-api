@@ -235,15 +235,19 @@ class search(table):
             )
 
     @classmethod
-    async def run(cls, query, limit=10, **filters):
-        args = [utils.prepare_query(query), limit]
-        filter_sql = ""
+    async def run(cls, query=None, limit=10, offset=0, **filters):
+        args = [limit, offset]
+        query = utils.prepare_query(query)
+        filter_sql = []
+        if query:
+            args.append(query)
+            filter_sql.append("ft @@ to_tsquery('ftdict', $3)")
         for name, value in filters.items():
             if value is not None:
                 args.append(value)
-                filter_sql += f" AND {name}=${len(args)}"
+                filter_sql.append(f"{name}=${len(args)}")
         return await cls.fetch(
-            sql.search.format(filters=filter_sql), *args
+            sql.search.format(filters=" AND ".join(filter_sql)), *args
         )
 
 

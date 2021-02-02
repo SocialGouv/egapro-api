@@ -220,3 +220,115 @@ async def test_search_with_filters(client):
             "structure": "Entreprise",
         },
     }
+
+
+async def test_filters_without_query(client):
+    await db.declaration.put(
+        "12345671",
+        2020,
+        "foo@bar.org",
+        {
+            "entreprise": {
+                "raison_sociale": "Oran Bar",
+                "effectif": {"tranche": "1000:"},
+                "département": "77",
+                "région": "11",
+            },
+            "déclaration": {"date": datetime.now()},
+        },
+    )
+    await db.declaration.put(
+        "987654321",
+        2020,
+        "foo@bar.org",
+        {
+            "entreprise": {
+                "raison_sociale": "Open Bar",
+                "effectif": {"tranche": "1000:"},
+                "département": "78",
+                "région": "11",
+            },
+            "déclaration": {"date": datetime.now()},
+        },
+    )
+    results = await db.search.run(departement="78", region="11")
+    assert len(results) == 1
+    assert results[0].data == {
+        "declaration": {"noteIndex": None},
+        "id": None,
+        "informations": {"anneeDeclaration": 2020},
+        "informationsEntreprise": {
+            "departement": "78",
+            "entreprisesUES": [],
+            "nomEntreprise": "Open Bar",
+            "nomUES": None,
+            "region": "11",
+            "siren": "987654321",
+            "structure": "Entreprise",
+        },
+    }
+
+
+async def test_search_with_offset(client):
+    await db.declaration.put(
+        "12345671",
+        2020,
+        "foo@bar.org",
+        {
+            "entreprise": {
+                "raison_sociale": "Oran Bar",
+                "effectif": {"tranche": "1000:"},
+                "département": "77",
+                "région": "11",
+            },
+            "déclaration": {"date": datetime.now()},
+        },
+    )
+    await db.declaration.put(
+        "987654321",
+        2020,
+        "foo@bar.org",
+        {
+            "entreprise": {
+                "raison_sociale": "Open Bar",
+                "effectif": {"tranche": "1000:"},
+                "département": "78",
+                "région": "11",
+            },
+            "déclaration": {"date": datetime.now()},
+        },
+    )
+    results = await db.search.run(region="11")
+    assert len(results) == 2
+    results = await db.search.run(region="11", limit=1)
+    assert len(results) == 1
+    assert results[0].data == {
+        "declaration": {"noteIndex": None},
+        "id": None,
+        "informations": {"anneeDeclaration": 2020},
+        "informationsEntreprise": {
+            "departement": "78",
+            "entreprisesUES": [],
+            "nomEntreprise": "Open Bar",
+            "nomUES": None,
+            "region": "11",
+            "siren": "987654321",
+            "structure": "Entreprise",
+        },
+    }
+    results = await db.search.run(region="11", limit=1, offset=1)
+    assert len(results) == 1
+    assert results[0].data == {
+        "declaration": {"noteIndex": None},
+        "id": None,
+        "informations": {"anneeDeclaration": 2020},
+        "informationsEntreprise": {
+            "departement": "77",
+            "entreprisesUES": [],
+            "nomEntreprise": "Oran Bar",
+            "nomUES": None,
+            "region": "11",
+            "siren": "12345671",
+            "structure": "Entreprise",
+        },
+    }
