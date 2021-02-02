@@ -247,8 +247,9 @@ async def search(request, response):
     limit = request.query.int("limit", 10)
     code_naf = request.query.get("code_naf", None)
     departement = request.query.get("departement", None)
+    region = request.query.get("region", None)
     results = await db.search.run(
-        q, limit=limit, code_naf=code_naf, departement=departement
+        q, limit=limit, code_naf=code_naf, departement=departement, region=region
     )
     response.json = {"data": [r.data for r in results], "total": len(results)}
 
