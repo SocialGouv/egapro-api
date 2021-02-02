@@ -141,15 +141,6 @@ class declaration(table):
         )
 
     @classmethod
-    async def reindex(cls):
-        async with cls.pool.acquire() as conn:
-            # TODO use a generated column (PSQL >= 12 only)
-            await conn.execute(
-                "UPDATE declaration "
-                "SET ft=to_tsvector('ftdict', data->'entreprise'->>'raison_sociale')"
-            )
-
-    @classmethod
     def public_data(cls, data):
         # Keep old schema for now, as it's used only by egapro
         data = models.Data(data)
