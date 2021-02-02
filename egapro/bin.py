@@ -140,6 +140,7 @@ async def create_indexes():
 @minicli.cli
 async def reindex():
     """Reindex Full Text search."""
+    await db.search.truncate()
     records = await db.declaration.completed()
     bar = progressist.ProgressBar(prefix="Reindexing", total=len(records), throttle=100)
     for record in bar.iter(records):

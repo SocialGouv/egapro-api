@@ -241,6 +241,10 @@ class search(table):
             sql.search.format(filters=" AND ".join(filter_sql)), *args
         )
 
+    @classmethod
+    async def truncate(cls):
+        await cls.execute("TRUNCATE table search")
+
 
 async def set_type_codecs(conn):
     await conn.set_type_codec(
