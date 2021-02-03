@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 import asyncpg
 from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
@@ -118,6 +119,7 @@ class declaration(table):
             query = sql.insert_draft_declaration
             args = (siren, int(year), modified_at, owner, data.raw)
         else:
+            await search.index(data)
             query = sql.insert_declaration
             args = (siren, year, modified_at, declared_at, owner, data.raw, ft)
         async with cls.pool.acquire() as conn:
@@ -137,24 +139,6 @@ class declaration(table):
             int(year),
             owner,
         )
-
-    @classmethod
-    async def search(cls, query, limit=10):
-        async with cls.pool.acquire() as conn:
-            rows = await conn.fetch(
-                sql.search,
-                utils.prepare_query(query),
-                limit,
-            )
-        return [cls.public_data(row["data"]) for row in rows]
-
-    @classmethod
-    async def reindex(cls):
-        async with cls.pool.acquire() as conn:
-            # TODO use a generated column (PSQL >= 12 only)
-            await conn.execute(
-                "UPDATE declaration SET ft=to_tsvector('ftdict', data->'entreprise'->>'raison_sociale')"
-            )
 
     @classmethod
     def public_data(cls, data):
@@ -214,6 +198,56 @@ class simulation(table):
         return await cls.create(data)
 
 
+class search(table):
+    @classmethod
+    async def index(cls, data):
+        if data.path("entreprise.effectif.tranche") not in ("1000:", "251:999"):
+            return
+        ft = helpers.extract_ft(data)
+        siren = data.siren
+        year = data.year
+        region = data.path("entreprise.région")
+        departement = data.path("entreprise.département")
+        code_naf = data.path("entreprise.code_naf")
+        note = data.path("déclaration.index")
+        declared_at = datetime.fromisoformat(data.path("déclaration.date"))
+        async with cls.pool.acquire() as conn:
+            await conn.execute(
+                sql.index_declaration,
+                siren,
+                year,
+                declared_at,
+                declaration.public_data(data),
+                ft,
+                region,
+                departement,
+                code_naf,
+                note,
+            )
+
+    @classmethod
+    async def run(cls, query=None, limit=10, offset=0, **filters):
+        args = [limit, offset]
+        query = utils.prepare_query(query)
+        where = []
+        if query:
+            args.append(query)
+            where.append("ft @@ to_tsquery('ftdict', $3)")
+        for name, value in filters.items():
+            if value is not None:
+                args.append(value)
+                where.append(f"{name}=${len(args)}")
+        if where:
+            where = "WHERE " + " AND ".join(where)
+        return await cls.fetch(
+            sql.search.format(where=where or ""), *args
+        )
+
+    @classmethod
+    async def truncate(cls):
+        await cls.execute("TRUNCATE table search")
+
+
 async def set_type_codecs(conn):
     await conn.set_type_codec(
         "jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog"
@@ -240,6 +274,7 @@ async def init():
         await conn.execute(sql.create_ftdict)
         await conn.execute(sql.create_declaration_table)
         await conn.execute(sql.create_simulation_table)
+        await conn.execute(sql.create_search_table)
 
 
 async def create_indexes():

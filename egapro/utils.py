@@ -26,6 +26,8 @@ def remove_one_year(end):
 
 
 def prepare_query(query):
+    if not query:
+        return query
     # TODO deal with edge cases ( | , !…)
     query = query.replace("&", " ")  # Escape &.
     query = " ".join(query.split())  # Remove multiple whitespaces.

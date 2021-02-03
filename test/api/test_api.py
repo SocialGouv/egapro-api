@@ -74,13 +74,9 @@ async def test_search_endpoint(client):
     resp = await client.get("/search?q=bio&limit=1")
     assert resp.status == 200
     assert len(json.loads(resp.body)["data"]) == 1
-
-
-async def test_invalid_search_query(client):
-    resp = await client.get("/search?q=")
-    assert resp.status == 400
-    resp = await client.get("/search?q= ")
-    assert resp.status == 400
+    resp = await client.get("/search")
+    assert resp.status == 200
+    assert len(json.loads(resp.body)["data"]) == 1
 
 
 async def test_config_endpoint(client):
