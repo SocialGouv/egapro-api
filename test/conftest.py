@@ -101,7 +101,7 @@ def declaration():
 class Client(BaseClient):
     def login(self, email):
         token = tokens.create(email)
-        self.default_headers["API-Key"] = token.decode()
+        self.default_headers["API-Key"] = token
 
     def logout(self):
         try:

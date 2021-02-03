@@ -213,7 +213,7 @@ class SimulationResource:
         email = data.get("informationsDeclarant", {}).get("email")
         if email and not draft:
             token = tokens.create(email)
-            response.cookies.set(name="api-key", value=token.decode())
+            response.cookies.set(name="api-key", value=token)
 
     async def on_get(self, request, response, uuid):
         record = await db.simulation.get(uuid)
@@ -231,7 +231,7 @@ async def send_token(request, response):
     if not email:
         raise HttpError(400, "Missing email key")
     token = tokens.create(email)
-    link = f"{request.domain}declaration/?token={token.decode()}"
+    link = f"{request.domain}declaration/?token={token}"
     if "localhost" in link or "127.0.0.1" in link:
         print(link)
     body = emails.ACCESS_GRANTED.format(link=link)
