@@ -16,12 +16,12 @@
 
 ## Endpoints
 
-### /token
+### /token (POST)
 Pour demander un token.
 
 Body attendu: `{"email": "foo@bar.org"}`
 
-### /declaration/{siren}/{year}
+### /declaration/{siren}/{year} (PUT, GET)
 Pour ajouter ou modifier une déclaration.
 
 Où `siren` est le numéro de siren de l'entreprise ou UES déclarant, et `year` l'année de validité des indicateurs déclarés.
@@ -32,12 +32,24 @@ https://mailtrap.dev.egapro.fabrique.social.gouv.fr/
 
 (Demander un accès.)
 
-## Process
+## Process avec envoi d'email
 
-1. Faire une demande de token sur /token, en passant un email dans un body json:
+1. Faire un POST sur `/token`, en passant un email dans un body json:
 
     `{"email": "foo@bar.org"}`
 
-1. Récupérer le token envoyé par mail (via l'interface mailtrap)
+1. Récupérer le token envoyé par mail (via l'interface mailtrap dans le cas de la dev)
 
-1. Tester une déclaration sur `/declaration`, en passant le token via le header `API-KEY`
+1. Faire un PUT sur `/declaration`, en passant le token via le header `API-KEY`
+
+## Process depuis une IP partenaire
+
+1. Faire un POST sur `/token`, en passant un email dans un body json:
+
+    `{"email": "foo@bar.org"}`
+
+1. Récupérer le token envoyé en retour de cet appel. Example:
+
+    `{"token": "valeur_de_token"}`
+
+1. Faire un PUT sur `/declaration`, en passant le token via le header `API-KEY`
