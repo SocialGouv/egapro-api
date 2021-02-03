@@ -234,6 +234,7 @@ async def send_token(request, response):
     link = f"{request.domain}declaration/?token={token}"
     if "localhost" in link or "127.0.0.1" in link:
         print(link)
+    loggers.logger.info(f"Token request FOR {email} FROM {request.ip}")
     if request.ip in config.ALLOWED_IPS:
         response.json = {"token": token}
     else:
