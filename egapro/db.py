@@ -217,7 +217,6 @@ class search(table):
                 siren,
                 year,
                 declared_at,
-                declaration.public_data(data),
                 ft,
                 region,
                 departement,
@@ -239,9 +238,10 @@ class search(table):
                 where.append(f"{name}=${len(args)}")
         if where:
             where = "WHERE " + " AND ".join(where)
-        return await cls.fetch(
+        rows = await cls.fetch(
             sql.search.format(where=where or ""), *args
         )
+        return [declaration.public_data(row["data"]) for row in rows]
 
     @classmethod
     async def truncate(cls):
