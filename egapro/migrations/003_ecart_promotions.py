@@ -7,7 +7,7 @@ async def main(db, logger):
 
     records = await db.declaration.fetch(
         "SELECT * FROM declaration WHERE data->>'source'='simulateur' "
-        "AND legacy IS NOT NULL"
+        "AND legacy IS NOT NULL AND modified_at<'2020-12-25'"
     )
     bar = progressist.ProgressBar(prefix="Migrating…", total=len(records))
     for record in bar.iter(records):
