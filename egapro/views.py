@@ -255,7 +255,7 @@ async def search(request, response):
         departement=departement,
         region=region,
     )
-    response.json = {"data": [r.data for r in results], "total": len(results)}
+    response.json = {"data": results, "total": len(results)}
 
 
 @app.route("/config")

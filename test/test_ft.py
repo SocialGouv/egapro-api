@@ -47,7 +47,7 @@ async def test_search(client):
         )
     results = await db.search.run("total")
     assert len(results) == 1
-    assert results[0].data == {
+    assert results[0] == {
         "declaration": {"noteIndex": None},
         "id": None,
         "informationsEntreprise": {
@@ -93,7 +93,7 @@ async def test_small_companies_are_not_searchable(declaration):
     )
     results = await db.search.run("bar")
     assert len(results) == 2
-    names = {r.data["informationsEntreprise"]["nomEntreprise"] for r in results}
+    names = {r["informationsEntreprise"]["nomEntreprise"] for r in results}
     assert names == {"Mala Bar", "Karam Bar"}
 
 
@@ -120,7 +120,7 @@ async def test_search_from_ues_name(client):
     )
     results = await db.search.run("ues")
     assert len(results) == 1
-    assert results[0].data == {
+    assert results[0] == {
         "declaration": {"noteIndex": None},
         "id": None,
         "informationsEntreprise": {
@@ -159,7 +159,7 @@ async def test_search_from_ues_member_name(client):
     )
     results = await db.search.run("foo")
     assert len(results) == 1
-    assert results[0].data == {
+    assert results[0] == {
         "declaration": {"noteIndex": None},
         "id": None,
         "informationsEntreprise": {
@@ -206,7 +206,7 @@ async def test_search_with_filters(client):
     )
     results = await db.search.run("bar", departement="78", region="11")
     assert len(results) == 1
-    assert results[0].data == {
+    assert results[0] == {
         "declaration": {"noteIndex": None},
         "id": None,
         "informations": {"anneeDeclaration": 2020},
@@ -253,7 +253,7 @@ async def test_filters_without_query(client):
     )
     results = await db.search.run(departement="78", region="11")
     assert len(results) == 1
-    assert results[0].data == {
+    assert results[0] == {
         "declaration": {"noteIndex": None},
         "id": None,
         "informations": {"anneeDeclaration": 2020},
@@ -302,7 +302,7 @@ async def test_search_with_offset(client):
     assert len(results) == 2
     results = await db.search.run(region="11", limit=1)
     assert len(results) == 1
-    assert results[0].data == {
+    assert results[0] == {
         "declaration": {"noteIndex": None},
         "id": None,
         "informations": {"anneeDeclaration": 2020},
@@ -318,7 +318,7 @@ async def test_search_with_offset(client):
     }
     results = await db.search.run(region="11", limit=1, offset=1)
     assert len(results) == 1
-    assert results[0].data == {
+    assert results[0] == {
         "declaration": {"noteIndex": None},
         "id": None,
         "informations": {"anneeDeclaration": 2020},
