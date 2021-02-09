@@ -55,17 +55,14 @@ async def test_search_endpoint(client):
     assert json.loads(resp.body) == {
         "data": [
             {
-                "declaration": {"noteIndex": 95},
-                "id": "12345678-1234-5678-9012-123456789013",
-                "informations": {"anneeDeclaration": 2019},
-                "informationsEntreprise": {
-                    "nomEntreprise": "Bio c Bon",
-                    "departement": None,
-                    "region": None,
+                "entreprise": {
+                    "raison_sociale": "Bio c Bon",
+                    "département": None,
+                    "région": None,
+                    "code_naf": None,
+                    "effectif": {"tranche": "1000:"},
                     "siren": "12345671",
-                    "structure": "Entreprise",
-                    "entreprisesUES": [],
-                    "nomUES": None,
+                    "ues": None,
                 },
                 "notes": {"2019": 95},
             },

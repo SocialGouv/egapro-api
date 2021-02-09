@@ -33,6 +33,7 @@ async def test_search(client):
                 "entreprise": {
                     "raison_sociale": nom,
                     "effectif": {"tranche": "1000:"},
+                    "code_naf": "33.11Z",
                     "département": "77",
                     "région": "11",
                     "ues": {
@@ -48,18 +49,18 @@ async def test_search(client):
     results = await db.search.run("total")
     assert len(results) == 1
     assert results[0] == {
-        "declaration": {"noteIndex": None},
-        "id": None,
-        "informationsEntreprise": {
-            "nomEntreprise": "Total",
-            "nomUES": "Nom UES",
-            "departement": "77",
-            "region": "11",
+        "entreprise": {
+            "raison_sociale": "Total",
+            "département": "77",
+            "région": "11",
             "siren": "12345671",
-            "structure": "Unité Economique et Sociale (UES)",
-            "entreprisesUES": [{"nom": "foobabar", "siren": "987654321"}],
+            "ues": {
+                "entreprises": [{"raison_sociale": "foobabar", "siren": "987654321"}],
+                "nom": "Nom UES",
+            },
+            "code_naf": "33.11Z",
+            "effectif": {"tranche": "1000:"},
         },
-        "informations": {"anneeDeclaration": 2020},
         "notes": {"2020": None},
     }
     results = await db.search.run("pyrenées")
@@ -94,7 +95,7 @@ async def test_small_companies_are_not_searchable(declaration):
     )
     results = await db.search.run("bar")
     assert len(results) == 2
-    names = {r["informationsEntreprise"]["nomEntreprise"] for r in results}
+    names = {r["entreprise"]["raison_sociale"] for r in results}
     assert names == {"Mala Bar", "Karam Bar"}
 
 
@@ -122,18 +123,18 @@ async def test_search_from_ues_name(client):
     results = await db.search.run("ues")
     assert len(results) == 1
     assert results[0] == {
-        "declaration": {"noteIndex": None},
-        "id": None,
-        "informationsEntreprise": {
-            "nomEntreprise": "Babar",
-            "nomUES": "Nom UES",
-            "departement": "77",
-            "region": "11",
+        "entreprise": {
+            "raison_sociale": "Babar",
+            "département": "77",
+            "région": "11",
             "siren": "12345671",
-            "structure": "Unité Economique et Sociale (UES)",
-            "entreprisesUES": [{"nom": "foobabar", "siren": "987654321"}],
+            "code_naf": None,
+            "effectif": {"tranche": "1000:"},
+            "ues": {
+                "entreprises": [{"raison_sociale": "foobabar", "siren": "987654321"}],
+                "nom": "Nom UES",
+            },
         },
-        "informations": {"anneeDeclaration": 2020},
         "notes": {"2020": None},
     }
 
@@ -146,7 +147,6 @@ async def test_search_from_ues_member_name(client):
         {
             "entreprise": {
                 "raison_sociale": "Babar",
-                "effectif": {"tranche": "1000:"},
                 "département": "77",
                 "région": "11",
                 "ues": {
@@ -155,6 +155,7 @@ async def test_search_from_ues_member_name(client):
                         {"siren": "987654321", "raison_sociale": "foobabar"}
                     ],
                 },
+                "effectif": {"tranche": "1000:"},
             },
             "déclaration": {"date": datetime.now()},
             "notes": {"2020": None},
@@ -163,18 +164,18 @@ async def test_search_from_ues_member_name(client):
     results = await db.search.run("foo")
     assert len(results) == 1
     assert results[0] == {
-        "declaration": {"noteIndex": None},
-        "id": None,
-        "informationsEntreprise": {
-            "nomEntreprise": "Babar",
-            "nomUES": "Nom UES",
-            "departement": "77",
-            "region": "11",
+        "entreprise": {
+            "raison_sociale": "Babar",
+            "département": "77",
+            "région": "11",
             "siren": "12345671",
-            "structure": "Unité Economique et Sociale (UES)",
-            "entreprisesUES": [{"nom": "foobabar", "siren": "987654321"}],
+            "ues": {
+                "entreprises": [{"raison_sociale": "foobabar", "siren": "987654321"}],
+                "nom": "Nom UES",
+            },
+            "code_naf": None,
+            "effectif": {"tranche": "1000:"},
         },
-        "informations": {"anneeDeclaration": 2020},
         "notes": {"2020": None},
     }
 
@@ -211,17 +212,14 @@ async def test_search_with_filters(client):
     results = await db.search.run("bar", departement="78", region="11")
     assert len(results) == 1
     assert results[0] == {
-        "declaration": {"noteIndex": None},
-        "id": None,
-        "informations": {"anneeDeclaration": 2020},
-        "informationsEntreprise": {
-            "departement": "78",
-            "entreprisesUES": [],
-            "nomEntreprise": "Open Bar",
-            "nomUES": None,
-            "region": "11",
+        "entreprise": {
+            "département": "78",
+            "ues": None,
+            "raison_sociale": "Open Bar",
+            "région": "11",
             "siren": "987654321",
-            "structure": "Entreprise",
+            "code_naf": None,
+            "effectif": {"tranche": "1000:"},
         },
         "notes": {"2020": None},
     }
@@ -259,17 +257,14 @@ async def test_filters_without_query(client):
     results = await db.search.run(departement="78", region="11")
     assert len(results) == 1
     assert results[0] == {
-        "declaration": {"noteIndex": None},
-        "id": None,
-        "informations": {"anneeDeclaration": 2020},
-        "informationsEntreprise": {
-            "departement": "78",
-            "entreprisesUES": [],
-            "nomEntreprise": "Open Bar",
-            "nomUES": None,
-            "region": "11",
+        "entreprise": {
+            "département": "78",
+            "ues": None,
+            "raison_sociale": "Open Bar",
+            "région": "11",
+            "code_naf": None,
+            "effectif": {"tranche": "1000:"},
             "siren": "987654321",
-            "structure": "Entreprise",
         },
         "notes": {"2020": None},
     }
@@ -309,34 +304,28 @@ async def test_search_with_offset(client):
     results = await db.search.run(region="11", limit=1)
     assert len(results) == 1
     assert results[0] == {
-        "declaration": {"noteIndex": None},
-        "id": None,
-        "informations": {"anneeDeclaration": 2020},
-        "informationsEntreprise": {
-            "departement": "78",
-            "entreprisesUES": [],
-            "nomEntreprise": "Open Bar",
-            "nomUES": None,
-            "region": "11",
+        "entreprise": {
+            "département": "78",
+            "ues": None,
+            "raison_sociale": "Open Bar",
+            "code_naf": None,
+            "région": "11",
             "siren": "987654321",
-            "structure": "Entreprise",
+            "effectif": {"tranche": "1000:"},
         },
         "notes": {"2020": None},
     }
     results = await db.search.run(region="11", limit=1, offset=1)
     assert len(results) == 1
     assert results[0] == {
-        "declaration": {"noteIndex": None},
-        "id": None,
-        "informations": {"anneeDeclaration": 2020},
-        "informationsEntreprise": {
-            "departement": "77",
-            "entreprisesUES": [],
-            "nomEntreprise": "Oran Bar",
-            "nomUES": None,
-            "region": "11",
+        "entreprise": {
+            "département": "77",
+            "ues": None,
+            "raison_sociale": "Oran Bar",
+            "région": "11",
             "siren": "12345671",
-            "structure": "Entreprise",
+            "code_naf": None,
+            "effectif": {"tranche": "1000:"},
         },
         "notes": {"2020": None},
     }
