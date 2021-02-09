@@ -5,7 +5,7 @@ import asyncpg
 from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
 import ujson as json
 
-from . import config, models, sql, utils, helpers
+from . import config, constants, models, sql, utils, helpers
 from .schema.legacy import from_legacy
 
 
@@ -227,21 +227,33 @@ class search(table):
     @classmethod
     async def run(cls, query=None, limit=10, offset=0, **filters):
         args = [limit, offset]
+        args, where = cls.build_query(args, query, **filters)
+        rows = await cls.fetch(sql.search.format(where=where or ""), *args)
+        return [
+            {**declaration.public_data(row["data"][0]), "notes": row["notes"]}
+            for row in rows
+        ]
+
+    @classmethod
+    async def stats(cls, query=None, **filters):
+        args = [constants.CURRENT_YEAR]
+        args, where = cls.build_query(args, query, **filters)
+        return await cls.fetchrow(sql.search_stats.format(where=where or ""), *args)
+
+    @staticmethod
+    def build_query(args, query, **filters):
         query = utils.prepare_query(query)
         where = []
         if query:
             args.append(query)
-            where.append("ft @@ to_tsquery('ftdict', $3)")
+            where.append(f"ft @@ to_tsquery('ftdict', ${len(args)})")
         for name, value in filters.items():
             if value is not None:
                 args.append(value)
                 where.append(f"{name}=${len(args)}")
         if where:
             where = "WHERE " + " AND ".join(where)
-        rows = await cls.fetch(
-            sql.search.format(where=where or ""), *args
-        )
-        return [declaration.public_data(row["data"]) for row in rows]
+        return args, where
 
     @classmethod
     async def truncate(cls):

@@ -60,6 +60,7 @@ async def test_search(client):
             "entreprisesUES": [{"nom": "foobabar", "siren": "987654321"}],
         },
         "informations": {"anneeDeclaration": 2020},
+        "notes": {"2020": None},
     }
     results = await db.search.run("pyrenées")
     assert len(results) == 1
@@ -133,6 +134,7 @@ async def test_search_from_ues_name(client):
             "entreprisesUES": [{"nom": "foobabar", "siren": "987654321"}],
         },
         "informations": {"anneeDeclaration": 2020},
+        "notes": {"2020": None},
     }
 
 
@@ -155,6 +157,7 @@ async def test_search_from_ues_member_name(client):
                 },
             },
             "déclaration": {"date": datetime.now()},
+            "notes": {"2020": None},
         },
     )
     results = await db.search.run("foo")
@@ -172,6 +175,7 @@ async def test_search_from_ues_member_name(client):
             "entreprisesUES": [{"nom": "foobabar", "siren": "987654321"}],
         },
         "informations": {"anneeDeclaration": 2020},
+        "notes": {"2020": None},
     }
 
 
@@ -219,6 +223,7 @@ async def test_search_with_filters(client):
             "siren": "987654321",
             "structure": "Entreprise",
         },
+        "notes": {"2020": None},
     }
 
 
@@ -266,6 +271,7 @@ async def test_filters_without_query(client):
             "siren": "987654321",
             "structure": "Entreprise",
         },
+        "notes": {"2020": None},
     }
 
 
@@ -315,6 +321,7 @@ async def test_search_with_offset(client):
             "siren": "987654321",
             "structure": "Entreprise",
         },
+        "notes": {"2020": None},
     }
     results = await db.search.run(region="11", limit=1, offset=1)
     assert len(results) == 1
@@ -331,4 +338,5 @@ async def test_search_with_offset(client):
             "siren": "12345671",
             "structure": "Entreprise",
         },
+        "notes": {"2020": None},
     }

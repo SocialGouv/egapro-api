@@ -260,7 +260,13 @@ async def search(request, response):
         departement=departement,
         region=region,
     )
-    response.json = {"data": results, "total": len(results)}
+    stats = await db.search.stats(
+        query=q,
+        code_naf=code_naf,
+        departement=departement,
+        region=region,
+    )
+    response.json = {"data": results, **stats}
 
 
 @app.route("/config")

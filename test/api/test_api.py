@@ -85,9 +85,13 @@ async def test_search_endpoint(client):
                     "entreprisesUES": [],
                     "nomUES": None,
                 },
+                "notes": {"2019": 95},
             },
         ],
-        "total": 1,
+        "count": 1,
+        "max": 95,
+        "min": 95,
+        "avg": 95,
     }
     resp = await client.get("/search?q=bio&limit=1")
     assert resp.status == 200
