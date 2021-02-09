@@ -142,25 +142,16 @@ class declaration(table):
 
     @classmethod
     def public_data(cls, data):
-        # Keep old schema for now, as it's used only by egapro
         data = models.Data(data)
         out = {
-            "id": data.get("id"),
-            "declaration": {"noteIndex": data.path("déclaration.index")},
-            "informationsEntreprise": {
-                "nomEntreprise": data.path("entreprise.raison_sociale"),
+            "entreprise": {
+                "raison_sociale": data.path("entreprise.raison_sociale"),
                 "siren": data.path("entreprise.siren"),
-                "region": data.path("entreprise.région"),
-                "departement": data.path("entreprise.département"),
-                "structure": data.structure,
-                "nomUES": data.path("entreprise.ues.nom"),
-                "entreprisesUES": [
-                    {"nom": e["raison_sociale"], "siren": e["siren"]}
-                    for e in data.path("entreprise.ues.entreprises") or []
-                ],
-            },
-            "informations": {
-                "anneeDeclaration": data.path("déclaration.année_indicateurs")
+                "région": data.path("entreprise.région"),
+                "département": data.path("entreprise.département"),
+                "code_naf": data.path("entreprise.code_naf"),
+                "ues": data.path("entreprise.ues"),
+                "effectif": {"tranche": data.path("entreprise.effectif.tranche")},
             },
         }
         return out
