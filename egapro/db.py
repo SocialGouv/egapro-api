@@ -226,8 +226,8 @@ class search(table):
         ]
 
     @classmethod
-    async def stats(cls, query=None, **filters):
-        args = [constants.CURRENT_YEAR]
+    async def stats(cls, year, query=None, **filters):
+        args = [year]
         args, where = cls.build_query(args, query, **filters)
         return await cls.fetchrow(sql.search_stats.format(where=where or ""), *args)
 
