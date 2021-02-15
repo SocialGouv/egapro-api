@@ -1,7 +1,6 @@
 """Export data from DB."""
 
 import csv
-import re
 from pathlib import Path
 
 import ujson as json
@@ -67,6 +66,17 @@ async def public_data(path: Path):
     writer.writerows(rows)
 
 
+def clean_digdash(d):
+    if isinstance(d, list):
+        [clean_digdash(v) for v in d]
+    elif isinstance(d, dict):
+        for key in list(d.keys()):
+            value = d[key]
+            if ":" in key:
+                d[key.replace(":", "-")] = d.pop(key)
+            clean_digdash(value)
+
+
 async def digdash(dest):
     # Don't put all data in memory.
     dest.write("[")
@@ -76,9 +86,7 @@ async def digdash(dest):
             dest.write(",")
         first = False
         data = record.data.raw
+        clean_digdash(data)
         dumped = utils.json_dumps(data)
-        dumped = DIGDASH_CLEAN.sub(r"\1-\2", dumped)
         dest.write(dumped)
     dest.write("]")
-
-DIGDASH_CLEAN = re.compile(r'("[^\: ]*)\:([^" ]*":)')
