@@ -1,6 +1,7 @@
 """Export data from DB."""
 
 import csv
+import re
 from pathlib import Path
 
 import ujson as json
@@ -75,5 +76,9 @@ async def digdash(dest):
             dest.write(",")
         first = False
         data = record.data.raw
-        dest.write(utils.json_dumps(data))
+        dumped = utils.json_dumps(data)
+        dumped = DIGDASH_CLEAN.sub(r"\1-\2", dumped)
+        dest.write(dumped)
     dest.write("]")
+
+DIGDASH_CLEAN = re.compile(r'("[^\:]*)\:([^"]*":)')
