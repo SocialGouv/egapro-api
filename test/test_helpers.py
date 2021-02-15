@@ -172,3 +172,105 @@ def test_extract_ft():
         helpers.extract_ft(models.Data(data))
         == "blablabar nom ues entreprise une entreprise deux"
     )
+
+
+@pytest.mark.asyncio
+async def test_api_entreprise(monkeypatch):
+    async def mock_get(*args, **kwargs):
+        return {
+            "entreprise": {
+                "siren": "481912999",
+                "capital_social": 100000,
+                "numero_tva_intracommunautaire": "FR94481912999",
+                "forme_juridique": "SAS, société par actions simplifiée",
+                "forme_juridique_code": "5710",
+                "nom_commercial": "FOOBAR",
+                "procedure_collective": False,
+                "enseigne": None,
+                "libelle_naf_entreprise": "Conseil en systèmes et logiciels informatiques",
+                "naf_entreprise": "6202A",
+                "raison_sociale": "FOOBAR",
+                "siret_siege_social": "48191290000099",
+                "code_effectif_entreprise": "03",
+                "date_creation": 1103065200,
+                "nom": None,
+                "prenom": None,
+                "date_radiation": None,
+                "categorie_entreprise": "PME",
+                "tranche_effectif_salarie_entreprise": {
+                    "de": 6,
+                    "a": 9,
+                    "code": "03",
+                    "date_reference": "2018",
+                    "intitule": "6 à 9 salariés",
+                },
+                "mandataires_sociaux": [
+                    {
+                        "nom": "FOO",
+                        "prenom": "BAR",
+                        "fonction": "PRESIDENT",
+                        "date_naissance": "1979-08-06",
+                        "date_naissance_timestamp": 302738400,
+                        "dirigeant": True,
+                        "raison_sociale": "",
+                        "identifiant": "",
+                        "type": "PP",
+                    },
+                ],
+                "etat_administratif": {"value": "A", "date_cessation": None},
+            },
+            "etablissement_siege": {
+                "siege_social": True,
+                "siret": "48191299000099",
+                "naf": "6202A",
+                "libelle_naf": "Conseil en systèmes et logiciels informatiques",
+                "date_mise_a_jour": 1598343993,
+                "tranche_effectif_salarie_etablissement": {
+                    "de": 6,
+                    "a": 9,
+                    "code": "03",
+                    "date_reference": "2018",
+                    "intitule": "6 à 9 salariés",
+                },
+                "date_creation_etablissement": 1485903600,
+                "region_implantation": {"code": "11", "value": "Île-de-France"},
+                "commune_implantation": {
+                    "code": "75102",
+                    "value": "Paris 2e Arrondissement",
+                },
+                "pays_implantation": {"code": "FR", "value": "FRANCE"},
+                "diffusable_commercialement": True,
+                "enseigne": None,
+                "adresse": {
+                    "l1": "FOOBAR",
+                    "l2": None,
+                    "l3": None,
+                    "l4": "2 RUE FOOBAR",
+                    "l5": None,
+                    "l6": "75002 PARIS 2",
+                    "l7": "FRANCE",
+                    "numero_voie": "2",
+                    "type_voie": "RUE",
+                    "nom_voie": "FOOBAR",
+                    "complement_adresse": None,
+                    "code_postal": "75002",
+                    "localite": "PARIS 2",
+                    "code_insee_localite": "75102",
+                    "cedex": None,
+                },
+                "etat_administratif": {"value": "A", "date_fermeture": None},
+            },
+            "gateway_error": False,
+        }
+
+    monkeypatch.setattr("egapro.helpers.get", mock_get)
+    data = await helpers.load_from_api_entreprises("481912999")
+    assert data == {
+        "adresse": "2 RUE FOOBAR",
+        "code_naf": "6202A",
+        "code_postal": "75002",
+        "commune": "75102",
+        "département": "75",
+        "raison_sociale": "FOOBAR",
+        "région": "11",
+    }

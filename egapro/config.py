@@ -25,6 +25,7 @@ ALLOW_ORIGIN = "*"
 STAFF = []
 SENTRY_DSN = ""
 FLAVOUR = "local"
+API_ENTREPRISES = None
 
 
 def init():

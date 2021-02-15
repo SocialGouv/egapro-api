@@ -2,7 +2,9 @@
 
 import math
 
-from egapro import schema
+import httpx
+
+from egapro import config, constants, schema
 from egapro.schema.utils import clean_readonly
 
 
@@ -206,3 +208,37 @@ def extract_ft(data):
         data.path("entreprise.ues.nom"),
     ] + [e["raison_sociale"] for e in data.path("entreprise.ues.entreprises") or []]
     return " ".join(c for c in candidates if c)
+
+
+async def get(*args, **kwargs):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(*args, **kwargs)
+        return response.json()
+
+
+async def load_from_api_entreprises(siren):
+    url = f"https://entreprise.api.gouv.fr/v2/entreprises/{siren}"
+    params = {
+        "token": config.API_ENTREPRISES,
+        "context": "egapro",
+        "recipient": "egapro",
+        "object": "egapro",
+    }
+    data = await get(url, params=params)
+    entreprise = data.get("entreprise", {})
+    siege = data.get("etablissement_siege", {})
+    code_postal = siege.get("adresse", {}).get("code_postal")
+    commune = siege.get("adresse", {}).get("code_insee_localite")
+    departement = commune[:2] if commune else None
+    adresse = siege.get("adresse", {})
+    adresse = [adresse.get(k) for k in ["numero_voie", "type_voie", "nom_voie"]]
+    adresse = " ".join(v for v in adresse if v)
+    return {
+        "raison_sociale": entreprise.get("raison_sociale"),
+        "code_naf": entreprise.get("naf_entreprise"),
+        "région": siege.get("region_implantation", {}).get("code"),
+        "département": departement,
+        "adresse": adresse,
+        "commune": commune,
+        "code_postal": code_postal,
+    }
