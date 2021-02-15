@@ -2,8 +2,9 @@ Madame, Monsieur,
 
 Vous venez de procéder à la transmission aux services du ministre chargé du travail de vos indicateurs et de votre niveau de résultat en matière d’écart de rémunération entre les femmes et les hommes pour l'année {year} conformément aux dispositions de l’article D.1142-5 du code du travail. L’administration du travail accuse réception par le présent message de votre due transmission. Cet accusé réception ne vaut pas contrôle de conformité de vos déclarations.
 
-En cas d’erreur de saisie, vous pouvez à tout moment corriger les informations déclarées, en utilisant le lien spécifique unique suivant : {url} attaché à votre déclaration.
-Attention : ce lien ne doit pas être utilisé pour une nouvelle déclaration. Il est rattaché exclusivement à {company} pour l'année {year}.
+Si vous souhaitez visualiser ou modifier votre déclaration, veuillez cliquer sur le lien suivant :
+{url}
+Il conviendra de saisir de nouveau votre email puis les informations relatives à l'année au titre de laquelle les indicateurs sont calculés ({year}) et au numéro Siren de votre entreprise ({siren}) .
 
 Pour tout renseignement utile, vous êtes invité à prendre contact avec les services de la DIRECCTE dont le siège de votre entreprise dépend.
 

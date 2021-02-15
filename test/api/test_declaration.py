@@ -284,16 +284,12 @@ async def test_declaring_twice_should_not_duplicate(client, app, body):
 
 async def test_confirmed_declaration_should_send_email(client, monkeypatch, body):
     calls = 0
-    company = "FooBar"
     del body["id"]
 
     def mock_send(to, subject, txt, html):
-        print(txt)
         assert to == "foo@bar.org"
         assert "/declaration/?siren=514027945&year=2019" in txt
         assert "/declaration/?siren=514027945&year=2019" in html
-        assert company in txt
-        assert company in html
         nonlocal calls
         calls += 1
 
@@ -313,15 +309,12 @@ async def test_confirmed_declaration_should_send_email_for_legacy_call(
 ):
     calls = 0
     id = "1234"
-    company = "FooBar"
     body["source"] = "simulateur"
 
     def mock_send(to, subject, txt, html):
         assert to == "foo@bar.org"
         assert id in txt
         assert id in html
-        assert company in txt
-        assert company in html
         nonlocal calls
         calls += 1
 
