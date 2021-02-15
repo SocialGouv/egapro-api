@@ -81,4 +81,4 @@ async def digdash(dest):
         dest.write(dumped)
     dest.write("]")
 
-DIGDASH_CLEAN = re.compile(r'("[^\:]*)\:([^"]*":)')
+DIGDASH_CLEAN = re.compile(r'("[^\: ]*)\:([^" ]*":)')

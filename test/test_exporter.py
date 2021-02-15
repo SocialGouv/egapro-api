@@ -694,6 +694,41 @@ async def test_digdash_dump(declaration):
         entreprise={"effectif": {"tranche": "1000:"}},
         modified_at=datetime(2021, 1, 12, 13, 14, tzinfo=timezone.utc),
         uid="44d247cc-55bf-11eb-9104-4485000df3ef",
+        indicateurs={
+            "rémunérations": {
+                "mode": "niveau_branche",
+                "note": 25,
+                "résultat": 10.6,
+                "catégories": [
+                    {
+                        "nom": "tranche 0",
+                        "tranches": {"50:": 0, ":29": 0, "30:39": 0, "40:49": 0},
+                    },
+                    {
+                        "nom": "tranche 1",
+                        "tranches": {"50:": 0, ":29": 0, "30:39": 0, "40:49": 0},
+                    },
+                    {
+                        "nom": "tranche 2",
+                        "tranches": {"50:": 56.5, ":29": 0.0, "30:39": 1.4, "40:49": 0},
+                    },
+                    {
+                        "nom": "tranche 3",
+                        "tranches": {"50:": -43.9, ":29": 0, "30:39": 0, "40:49": 0},
+                    },
+                    {
+                        "nom": "tranche 4",
+                        "tranches": {
+                            "50:": -17.0,
+                            ":29": -20.1,
+                            "30:39": 0,
+                            "40:49": 22.9,
+                        },
+                    },
+                ],
+                "population_favorable": "hommes",
+            }
+        },
     )
     await declaration(
         company="FooBar",
@@ -725,7 +760,49 @@ async def test_digdash_dump(declaration):
                 "raison_sociale": "Mirabar",
             },
             "indicateurs": {
-                "rémunérations": {"mode": "csp"},
+                "rémunérations": {
+                    "catégories": [
+                        {
+                            "nom": "tranche 0",
+                            "tranches": {"-29": 0, "30-39": 0, "40-49": 0, "50-": 0},
+                        },
+                        {
+                            "nom": "tranche 1",
+                            "tranches": {"-29": 0, "30-39": 0, "40-49": 0, "50-": 0},
+                        },
+                        {
+                            "nom": "tranche 2",
+                            "tranches": {
+                                "-29": 0.0,
+                                "30-39": 1.4,
+                                "40-49": 0,
+                                "50-": 56.5,
+                            },
+                        },
+                        {
+                            "nom": "tranche 3",
+                            "tranches": {
+                                "-29": 0,
+                                "30-39": 0,
+                                "40-49": 0,
+                                "50-": -43.9,
+                            },
+                        },
+                        {
+                            "nom": "tranche 4",
+                            "tranches": {
+                                "-29": -20.1,
+                                "30-39": 0,
+                                "40-49": 22.9,
+                                "50-": -17.0,
+                            },
+                        },
+                    ],
+                    "mode": "niveau_branche",
+                    "note": 25,
+                    "population_favorable": "hommes",
+                    "résultat": 10.6,
+                },
                 "augmentations_et_promotions": {},
                 "congés_maternité": {},
             },
