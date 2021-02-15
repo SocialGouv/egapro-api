@@ -1,6 +1,7 @@
 import sys
 from collections import Counter, namedtuple
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 import fastjsonschema
@@ -79,6 +80,12 @@ def _cross_validate(data):
         assert (
             periode_reference
         ), "Le champ déclaration.fin_période_référence doit être défini"
+        try:
+            annee_periode_reference = date.fromisoformat(periode_reference).year
+        except ValueError:
+            annee_periode_reference = None
+        assert annee_periode_reference == data.year, "L'année de la date de fin de période ne peut pas être différente de l'année au titre de laquelle les indicateurs sont calculés."
+
     tranche = data.path("entreprise.effectif.tranche")
     if tranche == "50:250":
         paths = ("indicateurs.promotions", "indicateurs.augmentations")

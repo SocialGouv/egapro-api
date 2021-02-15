@@ -358,6 +358,18 @@ async def test_confirmed_declaration_should_raise_if_missing_fin_periode_referen
     }
 
 
+async def test_confirmed_declaration_should_raise_if_invalid_fin_periode_reference(
+    client, monkeypatch, body
+):
+    body["déclaration"]["fin_période_référence"] = "0219-12-31"
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    body = json.loads(resp.body)
+    assert body == {
+        "error": "L'année de la date de fin de période ne peut pas être différente de l'année au titre de laquelle les indicateurs sont calculés."
+    }
+
+
 async def test_with_unknown_siren_or_year(client):
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 404
