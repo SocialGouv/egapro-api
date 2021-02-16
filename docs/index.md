@@ -26,7 +26,7 @@ Pour ajouter ou modifier une déclaration.
 
 Où `siren` est le numéro de siren de l'entreprise ou UES déclarant, et `year` l'année de validité des indicateurs déclarés.
 
-Pour aller voir les mails en dev:
+Pour aller voir les mails envoyés par le serveur de dev:
 
 https://mailtrap.dev.egapro.fabrique.social.gouv.fr/
 
@@ -38,7 +38,7 @@ https://mailtrap.dev.egapro.fabrique.social.gouv.fr/
 
     `{"email": "foo@bar.org"}`
 
-1. Récupérer le token envoyé par mail (via l'interface mailtrap dans le cas de la dev)
+1. Récupérer le token envoyé par mail (via l'interface mailtrap dans le cas du serveur de dev)
 
 1. Faire un PUT sur `/declaration`, en passant le token via le header `API-KEY`
 
