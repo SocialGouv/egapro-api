@@ -329,3 +329,11 @@ async def test_search_with_offset(client):
         },
         "notes": {"2020": None},
     }
+
+
+async def test_search_with_siren(declaration):
+    await declaration("123456712", entreprise={"effectif": {"tranche": "1000:"}})
+    await declaration("987654321", entreprise={"effectif": {"tranche": "1000:"}})
+    results = await db.search.run("987654321")
+    assert len(results) == 1
+    assert results[0]["entreprise"]["siren"] == "987654321"
