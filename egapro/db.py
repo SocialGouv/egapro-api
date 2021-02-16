@@ -13,7 +13,7 @@ class NoData(Exception):
     pass
 
 
-class Record(dict):
+class Record(asyncpg.Record):
     def __getattr__(self, key):
         return self.get(key)
 
@@ -37,15 +37,15 @@ class table:
     @classmethod
     async def fetch(cls, sql, *params):
         async with cls.pool.acquire() as conn:
-            return [cls.record_class(r) for r in await conn.fetch(sql, *params)]
+            return await conn.fetch(sql, *params, record_class=cls.record_class)
 
     @classmethod
     async def fetchrow(cls, sql, *params):
         async with cls.pool.acquire() as conn:
-            row = await conn.fetchrow(sql, *params)
+            row = await conn.fetchrow(sql, *params, record_class=cls.record_class)
         if not row:
             raise NoData
-        return cls.record_class(row)
+        return row
 
     @classmethod
     async def fetchval(cls, sql, *params):
