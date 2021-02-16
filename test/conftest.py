@@ -37,6 +37,7 @@ def pytest_runtest_setup(item):
             await conn.execute("TRUNCATE TABLE declaration;")
             await conn.execute("TRUNCATE TABLE simulation;")
             await conn.execute("TRUNCATE TABLE search;")
+            await conn.execute("TRUNCATE TABLE archive;")
         await db.terminate()
 
     asyncio.get_event_loop().run_until_complete(setup())

@@ -149,6 +149,7 @@ async def declare(request, response, siren, year):
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:
+        await db.archive.put(siren, year, data, by=declarant, ip=request.ip)
         # Do not send the success email on update for now (we send too much emails that
         # are unwanted, mainly because when someone loads the frontend app a PUT is
         # automatically sent, without any action from the user.)

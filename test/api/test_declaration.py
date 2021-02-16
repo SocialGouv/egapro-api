@@ -121,6 +121,10 @@ async def test_basic_declaration_should_save_data(client, body, monkeypatch):
     del data["declared_at"]
     del data["data"]["déclaration"]["date"]
     assert data == {"data": body, "siren": "514027945", "year": 2019}
+    count = await db.table.fetchval(
+        "SELECT COUNT(*) FROM archive WHERE siren=$1 AND year=$2;", "514027945", 2019
+    )
+    assert count == 2
 
 
 async def test_draft_declaration_should_save_data(client, body):
