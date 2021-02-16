@@ -233,9 +233,12 @@ class search(table):
 
     @staticmethod
     def build_query(args, query, **filters):
-        query = utils.prepare_query(query)
         where = []
-        if query:
+        if query and len(query) == 9 and query.isdigit():
+            filters["siren"] = query
+            query = None
+        elif query:
+            query = utils.prepare_query(query)
             args.append(query)
             where.append(f"ft @@ to_tsquery('ftdict', ${len(args)})")
         for name, value in filters.items():
