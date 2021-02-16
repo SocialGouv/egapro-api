@@ -289,6 +289,22 @@ def ues_data(sheet, data):
     commune = data.path("entreprise.commune")
     tranche = EFFECTIF.get(data.path("entreprise.effectif.tranche"))
     nom = data.path("entreprise.ues.nom")
+    sheet.append(
+        [
+            data.year,
+            region,
+            departement,
+            adresse,
+            cp,
+            commune,
+            tranche,
+            nom,
+            data.siren,
+            data.company,
+            data.path("entreprise.raison_sociale"),
+            data.siren,
+        ]
+    )
     for ues in data.path("entreprise.ues.entreprises") or []:
         sheet.append(
             [
@@ -333,7 +349,7 @@ def prepare_entreprise(data):
     data["structure"] = (
         "Unité Economique et Sociale (UES)" if nombre_ues else "Entreprise"
     )
-    data["nombre_ues"] = nombre_ues or None
+    data["nombre_ues"] = nombre_ues + 1 if nombre_ues else None
 
 
 def prepare_declaration(data):

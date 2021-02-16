@@ -355,6 +355,8 @@ class RowProcessor:
                         ]
                     )
                 )
+            if siren == sirenUES:
+                continue
             entreprises.append({"nom": raisonSociale, "siren": siren})
         # Ajouter l'entreprise déclarante pour l'UES au nombre d'entreprises de l'UES
         self.set("informationsEntreprise/nombreEntreprises", len(entreprises) + 1)

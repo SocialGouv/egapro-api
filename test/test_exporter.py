@@ -563,6 +563,8 @@ async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
     sheet = workbook["BDD REPONDANTS"]
     assert sheet["Q1"].value == "Structure"
     assert sheet["Q2"].value == "Unité Economique et Sociale (UES)"
+    assert sheet["X1"].value == "Nb_ets_UES"
+    assert sheet["X2"].value == 3
     sheet = workbook["BDD UES détail entreprises"]
     assert list(sheet.values) == [
         (
@@ -578,6 +580,20 @@ async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
             "Nom_entreprise_declarante",
             "Nom_entreprise",
             "Siren",
+        ),
+        (
+            2020,
+            "Auvergne-Rhône-Alpes",
+            "Drôme",
+            None,
+            None,
+            None,
+            "1000 et plus",
+            "MiraFoo",
+            "87654321",
+            "Mirabar",
+            "Mirabar",
+            "87654321",
         ),
         (
             2020,

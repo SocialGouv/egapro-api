@@ -125,6 +125,7 @@ def _cross_validate(data):
     all_siren = [e["siren"] for e in entreprises]
     duplicates = [v for v, c in Counter(all_siren).items() if c > 1]
     assert not duplicates, f"Valeur de siren en double: {','.join(duplicates)}"
+    assert data.siren not in all_siren, "L'entreprise déclarante ne doit pas être dupliquée dans les entreprises de l'UES"
     for ues in entreprises:
         msg = f"Invalid siren: {ues['siren']}"
         assert siren_is_valid(ues["siren"]), msg

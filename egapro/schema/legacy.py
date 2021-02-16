@@ -57,8 +57,6 @@ def from_legacy(data):
     if "entreprisesUES" in entreprise or ues:
         # Make sure entreprise declarante is part of the list
         entreprises = {}
-        if "siren" in entreprise and "raison_sociale" in entreprise:
-            entreprises = {entreprise["siren"]: entreprise["raison_sociale"]}
         # Deduplicate on siren
         entreprises.update(
             {
