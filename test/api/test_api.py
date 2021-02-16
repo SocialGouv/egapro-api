@@ -23,6 +23,24 @@ async def test_request_token(client, monkeypatch):
     assert calls == 1
 
 
+async def test_request_token_with_allowed_ips(client, monkeypatch):
+    calls = 0
+
+    def mock_send(to, subject, body):
+        nonlocal calls
+        calls += 1
+
+    client.logout()
+    monkeypatch.setattr("egapro.emails.send", mock_send)
+    monkeypatch.setattr("egapro.config.ALLOWED_IPS", ["1.1.1.1"])
+    resp = await client.post(
+        "/token", body={"email": "foo@bar.org"}, headers={"X-REAL-IP": "1.1.1.1"}
+    )
+    assert resp.status == 200
+    assert list(json.loads(resp.body).keys()) == ["token"]
+    assert calls == 0
+
+
 async def test_search_endpoint(client):
     await db.declaration.put(
         "12345671",

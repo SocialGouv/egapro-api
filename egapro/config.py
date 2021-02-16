@@ -26,6 +26,7 @@ STAFF = []
 SENTRY_DSN = ""
 FLAVOUR = "local"
 API_ENTREPRISES = None
+ALLOWED_IPS = []
 
 
 def init():
