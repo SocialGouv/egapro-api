@@ -130,16 +130,23 @@ async def dump_digdash(path: Path):
 async def migrate(*migrations):
     ROOT = Path(__file__).parent / "migrations"
 
-    if migrations and migrations[0] == "list":
+    if not migrations or migrations[0] == "list":
         for path in sorted(ROOT.iterdir()):
             if path.stem[0].isdigit():
                 print(path.stem)
         sys.exit()
 
     for name in migrations:
-        module = import_module(f"egapro.migrations.{name}")
         print(f"Running {name}")
-        await module.main(db, loggers.logger)
+        if (ROOT / f"{name}.py").exists():
+            module = import_module(f"egapro.migrations.{name}")
+            await module.main(db, loggers.logger)
+        elif (ROOT / f"{name}.sql").exists():
+            res = await db.table.execute((ROOT / f"{name}.sql").read_text())
+            print(res)
+        else:
+            raise ValueError(f"There is no migration {name}")
+
         print(f"Done {name}")
 
 
