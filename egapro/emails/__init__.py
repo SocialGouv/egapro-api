@@ -1,9 +1,10 @@
 import smtplib
 import ssl
+import sys
 from email.message import EmailMessage
 from pathlib import Path
 
-from jinja2 import Template
+from jinja2 import Template, TemplateError, Undefined
 
 from .. import config
 from ..loggers import logger
@@ -17,6 +18,12 @@ Voici le lien vous permettant de déclarer sur Egapro:
 
 L'équipe Egapro
 """
+
+
+# Never fail when a deep attribute is missing (eg. indicateurs.rémunérations.note)
+class SilentUndefined(Undefined):
+    def _fail_with_undefined_error(self, *args, **kwargs):
+        return None
 
 
 def send(to, subject, txt, html=None):
@@ -48,13 +55,24 @@ def send(to, subject, txt, html=None):
 class Email:
     def __init__(self, subject, txt, html):
         self.subject = subject
-        self.txt = Template(txt)
-        self.html = Template(html)
+        self.txt = self.load(txt)
+        self.html = self.load(html)
 
     def send(self, to, **vars):
-        txt = self.txt.render(**vars)
-        html = (self.html or "").render(**vars)
+        txt, html = self(**vars)
         send(to, self.subject, txt, html)
+
+    def __call__(self, **vars):
+        return self.txt.render(**vars), (self.html or "").render(**vars)
+
+    def load(self, s):
+        try:
+            return Template(
+                s or "", undefined=SilentUndefined, trim_blocks=True, lstrip_blocks=True
+            )
+        except TemplateError as err:
+            print(s)
+            sys.exit(err)
 
 
 def load():
@@ -69,7 +87,7 @@ def load():
             if html.exists():
                 html = html.read_text()
             else:
-                html = ""
+                html = None
             globals()[path.name] = Email(subject, txt, html)
 
 

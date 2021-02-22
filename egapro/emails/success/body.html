@@ -1,30 +1,24 @@
 <html>
-  <head>
-    <style type="text/css">
-      .warning {
-        color: red;
-      }
-    </style>
-  </head>
   <body>
     <p>Madame, Monsieur,</p>
-
     <p>Vous venez de procéder à la transmission aux services du ministre chargé du travail de vos indicateurs et de votre niveau de résultat en matière d’écart de rémunération entre les femmes et les hommes pour l'année {year} conformément aux dispositions de l’article D.1142-5 du code du travail. L’administration du travail accuse réception par le présent message de votre due transmission. Cet accusé réception ne vaut pas contrôle de conformité de vos déclarations.</p>
 
-    <p>
-      Si vous souhaitez visualiser ou modifier votre déclaration, veuillez cliquer sur le lien suivant : <a href="{{ url }}">{{ url }}</a><br />
-      Il conviendra de saisir de nouveau votre email puis les informations relatives à l'année au titre de laquelle les indicateurs sont calculés ({{ year }}) et au numéro Siren de votre entreprise ({{ siren }}) .
-    </p>
-    <p>
-      Pour tout renseignement utile, vous êtes invité à prendre contact avec les services de la DIRECCTE dont le siège de votre entreprise dépend.
-    </p>
-
-    <p>
-      Veuillez agréer, Madame, Monsieur, nos salutations distinguées,
-      Les services de l’administration du travail.
-    </p>
-    <p>
-     <span class="warning">Merci de ne pas répondre à ce message qui a été généré automatiquement par une boîte ne pouvant traiter les demandes.</span>
-    </p>
-  </body>
+    <p>Vous avez déclaré un index global {% if déclaration.index is none %}non calculable{% else %}de {{ déclaration.index }}{% endif %}, décliné par indicateurs comme suit :</p>
+    <ul>
+      <li>Indicateur écart de rémunérations : {{ indicateurs.rémunérations.note|default("non calculable") }}</li>
+      {% if entreprise.effectif.tranche == "50:250" %}
+      <li>Indicateur écart de taux de promotion (pour les entreprises de plus de 250 salariés) : {{ indicateurs.augmentations_et_promotions.note|default("non calculable") }}</li>
+      {% else %}
+      <li>Indicateur écart de taux d'augmentation : {{ indicateurs.augmentations.note|default("non calculable") }}</li>
+      <li>Indicateur écart de taux de promotion : {{ indicateurs.promotions.note|default("non calculable") }}</li>
+      {% endif %}
+      <li>Indicateur retour de congés maternité : {{ indicateurs.congés_maternité.note|default("non calculable") }}</li>
+      <li>Indicateur hautes rémunérations: {{ indicateurs.hautes_rémunérations.note }}</li>
+    </ul>
+    <p>Si vous souhaitez visualiser ou modifier votre déclaration, veuillez cliquer sur le lien suivant : <a href="{{ url }}">{{ url }}</a></p>
+    <p>Il conviendra de saisir de nouveau votre email ; puis les informations relatives à l’année au titre de laquelle les indicateurs sont calculés ({{ year }}) et au numéro Siren de votre entreprise ({{ siren }}).</p>
+    <p>Pour tout renseignement utile, vous êtes invité à prendre contact avec les services de la DIRECCTE dont le siège de votre entreprise dépend.</p>
+    <p>Veuillez agréer, Madame, Monsieur, nos salutations distinguées,</p>
+    <p>Les services de l’administration du travail</p>
+   </body>
 </html>
