@@ -4,6 +4,7 @@ import sys
 from email.message import EmailMessage
 from pathlib import Path
 
+import yaml
 from jinja2 import Template, TemplateError, Undefined
 
 from .. import config
@@ -19,6 +20,8 @@ Voici le lien vous permettant de déclarer sur Egapro:
 L'équipe Egapro
 """
 
+REPLY_TO = {}
+
 
 # Never fail when a deep attribute is missing (eg. indicateurs.rémunérations.note)
 class SilentUndefined(Undefined):
@@ -26,11 +29,13 @@ class SilentUndefined(Undefined):
         return None
 
 
-def send(to, subject, txt, html=None):
+def send(to, subject, txt, html=None, reply_to=None):
     msg = EmailMessage()
     msg["From"] = config.FROM_EMAIL
     msg["To"] = to
     msg["Subject"] = subject
+    if reply_to:
+        msg["Reply-To"] = reply_to
     msg.set_content(txt)
     if html:
         msg.add_alternative(html, subtype="html")
@@ -58,12 +63,13 @@ class Email:
         self.txt = self.load(txt)
         self.html = self.load(html)
 
-    def send(self, to, **vars):
-        txt, html = self(**vars)
-        send(to, self.subject, txt, html)
+    def send(self, to, **context):
+        txt, html = self(**context)
+        reply_to = REPLY_TO.get(context.get("departement"))
+        send(to, self.subject, txt, html, reply_to=reply_to)
 
-    def __call__(self, **vars):
-        return self.txt.render(**vars), (self.html or "").render(**vars)
+    def __call__(self, **context):
+        return self.txt.render(**context), (self.html or "").render(**context)
 
     def load(self, s):
         try:
@@ -78,7 +84,8 @@ class Email:
 def load():
     """Load templates, in order to do `emails.success.send()` for a template named
     `success`."""
-    for path in Path(__file__).parent.iterdir():
+    root = Path(__file__).parent
+    for path in root.iterdir():
         if path.is_dir() and not path.name.startswith("_"):
             # Don't include carriage return in subject.
             subject = (path / "subject.txt").read_text()[:-1]
@@ -89,6 +96,8 @@ def load():
             else:
                 html = None
             globals()[path.name] = Email(subject, txt, html)
+
+    REPLY_TO.update(yaml.safe_load((root / "reply_to.yml").read_text()))
 
 
 load()

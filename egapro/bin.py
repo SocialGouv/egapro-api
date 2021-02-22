@@ -1,6 +1,7 @@
 import sys
-from datetime import datetime
+import urllib.request
 from importlib import import_module
+from io import BytesIO
 from pathlib import Path
 
 import minicli
@@ -9,7 +10,7 @@ import yaml
 import ujson as json
 from openpyxl import load_workbook
 
-from egapro import config, db, dgt, exporter, models, schema, tokens, loggers
+from egapro import config, constants, db, dgt, exporter, models, schema, tokens, loggers
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro.solen import *  # noqa: expose to minicli
 from egapro.utils import json_dumps
@@ -226,6 +227,42 @@ def read_token(token):
     print("—" * 20)
     print(tokens.read(token))
     print("—" * 20)
+
+
+@minicli.cli
+def compute_reply_to():
+    URL = (
+        "https://travail-emploi.gouv.fr/IMG/xlsx/referents_egalite_professionnelle.xlsx"
+    )
+    with urllib.request.urlopen(URL) as response:
+        wb = load_workbook(BytesIO(response.read()))
+    ws = wb.active
+    referents = {}
+    for line in ws.values:
+        if line[0] and line[2] and "@" in line[2]:
+            if "(" in line[0]:
+                dep = line[0][-3:-1]
+            elif "GUADELOUPE" in line[0]:
+                dep = "971"
+            elif "MARTINIQUE" in line[0]:
+                dep = "972"
+            elif "GUYANE" in line[0]:
+                dep = "973"
+            elif "REUNION" in line[0]:
+                dep = "974"
+            elif "MAYOTTE" in line[0]:
+                dep = "976"
+            else:
+                continue
+            name = line[1].split("\n")[0].strip() if line[1] else f"Egapro {line[0]}"
+            email = line[2]
+            referents[dep] = f"{name} <{email}>"
+    blob = yaml.dump(referents, default_flow_style=False, allow_unicode=True)
+    destination = Path(__file__).parent / "emails/reply_to.yml"
+    destination.write_text(blob)
+
+    missing = set(constants.DEPARTEMENTS.keys()) - set(referents.keys())
+    print(f"Missing departements: {missing}")
 
 
 @minicli.cli

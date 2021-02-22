@@ -290,15 +290,17 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch, body
     calls = 0
     del body["id"]
 
-    def mock_send(to, subject, txt, html):
+    def mock_send(to, subject, txt, html, reply_to):
         assert to == "foo@bar.org"
         assert "/declaration/?siren=514027945&year=2019" in txt
         assert "/declaration/?siren=514027945&year=2019" in html
+        assert reply_to == "Foo Bar <foo@baz.fr>"
         nonlocal calls
         calls += 1
 
     body["déclaration"]["brouillon"] = True
     monkeypatch.setattr("egapro.emails.send", mock_send)
+    monkeypatch.setattr("egapro.emails.REPLY_TO", {"12": "Foo Bar <foo@baz.fr>"})
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     assert not calls
@@ -315,7 +317,7 @@ async def test_confirmed_declaration_should_send_email_for_legacy_call(
     id = "1234"
     body["source"] = "simulateur"
 
-    def mock_send(to, subject, txt, html):
+    def mock_send(to, subject, txt, html, reply_to):
         assert to == "foo@bar.org"
         assert id in txt
         assert id in html
