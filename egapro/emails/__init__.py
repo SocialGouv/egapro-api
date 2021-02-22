@@ -3,6 +3,8 @@ import ssl
 from email.message import EmailMessage
 from pathlib import Path
 
+from jinja2 import Template
+
 from .. import config
 from ..loggers import logger
 
@@ -46,12 +48,12 @@ def send(to, subject, txt, html=None):
 class Email:
     def __init__(self, subject, txt, html):
         self.subject = subject
-        self.txt = txt
-        self.html = html
+        self.txt = Template(txt)
+        self.html = Template(html)
 
     def send(self, to, **vars):
-        txt = self.txt.format(**vars)
-        html = (self.html or "").format(**vars)
+        txt = self.txt.render(**vars)
+        html = (self.html or "").render(**vars)
         send(to, self.subject, txt, html)
 
 
@@ -67,7 +69,7 @@ def load():
             if html.exists():
                 html = html.read_text()
             else:
-                html = None
+                html = ""
             globals()[path.name] = Email(subject, txt, html)
 
 
