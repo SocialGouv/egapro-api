@@ -141,7 +141,6 @@ def test_success_email_with_small_company_non_calculable_index():
                 "date": "2020-11-04T10:37:06+00:00",
                 "année_indicateurs": 2019,
                 "fin_période_référence": "2019-12-31",
-                "index": None,
             },
             "déclarant": {
                 "email": "foo@bar.org",

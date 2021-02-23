@@ -3,7 +3,7 @@
     <p>Madame, Monsieur,</p>
     <p>Vous venez de procéder à la transmission aux services du ministre chargé du travail de vos indicateurs et de votre niveau de résultat en matière d’écart de rémunération entre les femmes et les hommes pour l'année {{ year }} conformément aux dispositions de l’article D.1142-5 du code du travail. L’administration du travail accuse réception par le présent message de votre due transmission. Cet accusé réception ne vaut pas contrôle de conformité de vos déclarations.</p>
 
-    <p>Vous avez déclaré un index global {% if déclaration.index is none %}non calculable{% else %}de {{ déclaration.index }}{% endif %}, décliné par indicateurs comme suit :</p>
+    <p>Vous avez déclaré un index global {% if déclaration.index is defined and déclaration.index is not none %}de {{ déclaration.index }}{% else %}non calculable{% endif %}, décliné par indicateurs comme suit :</p>
     <ul>
       <li>Indicateur écart de rémunérations : {{ indicateurs.rémunérations.note|default("non calculable") }}</li>
       {% if entreprise.effectif.tranche == "50:250" %}
