@@ -101,7 +101,7 @@ def test_success_email_with_small_company():
     </ul>
     <p>Si vous souhaitez visualiser ou modifier votre déclaration, veuillez cliquer sur le lien suivant : <a href="declaration/?siren=514027945&year=2019">declaration/?siren=514027945&year=2019</a></p>
     <p>Il conviendra de saisir de nouveau votre email ; puis les informations relatives à l’année au titre de laquelle les indicateurs sont calculés (2019) et au numéro Siren de votre entreprise (514027945).</p>
-    <p>Pour tout renseignement utile, vous êtes invité à prendre contact avec les services de la DIRECCTE dont le siège de votre entreprise dépend.</p>
+    <p>Pour tout renseignement utile, vous pouvez contacter votre référent égalité professionnelle femmes-hommes au sein de votre Direccte en répondant à ce message.</p>
     <p>Veuillez agréer, Madame, Monsieur, nos salutations distinguées,</p>
     <p>Les services de l’administration du travail</p>
    </body>
@@ -123,9 +123,10 @@ declaration/?siren=514027945&year=2019
 
 Il conviendra de saisir de nouveau votre email ; puis les informations relatives à l’année au titre de laquelle les indicateurs sont calculés (2019) et au numéro Siren de votre entreprise (514027945).
 
-Pour tout renseignement utile, vous êtes invité à prendre contact avec les services de la DIRECCTE dont le siège de votre entreprise dépend.
+Pour tout renseignement utile, vous pouvez contacter votre référent égalité professionnelle femmes-hommes au sein de votre Direccte en répondant à ce message.
 
 Veuillez agréer, Madame, Monsieur, nos salutations distinguées,
+
 Les services de l’administration du travail."""
 
     # fmt: on

@@ -20,7 +20,8 @@ Si vous souhaitez visualiser ou modifier votre déclaration, veuillez cliquer su
 
 Il conviendra de saisir de nouveau votre email ; puis les informations relatives à l’année au titre de laquelle les indicateurs sont calculés ({{ year }}) et au numéro Siren de votre entreprise ({{ siren }}).
 
-Pour tout renseignement utile, vous êtes invité à prendre contact avec les services de la DIRECCTE dont le siège de votre entreprise dépend.
+Pour tout renseignement utile, vous pouvez contacter votre référent égalité professionnelle femmes-hommes au sein de votre Direccte en répondant à ce message.
 
 Veuillez agréer, Madame, Monsieur, nos salutations distinguées,
+
 Les services de l’administration du travail.
