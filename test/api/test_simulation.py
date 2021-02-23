@@ -248,7 +248,7 @@ async def test_start_new_simulation_send_email_if_given(client, monkeypatch):
     calls = 0
     email_body = ""
 
-    def mock_send(to, subject, txt, html=None, reply_to=None):
+    def mock_send(to, subject, txt, html=None, reply_to=None, attachment=None):
         assert to == "foo@bar.org"
         nonlocal calls
         nonlocal email_body
@@ -273,7 +273,7 @@ async def test_send_code_endpoint(client, monkeypatch, body):
     email_body = ""
     recipient = None
 
-    def mock_send(to, subject, txt, html=None, reply_to=None):
+    def mock_send(to, subject, txt, html=None, reply_to=None, attachment=None):
         assert to == "foo@bar.org"
         nonlocal calls
         nonlocal email_body

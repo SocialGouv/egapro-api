@@ -306,7 +306,7 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch, body
     calls = 0
     del body["id"]
 
-    def mock_send(to, subject, txt, html, reply_to):
+    def mock_send(to, subject, txt, html, reply_to, attachment):
         assert to == "foo@bar.org"
         assert "/declaration/?siren=514027945&year=2019" in txt
         assert "/declaration/?siren=514027945&year=2019" in html
@@ -333,7 +333,7 @@ async def test_confirmed_declaration_should_send_email_for_legacy_call(
     id = "1234"
     body["source"] = "simulateur"
 
-    def mock_send(to, subject, txt, html, reply_to):
+    def mock_send(to, subject, txt, html, reply_to, attachment):
         assert to == "foo@bar.org"
         assert id in txt
         assert id in html

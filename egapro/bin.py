@@ -11,6 +11,7 @@ import ujson as json
 from openpyxl import load_workbook
 
 from egapro import config, constants, db, dgt, exporter, models, schema, tokens, loggers
+from egapro.emails.success import attachment
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro.solen import *  # noqa: expose to minicli
 from egapro.utils import json_dumps
@@ -152,7 +153,7 @@ async def explore(*siren_year):
     """
     if not siren_year:
         records = await db.declaration.fetch(
-            "SELECT * FROM declaration ORDER BY modified_at LIMIT 10"
+            "SELECT * FROM declaration ORDER BY modified_at DESC LIMIT 10"
         )
         print("# Latest déclarations")
         print("| siren     | year | modified_at      | declared_at      | owner")
@@ -255,6 +256,13 @@ def compute_reply_to():
 
     missing = set(constants.DEPARTEMENTS.keys()) - set(referents.keys())
     print(f"Missing departements: {missing}")
+
+
+@minicli.cli
+async def receipt(siren, year, destination=None):
+    declaration = await db.declaration.get(siren, year)
+    pdf, _ = attachment(declaration.data)
+    print(pdf.output(destination) or f"Saved to {destination}")
 
 
 @minicli.cli

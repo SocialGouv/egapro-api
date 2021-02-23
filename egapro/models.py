@@ -1,3 +1,5 @@
+from naf import DB as NAF
+
 from . import constants
 
 
@@ -64,6 +66,13 @@ class Data(dict):
     @property
     def email(self):
         return self.path("déclarant.email")
+
+    @property
+    def naf(self):
+        code = self.path("entreprise.code_naf")
+        if not code:
+            return None
+        return f"{code} - {NAF[code]}"
 
     @property
     def company(self):
