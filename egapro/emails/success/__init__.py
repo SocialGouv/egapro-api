@@ -1,19 +1,23 @@
 from datetime import datetime
 from pathlib import Path
 
-from fpdf import FPDF
+from fpdf import fpdf
 
 from egapro import constants
+
+
+# Disabled, waiting for new release so we can control the cache path.
+fpdf.FPDF_CACHE_MODE = 1
 
 
 def as_date(s):
     return datetime.fromisoformat(s).date().strftime("%d/%m/%Y")
 
 
-class PDF(FPDF):
+class PDF(fpdf.FPDF):
     def header(self):
         self.image(Path(__file__).parent / "logo.png", 10, 8, 33)
-        self.set_font("helvetica", "B", 16)
+        self.set_font("Marianne", "B", 16)
         # Move to the right
         self.cell(35)
         self.cell(
@@ -28,29 +32,36 @@ class PDF(FPDF):
     def footer(self):
         # Position at 1.5 cm from bottom
         self.set_y(-15)
-        # helvetica italic 8
-        self.set_font("helvetica", "I", 8)
+        # Marianne italic 8
+        self.set_font("Marianne", "I", 8)
         # Page number
         self.cell(0, 10, "Page " + str(self.page_no()) + "/{nb}", 0, 0, "C")
 
     def write_pair(self, key, value):
-        self.set_font("helvetica", "B", 12)
-        self.write(5, f"{key} ")
-        self.set_font("helvetica", "", 12)
+        self.set_font("Marianne", "B", 11)
+        self.cell(0, h=5, txt=f"{key} ")
+        self.set_font("Marianne", "", 11)
         if value is None:
             value = " - "
-        self.write(5, str(value))
+        self.cell(0, h=5, txt=str(value), align="R")
         self.ln()
 
     def write_headline(self, value):
         self.ln(8)
-        self.set_font("helvetica", "B", 15)
+        self.set_font("Marianne", "B", 14)
         self.write(6, str(value))
-        self.ln(8)
+        self.ln(6)
+        self.line(self.l_margin, self.y, self.w - self.r_margin, self.y)
+        self.ln(2)
 
 
 def attachment(data):
     pdf = PDF()
+    root = Path(__file__).parent
+    pdf.add_font("Marianne", "", root / "font/Marianne-Regular.ttf", uni=True)
+    pdf.add_font("Marianne", "I", root / "font/Marianne-RegularItalic.ttf", uni=True)
+    pdf.add_font("Marianne", "B", root / "font/Marianne-Bold.ttf", uni=True)
+    pdf.add_font("Marianne", "BI", root / "font/Marianne-BoldItalic.ttf", uni=True)
     pdf.set_title(f"Index Egapro {data.siren}/{data.year}")
     pdf.add_page()
     tranche_effectif = data.path("entreprise.effectif.tranche")

@@ -344,7 +344,10 @@ def test_success_email_attachment(patch_datetime):
                 "année_indicateurs": 2019,
                 "fin_période_référence": "2019-12-31",
                 "index": 65,
-                "publication": {"date": "2020-11-04"},
+                "publication": {
+                    "date": "2020-11-04",
+                    "modalités": "Un long test pour voir ce que ça donne avec un long œuf à rallonge",
+                },
             },
             "déclarant": {
                 "email": "foo@bar.org",
@@ -423,4 +426,5 @@ def test_success_email_attachment(patch_datetime):
         }
     )
     pdf, filename = success_attachment(data)
+    pdf.output(f"test/data/{filename}")
     assert bytes(pdf.output()) == Path(f"test/data/{filename}").read_bytes()
