@@ -1,2 +1,3 @@
 SELECT data FROM declaration
-WHERE data->'entreprise'->'effectif'->>'tranche' IN ('1000:', '251:999')
+WHERE data->'entreprise'->'effectif'->>'tranche' = '1000:'
+AND year IN ('2018', '2019')

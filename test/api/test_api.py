@@ -44,10 +44,10 @@ async def test_request_token_with_allowed_ips(client, monkeypatch):
 async def test_search_endpoint(client):
     await db.declaration.put(
         "12345671",
-        2020,
+        2019,
         "foo@bar.org",
         {
-            "déclaration": {"index": 95, "année_indicateurs": 2020},
+            "déclaration": {"index": 95, "année_indicateurs": 2019},
             "id": "12345678-1234-5678-9012-123456789013",
             "entreprise": {
                 "raison_sociale": "Bio c Bon",
@@ -57,10 +57,10 @@ async def test_search_endpoint(client):
     )
     await db.declaration.put(
         "12345672",
-        2020,
+        2019,
         "foo@bar.org",
         {
-            "déclaration": {"index": 93, "année_indicateurs": 2020},
+            "déclaration": {"index": 93, "année_indicateurs": 2019},
             "id": "12345678-1234-5678-9012-123456789012",
             "entreprise": {
                 "raison_sociale": "Biocoop",
@@ -82,7 +82,7 @@ async def test_search_endpoint(client):
                     "siren": "12345671",
                     "ues": None,
                 },
-                "notes": {"2020": 95},
+                "notes": {"2019": 95},
             },
         ],
         "count": 1,

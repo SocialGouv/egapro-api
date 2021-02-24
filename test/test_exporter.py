@@ -630,6 +630,7 @@ async def test_export_public_data(declaration):
     await declaration(
         company="Mirabar",
         siren="87654321",
+        year=2019,
         entreprise={"effectif": {"tranche": "1000:"}},
     )
     await declaration(
@@ -657,9 +658,9 @@ async def test_export_public_data(declaration):
     out.seek(0)
     assert out.read() == (
         "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
-        "Mirabar;87654321;2020;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+        "Mirabar;87654321;2019;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
         "FooBar;87654322;2018;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
-        "KaramBar;87654324;2020;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+        # "KaramBar;87654324;2020;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
     )
 
 
@@ -667,6 +668,7 @@ async def test_export_ues_public_data(declaration):
     await declaration(
         company="Mirabar",
         siren="87654321",
+        year=2019,
         entreprise={
             "ues": {
                 "raison_sociale": "MiraFoo",
@@ -683,7 +685,7 @@ async def test_export_ues_public_data(declaration):
     out.seek(0)
     assert out.read() == (
         "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
-        "Mirabar;87654321;2020;26;Unité Economique et Sociale (UES);MiraFoo;MiraBaz (315710251),MiraPouet (315710251);Auvergne-Rhône-Alpes;Drôme\r\n"
+        "Mirabar;87654321;2019;26;Unité Economique et Sociale (UES);MiraFoo;MiraBaz (315710251),MiraPouet (315710251);Auvergne-Rhône-Alpes;Drôme\r\n"
     )
 
 

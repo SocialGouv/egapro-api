@@ -27,7 +27,7 @@ async def test_search(client):
     for siren, nom in rows:
         await db.declaration.put(
             siren,
-            2020,
+            2019,
             "foo@bar.org",
             {
                 "entreprise": {
@@ -61,7 +61,7 @@ async def test_search(client):
             "code_naf": "33.11Z",
             "effectif": {"tranche": "1000:"},
         },
-        "notes": {"2020": None},
+        "notes": {"2019": None},
     }
     results = await db.search.run("pyrenées")
     assert len(results) == 1
@@ -77,6 +77,7 @@ async def test_small_companies_are_not_searchable(declaration):
     await declaration(
         company="Mala Bar",
         siren="87654321",
+        year=2019,
         entreprise={"effectif": {"tranche": "1000:"}},
     )
     # Small entreprise, should not be exported.
@@ -94,15 +95,15 @@ async def test_small_companies_are_not_searchable(declaration):
         year=2020,
     )
     results = await db.search.run("bar")
-    assert len(results) == 2
+    assert len(results) == 1
     names = {r["entreprise"]["raison_sociale"] for r in results}
-    assert names == {"Mala Bar", "Karam Bar"}
+    assert names == {"Mala Bar"}
 
 
 async def test_search_from_ues_name(client):
     await db.declaration.put(
         "12345671",
-        2020,
+        2019,
         "foo@bar.org",
         {
             "entreprise": {
@@ -135,14 +136,14 @@ async def test_search_from_ues_name(client):
                 "nom": "Nom UES",
             },
         },
-        "notes": {"2020": None},
+        "notes": {"2019": None},
     }
 
 
 async def test_search_from_ues_member_name(client):
     await db.declaration.put(
         "12345671",
-        2020,
+        2019,
         "foo@bar.org",
         {
             "entreprise": {
@@ -158,7 +159,7 @@ async def test_search_from_ues_member_name(client):
                 "effectif": {"tranche": "1000:"},
             },
             "déclaration": {"date": datetime.now()},
-            "notes": {"2020": None},
+            "notes": {"2019": None},
         },
     )
     results = await db.search.run("foo")
@@ -176,14 +177,14 @@ async def test_search_from_ues_member_name(client):
             "code_naf": None,
             "effectif": {"tranche": "1000:"},
         },
-        "notes": {"2020": None},
+        "notes": {"2019": None},
     }
 
 
 async def test_search_with_filters(client):
     await db.declaration.put(
         "12345671",
-        2020,
+        2019,
         "foo@bar.org",
         {
             "entreprise": {
@@ -197,7 +198,7 @@ async def test_search_with_filters(client):
     )
     await db.declaration.put(
         "987654321",
-        2020,
+        2019,
         "foo@bar.org",
         {
             "entreprise": {
@@ -221,14 +222,14 @@ async def test_search_with_filters(client):
             "code_naf": None,
             "effectif": {"tranche": "1000:"},
         },
-        "notes": {"2020": None},
+        "notes": {"2019": None},
     }
 
 
 async def test_filters_without_query(client):
     await db.declaration.put(
         "12345671",
-        2020,
+        2019,
         "foo@bar.org",
         {
             "entreprise": {
@@ -242,7 +243,7 @@ async def test_filters_without_query(client):
     )
     await db.declaration.put(
         "987654321",
-        2020,
+        2019,
         "foo@bar.org",
         {
             "entreprise": {
@@ -266,14 +267,14 @@ async def test_filters_without_query(client):
             "effectif": {"tranche": "1000:"},
             "siren": "987654321",
         },
-        "notes": {"2020": None},
+        "notes": {"2019": None},
     }
 
 
 async def test_search_with_offset(client):
     await db.declaration.put(
         "12345671",
-        2020,
+        2019,
         "foo@bar.org",
         {
             "entreprise": {
@@ -287,7 +288,7 @@ async def test_search_with_offset(client):
     )
     await db.declaration.put(
         "987654321",
-        2020,
+        2019,
         "foo@bar.org",
         {
             "entreprise": {
@@ -313,7 +314,7 @@ async def test_search_with_offset(client):
             "siren": "987654321",
             "effectif": {"tranche": "1000:"},
         },
-        "notes": {"2020": None},
+        "notes": {"2019": None},
     }
     results = await db.search.run(region="11", limit=1, offset=1)
     assert len(results) == 1
@@ -327,13 +328,13 @@ async def test_search_with_offset(client):
             "code_naf": None,
             "effectif": {"tranche": "1000:"},
         },
-        "notes": {"2020": None},
+        "notes": {"2019": None},
     }
 
 
 async def test_search_with_siren(declaration):
-    await declaration("123456712", entreprise={"effectif": {"tranche": "1000:"}})
-    await declaration("987654321", entreprise={"effectif": {"tranche": "1000:"}})
+    await declaration("123456712", year=2019, entreprise={"effectif": {"tranche": "1000:"}})
+    await declaration("987654321", year=2019, entreprise={"effectif": {"tranche": "1000:"}})
     results = await db.search.run("987654321")
     assert len(results) == 1
     assert results[0]["entreprise"]["siren"] == "987654321"

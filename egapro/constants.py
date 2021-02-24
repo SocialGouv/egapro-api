@@ -1,6 +1,6 @@
 YEARS = [2018, 2019, 2020]
 
-CURRENT_YEAR = YEARS[-1]
+CURRENT_YEAR = "2019"
 
 EFFECTIFS = {
     "50:250": "De 50 à 250 inclus",
