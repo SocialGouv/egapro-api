@@ -38,16 +38,28 @@ class PDF(fpdf.FPDF):
         self.cell(0, 10, "Page " + str(self.page_no()) + "/{nb}", 0, 0, "C")
 
     def write_pair(self, key, value):
-        line_height = self.font_size * 2.1
+        line_height = self.font_size * 2.2
         self.set_font("Marianne", "B", 11)
-        # self.multi_cell(0, h=5, txt=f"{key} ")
         cell_width = self.epw / 2
-        self.multi_cell(cell_width, line_height, f"{key} ", border=0, ln=3, max_line_height=self.font_size)
+        self.multi_cell(
+            cell_width,
+            line_height,
+            f"{key} ",
+            ln=3,
+            max_line_height=self.font_size,
+            align="L",
+        )
         self.set_font("Marianne", "", 11)
         if value is None:
             value = " - "
-        # self.multi_cell(0, h=5, txt=str(value), align="R", ln=3)
-        self.multi_cell(cell_width, line_height, str(value), border=0, ln=3, max_line_height=self.font_size, align="R")
+        self.multi_cell(
+            cell_width,
+            line_height,
+            str(value),
+            ln=3,
+            max_line_height=self.font_size,
+            align="R",
+        )
         self.ln(line_height)
 
     def write_headline(self, value):
@@ -57,6 +69,12 @@ class PDF(fpdf.FPDF):
         self.ln(6)
         self.line(self.l_margin, self.y, self.w - self.r_margin, self.y)
         self.ln(2)
+
+    def write_table(self, title, cells):
+        with self.unbreakable() as pdf:
+            pdf.write_headline(title)
+            for key, value in cells:
+                pdf.write_pair(key, value)
 
 
 def attachment(data):
@@ -70,130 +88,144 @@ def attachment(data):
     pdf.add_page()
     tranche_effectif = data.path("entreprise.effectif.tranche")
 
-    pdf.write_headline("Informations déclarant")
-    name = "{nom} {prénom}".format(**data["déclarant"])
-    pdf.write_pair("Nom Prénom", name)
-    pdf.write_pair("Adresse mail", data.path("déclarant.email"))
+    cells = (
+        ("Nom Prénom", "{nom} {prénom}".format(**data["déclarant"])),
+        ("Adresse mail", data.path("déclarant.email")),
+    )
+    pdf.write_table("Informations déclarant", cells)
 
-    pdf.write_headline(
-        "Périmètre retenu pour le calcul et la publication des indicateurs"
-    )
-    pdf.write_pair("Structure", data.structure)
-    pdf.write_pair("Tranche effectifs", constants.EFFECTIFS.get(tranche_effectif))
-    pdf.write_pair("Raison sociale", data.company)
-    pdf.write_pair("Siren", data.siren)
-    pdf.write_pair("Code NAF", data.naf)
     adresse = "{adresse} {code_postal} {commune}".format(**data["entreprise"])
-    pdf.write_pair("Année de calcul", data.year)
-    pdf.write_pair("Adresse", adresse)
+    cells = [
+        ("Structure", data.structure),
+        ("Tranche effectifs", constants.EFFECTIFS.get(tranche_effectif)),
+        ("Raison sociale", data.company),
+        ("Siren", data.siren),
+        ("Code NAF", data.naf),
+        ("Année de calcul", data.year),
+        ("Adresse", adresse),
+    ]
     if data.path("entreprise.ues.entreprises"):
-        pdf.write_pair("Nom UES", data.path("entreprise.ues.nom"))
-        pdf.write_pair(
-            "Nombre d'entreprises composant l'UES",
-            len(data.path("entreprise.ues.entreprises")),
+        cells.append(("Nom UES", data.path("entreprise.ues.nom")))
+        cells.append(
+            (
+                "Nombre d'entreprises composant l'UES",
+                len(data.path("entreprise.ues.entreprises")),
+            ),
         )
-    pdf.write_headline("Informations calcul et période de référence")
-    pdf.write_pair(
-        "Année au titre de laquelle les indicateurs sont calculés", data.year
+    pdf.write_table(
+        "Périmètre retenu pour le calcul et la publication des indicateurs", cells
     )
-    pdf.write_pair(
-        "Date de fin de la période de référence",
-        as_date(data.path("déclaration.fin_période_référence")),
+
+    cells = (
+        ("Année au titre de laquelle les indicateurs sont calculés", data.year),
+        (
+            "Date de fin de la période de référence",
+            as_date(data.path("déclaration.fin_période_référence")),
+        ),
+        (
+            "Nombre de salariés pris en compte pour le calcul des indicateurs",
+            data.path("entreprise.effectif.total"),
+        ),
     )
-    pdf.write_pair(
-        "Nombre de salariés pris en compte pour le calcul des indicateurs",
-        data.path("entreprise.effectif.total"),
-    )
+    pdf.write_table("Informations calcul et période de référence", cells)
+
+    non_calculable = data.path("indicateurs.rémunérations.non_calculable")
+    if non_calculable:
+        cells = [("Motif de non calculabilité", non_calculable)]
+    else:
+        cells = (
+            ("Modalité de calcul", data.path("indicateurs.rémunérations.mode")),
+            (
+                "Date de consultation du CSE",
+                data.path("indicateurs.rémunérations.date_consultation_cse"),
+            ),
+            (
+                "Nombre de niveaux ou coefficients",
+                len(data.path("indicateurs.rémunérations.catégories")),
+            ),
+            (
+                "Résultat final en %",
+                data.path("indicateurs.rémunérations.résultat"),
+            ),
+            (
+                "Population envers qui l'écart est favorable",
+                data.path("indicateurs.rémunérations.population_favorable"),
+            ),
+            (
+                "Nombre de points obtenus",
+                data.path("indicateurs.rémunérations.note"),
+            ),
+        )
+    pdf.write_table("Indicateur relatif à l'écart de rémunération", cells)
 
     if tranche_effectif == "50:250":
-        pdf.write_headline(
-            "Indicateur relatif à l'écart de taux d'augmentations individuelles "
-            "entre les femmes et les hommes"
-        )
         non_calculable = data.path(
             "indicateurs.augmentations_et_promotions.non_calculable"
         )
         if non_calculable:
-            pdf.write_pair("Motif de non calculabilité", non_calculable)
+            cells = [("Motif de non calculabilité", non_calculable)]
         else:
-            pdf.write_pair(
-                "Résultat final en %",
-                data.path("indicateurs.augmentations_et_promotions.résultat"),
-            )
-            pdf.write_pair(
-                "Résultat final en nombre équivalent de salariés",
-                data.path(
-                    "indicateurs.augmentations_et_promotions.résultat_nombre_salariés"
+            cells = (
+                (
+                    "Résultat final en %",
+                    data.path("indicateurs.augmentations_et_promotions.résultat"),
+                ),
+                (
+                    "Résultat final en nombre équivalent de salariés",
+                    data.path(
+                        "indicateurs.augmentations_et_promotions.résultat_nombre_salariés"
+                    ),
+                ),
+                (
+                    "Population envers qui l'écart est favorable",
+                    data.path(
+                        "indicateurs.augmentations_et_promotions.population_favorable"
+                    ),
+                ),
+                (
+                    "Nombre de points obtenus sur le résultat final en pourcentage",
+                    data.path(
+                        "indicateurs.augmentations_et_promotions.note_en_pourcentage"
+                    ),
+                ),
+                (
+                    "Nombre de points obtenus sur le résultat final en nombre de salariés",
+                    data.path(
+                        "indicateurs.augmentations_et_promotions.note_nombre_salariés"
+                    ),
+                ),
+                (
+                    "Nombre de points obtenus",
+                    data.path("indicateurs.augmentations_et_promotions.note"),
                 ),
             )
-            pdf.write_pair(
-                "Population envers qui l'écart est favorable",
-                data.path(
-                    "indicateurs.augmentations_et_promotions.population_favorable"
-                ),
-            )
-            pdf.write_pair(
-                "Nombre de points obtenus sur le résultat final en pourcentage",
-                data.path(
-                    "indicateurs.augmentations_et_promotions.note_en_pourcentage"
-                ),
-            )
-            pdf.write_pair(
-                "Nombre de points obtenus sur le résultat final en nombre de salariés",
-                data.path(
-                    "indicateurs.augmentations_et_promotions.note_nombre_salariés"
-                ),
-            )
-            pdf.write_pair(
-                "Nombre de points obtenus",
-                data.path("indicateurs.augmentations_et_promotions.note"),
-            )
-        pdf.ln(20)  # Force page break
-    else:
-        pdf.write_headline("Indicateur relatif à l'écart de rémunération")
-        non_calculable = data.path("indicateurs.rémunérations.non_calculable")
-        if non_calculable:
-            pdf.write_pair("Motif de non calculabilité", non_calculable)
-        else:
-            pdf.write_pair(
-                "Modalité de calcul", data.path("indicateurs.rémunérations.mode")
-            )
-            pdf.write_pair(
-                "Date de consultation du CSE",
-                data.path("indicateurs.rémunérations.date_consultation_cse"),
-            )
-            pdf.write_pair(
-                "Nombre de niveaux ou coefficients",
-                len(data.path("indicateurs.rémunérations.catégories")),
-            )
-            pdf.write_pair(
-                "Résultat final en %", data.path("indicateurs.rémunérations.résultat")
-            )
-            pdf.write_pair(
-                "Population envers qui l'écart est favorable",
-                data.path("indicateurs.rémunérations.population_favorable"),
-            )
-            pdf.write_pair(
-                "Nombre de points obtenus", data.path("indicateurs.rémunérations.note")
-            )
-
-        pdf.write_headline(
-            "Indicateur relatif à l'écart de taux d'augmentations individuelles"
+        pdf.write_table(
+            "Indicateur relatif à l'écart de taux d'augmentations individuelles "
+            "entre les femmes et les hommes",
+            cells,
         )
+    else:
         non_calculable = data.path("indicateurs.augmentations.non_calculable")
         if non_calculable:
-            pdf.write_pair("Motif de non calculabilité", non_calculable)
+            cells = [("Motif de non calculabilité", non_calculable)]
         else:
-            pdf.write_pair(
-                "Résultat final en %", data.path("indicateurs.augmentations.résultat")
+            cells = (
+                (
+                    "Résultat final en %",
+                    data.path("indicateurs.augmentations.résultat"),
+                ),
+                (
+                    "Population envers qui l'écart est favorable",
+                    data.path("indicateurs.augmentations.population_favorable"),
+                ),
+                (
+                    "Nombre de points obtenus",
+                    data.path("indicateurs.augmentations.note"),
+                ),
             )
-            pdf.write_pair(
-                "Population envers qui l'écart est favorable",
-                data.path("indicateurs.augmentations.population_favorable"),
-            )
-            pdf.write_pair(
-                "Nombre de points obtenus", data.path("indicateurs.augmentations.note")
-            )
+        pdf.write_table(
+            "Indicateur relatif à l'écart de taux d'augmentations individuelles", cells
+        )
 
         pdf.write_headline("Indicateur relatif à l'écart de taux de promotions")
         non_calculable = data.path("indicateurs.promotions.non_calculable")
@@ -211,60 +243,66 @@ def attachment(data):
                 "Nombre de points obtenus", data.path("indicateurs.promotions.note")
             )
 
-    pdf.write_headline(
-        "Indicateur relatif au % de salariées ayant bénéficié d'une augmentation dans "
-        "l'année suivant leur retour de congé maternité"
-    )
     non_calculable = data.path("indicateurs.congés_maternité.non_calculable")
     if non_calculable:
-        pdf.write_pair("Motif de non calculabilité", non_calculable)
+        cells = [("Motif de non calculabilité", non_calculable)]
     else:
-        pdf.write_pair(
-            "Résultat final en %", data.path("indicateurs.congés_maternité.résultat")
+        cells = (
+            ("Résultat final en %", data.path("indicateurs.congés_maternité.résultat")),
+            (
+                "Population envers qui l'écart est favorable",
+                data.path("indicateurs.congés_maternité.population_favorable"),
+            ),
+            (
+                "Nombre de points obtenus",
+                data.path("indicateurs.congés_maternité.note"),
+            ),
         )
-        pdf.write_pair(
-            "Population envers qui l'écart est favorable",
-            data.path("indicateurs.congés_maternité.population_favorable"),
-        )
-        pdf.write_pair(
-            "Nombre de points obtenus", data.path("indicateurs.congés_maternité.note")
-        )
-    pdf.write_headline(
+    pdf.write_table(
+        "Indicateur relatif au % de salariées ayant bénéficié d'une augmentation dans "
+        "l'année suivant leur retour de congé maternité",
+        cells,
+    )
+
+    cells = (
+        ("Résultat final en %", data.path("indicateurs.hautes_rémunérations.résultat")),
+        (
+            "Sexe des salariés sur-représentés",
+            data.path("indicateurs.hautes_rémunérations.population_favorable"),
+        ),
+        (
+            "Nombre de points obtenus",
+            data.path("indicateurs.hautes_rémunérations.note"),
+        ),
+    )
+    pdf.write_table(
         "Indicateur relatif au nombre de salariés du sexe sous-représenté parmi les "
-        "10 salariés ayant perçu les plus hautes rémunératons"
-    )
-    pdf.write_pair(
-        "Résultat final en %", data.path("indicateurs.hautes_rémunérations.résultat")
-    )
-    pdf.write_pair(
-        "Sexe des salariés sur-représentés",
-        data.path("indicateurs.hautes_rémunérations.population_favorable"),
-    )
-    pdf.write_pair(
-        "Nombre de points obtenus", data.path("indicateurs.hautes_rémunérations.note")
+        "10 salariés ayant perçu les plus hautes rémunératons",
+        cells,
     )
 
-    pdf.write_headline("Niveau de résultat global")
-    pdf.write_pair("Total de points obtenus", data.path("déclaration.points"))
-    pdf.write_pair(
-        "Nombre de points maximum pouvant être obtenus",
-        data.path("déclaration.points_calculables"),
+    cells = (
+        ("Total de points obtenus", data.path("déclaration.points")),
+        (
+            "Nombre de points maximum pouvant être obtenus",
+            data.path("déclaration.points_calculables"),
+        ),
+        ("Résultats final sur 100 points", data.grade),
+        (
+            "Mesures de corrections prévues",
+            data.path("déclaration.mesures_correctives"),
+        ),
+        ("Date de déclaration", as_date(data.path("déclaration.date"))),
     )
-    pdf.write_pair("Résultats final sur 100 points", data.grade)
-    pdf.write_pair(
-        "Mesures de corrections prévues", data.path("déclaration.mesures_correctives")
-    )
-    pdf.write_pair("Date de déclaration", as_date(data.path("déclaration.date")))
+    pdf.write_table("Niveau de résultat global", cells)
 
-    pdf.write_headline("Publication du niveau de résultat global")
-    pdf.write_pair(
-        "Date de publication", as_date(data.path("déclaration.publication.date"))
+    cells = (
+        ("Date de publication", as_date(data.path("déclaration.publication.date"))),
+        ("Site Internet de publication", data.path("déclaration.publication.url")),
+        (
+            "Modalités de communication auprès des salariés",
+            data.path("déclaration.publication.modalités"),
+        ),
     )
-    pdf.write_pair(
-        "Site Internet de publication", data.path("déclaration.publication.url")
-    )
-    pdf.write_pair(
-        "Modalités de communication auprès des salariés",
-        data.path("déclaration.publication.modalités"),
-    )
+    pdf.write_table("Publication du niveau de résultat global", cells)
     return pdf, "declaration.pdf"
