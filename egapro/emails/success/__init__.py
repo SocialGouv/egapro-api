@@ -148,7 +148,7 @@ def attachment(data):
                 data.path("indicateurs.rémunérations.résultat"),
             ),
             (
-                "Population envers qui l'écart est favorable",
+                "Population envers laquelle l'écart est favorable",
                 data.path("indicateurs.rémunérations.population_favorable"),
             ),
             (
@@ -177,7 +177,7 @@ def attachment(data):
                     ),
                 ),
                 (
-                    "Population envers qui l'écart est favorable",
+                    "Population envers laquelle l'écart est favorable",
                     data.path(
                         "indicateurs.augmentations_et_promotions.population_favorable"
                     ),
@@ -215,7 +215,7 @@ def attachment(data):
                     data.path("indicateurs.augmentations.résultat"),
                 ),
                 (
-                    "Population envers qui l'écart est favorable",
+                    "Population envers laquelle l'écart est favorable",
                     data.path("indicateurs.augmentations.population_favorable"),
                 ),
                 (
@@ -236,7 +236,7 @@ def attachment(data):
                 "Résultat final en %", data.path("indicateurs.promotions.résultat")
             )
             pdf.write_pair(
-                "Population envers qui l'écart est favorable",
+                "Population envers laquelle l'écart est favorable",
                 data.path("indicateurs.promotions.population_favorable"),
             )
             pdf.write_pair(
@@ -250,7 +250,7 @@ def attachment(data):
         cells = (
             ("Résultat final en %", data.path("indicateurs.congés_maternité.résultat")),
             (
-                "Population envers qui l'écart est favorable",
+                "Population envers laquelle l'écart est favorable",
                 data.path("indicateurs.congés_maternité.population_favorable"),
             ),
             (
@@ -265,7 +265,10 @@ def attachment(data):
     )
 
     cells = (
-        ("Résultat final en %", data.path("indicateurs.hautes_rémunérations.résultat")),
+        (
+            "Résultat en nombre de salariés du sexe sous-représenté",
+            data.path("indicateurs.hautes_rémunérations.résultat"),
+        ),
         (
             "Sexe des salariés sur-représentés",
             data.path("indicateurs.hautes_rémunérations.population_favorable"),
