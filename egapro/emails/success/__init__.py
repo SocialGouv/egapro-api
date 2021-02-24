@@ -15,6 +15,18 @@ def as_date(s):
 
 
 class PDF(fpdf.FPDF):
+    def __init__(self, data, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.data = data
+        root = Path(__file__).parent
+        self.add_font("Marianne", "", root / "font/Marianne-Regular.ttf", uni=True)
+        self.add_font(
+            "Marianne", "I", root / "font/Marianne-RegularItalic.ttf", uni=True
+        )
+        self.add_font("Marianne", "B", root / "font/Marianne-Bold.ttf", uni=True)
+        self.add_font("Marianne", "BI", root / "font/Marianne-BoldItalic.ttf", uni=True)
+        self.set_title(f"Index Egapro {data.siren}/{data.year}")
+
     def header(self):
         self.image(Path(__file__).parent / "logo.png", 10, 8, 33)
         self.set_font("Marianne", "B", 16)
@@ -35,7 +47,13 @@ class PDF(fpdf.FPDF):
         # Marianne italic 8
         self.set_font("Marianne", "I", 8)
         # Page number
-        self.cell(0, 10, "Page " + str(self.page_no()) + "/{nb}", 0, 0, "C")
+        page_number = self.page_no()
+        at = as_date(self.data.path("déclaration.date"))
+        txt = (
+            f"Page {page_number}/{{nb}} • Déclaration du {at} pour le Siren "
+            f"{self.data.siren} et l'année {self.data.year}"
+        )
+        self.cell(0, 10, txt, 0, 0, "C")
 
     def write_pair(self, key, value):
         line_height = self.font_size * 2.2
@@ -78,13 +96,7 @@ class PDF(fpdf.FPDF):
 
 
 def attachment(data):
-    pdf = PDF()
-    root = Path(__file__).parent
-    pdf.add_font("Marianne", "", root / "font/Marianne-Regular.ttf", uni=True)
-    pdf.add_font("Marianne", "I", root / "font/Marianne-RegularItalic.ttf", uni=True)
-    pdf.add_font("Marianne", "B", root / "font/Marianne-Bold.ttf", uni=True)
-    pdf.add_font("Marianne", "BI", root / "font/Marianne-BoldItalic.ttf", uni=True)
-    pdf.set_title(f"Index Egapro {data.siren}/{data.year}")
+    pdf = PDF(data)
     pdf.add_page()
     tranche_effectif = data.path("entreprise.effectif.tranche")
 
@@ -295,7 +307,6 @@ def attachment(data):
             "Mesures de corrections prévues",
             data.path("déclaration.mesures_correctives"),
         ),
-        ("Date de déclaration", as_date(data.path("déclaration.date"))),
     )
     pdf.write_table("Niveau de résultat global", cells)
 
