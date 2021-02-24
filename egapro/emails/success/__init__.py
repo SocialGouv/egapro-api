@@ -10,6 +10,19 @@ from egapro import constants
 fpdf.FPDF_CACHE_MODE = 1
 
 
+LABELS = {
+    "niveau_branche": "Par niveau ou coefficient hiérarchique en application de la classification de branche",
+    "niveau_autre": "Par niveau ou coefficient hiérarchique en application d'une autre méthode de cotation des postes",
+    "csp": "Par catégorie socio-professionnelle",
+    "egvi40pcet": "Effectif des groupes valides inférieur à 40% de l'effectif",
+    "absaugi": "Absence d'augmentations individuelles",
+    "absprom": "Absence de promotions",
+    "etsno5f5h": "L'entreprise ne comporte pas au moins 5 femmes et 5 hommes",
+    "absrcm": "Absence de retours de congé de maternité",
+    "absaugpdtcm": "Absence d'augmentations pendant ce congé",
+}
+
+
 def as_date(s):
     return datetime.fromisoformat(s).date().strftime("%d/%m/%Y")
 
@@ -70,6 +83,7 @@ class PDF(fpdf.FPDF):
         self.set_font("Marianne", "", 11)
         if value is None:
             value = " - "
+        value = LABELS.get(value, value)
         self.multi_cell(
             cell_width,
             line_height,
