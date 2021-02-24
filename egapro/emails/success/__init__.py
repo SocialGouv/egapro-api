@@ -38,13 +38,17 @@ class PDF(fpdf.FPDF):
         self.cell(0, 10, "Page " + str(self.page_no()) + "/{nb}", 0, 0, "C")
 
     def write_pair(self, key, value):
+        line_height = self.font_size * 2.1
         self.set_font("Marianne", "B", 11)
-        self.cell(0, h=5, txt=f"{key} ")
+        # self.multi_cell(0, h=5, txt=f"{key} ")
+        cell_width = self.epw / 2
+        self.multi_cell(cell_width, line_height, f"{key} ", border=0, ln=3, max_line_height=self.font_size)
         self.set_font("Marianne", "", 11)
         if value is None:
             value = " - "
-        self.cell(0, h=5, txt=str(value), align="R")
-        self.ln()
+        # self.multi_cell(0, h=5, txt=str(value), align="R", ln=3)
+        self.multi_cell(cell_width, line_height, str(value), border=0, ln=3, max_line_height=self.font_size, align="R")
+        self.ln(line_height)
 
     def write_headline(self, value):
         self.ln(8)
@@ -144,6 +148,7 @@ def attachment(data):
                 "Nombre de points obtenus",
                 data.path("indicateurs.augmentations_et_promotions.note"),
             )
+        pdf.ln(20)  # Force page break
     else:
         pdf.write_headline("Indicateur relatif à l'écart de rémunération")
         non_calculable = data.path("indicateurs.rémunérations.non_calculable")
@@ -205,7 +210,6 @@ def attachment(data):
             pdf.write_pair(
                 "Nombre de points obtenus", data.path("indicateurs.promotions.note")
             )
-        pdf.ln(20)  # Force page break
 
     pdf.write_headline(
         "Indicateur relatif au % de salariées ayant bénéficié d'une augmentation dans "
