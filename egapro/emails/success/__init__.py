@@ -127,7 +127,6 @@ def attachment(data):
         ("Raison sociale", data.company),
         ("Siren", data.siren),
         ("Code NAF", data.naf),
-        ("Année de calcul", data.year),
         ("Adresse", adresse),
     ]
     if data.path("entreprise.ues.entreprises"):
@@ -150,7 +149,7 @@ def attachment(data):
         ),
         (
             "Nombre de salariés pris en compte pour le calcul des indicateurs",
-            data.path("entreprise.effectif.total"),
+            int(data.path("entreprise.effectif.total")),
         ),
     )
     pdf.write_table("Informations calcul et période de référence", cells)

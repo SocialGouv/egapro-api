@@ -426,5 +426,5 @@ def test_success_email_attachment(patch_datetime):
         }
     )
     pdf, filename = success_attachment(data)
-    pdf.output(f"test/data/{filename}")
+    # pdf.output(f"test/data/{filename}")
     assert bytes(pdf.output()) == Path(f"test/data/{filename}").read_bytes()
