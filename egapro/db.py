@@ -128,7 +128,10 @@ class declaration(table):
     @classmethod
     async def owner(cls, siren, year):
         return await cls.fetchval(
-            "SELECT owner FROM declaration WHERE siren=$1 AND year=$2", siren, int(year)
+            "SELECT owner FROM declaration WHERE siren=$1 AND year=$2 "
+            "AND declared_at IS NOT NULL",
+            siren,
+            int(year),
         )
 
     @classmethod
@@ -255,7 +258,6 @@ class search(table):
 
 
 class archive(table):
-
     @classmethod
     async def put(cls, siren, year, data, by=None, ip=None):
         async with cls.pool.acquire() as conn:

@@ -208,11 +208,9 @@ async def test_basic_declaration_should_remove_data_namespace_if_present(client,
     assert data["data"] == body
 
 
-async def test_cannot_load_not_owned_declaration(client, monkeypatch):
-    async def mock_owner(*args, **kwargs):
-        return "foo@bar.baz"
+async def test_cannot_load_not_owned_declaration(client, declaration):
+    await declaration("514027945", 2019, "foo@bar.baz")
 
-    monkeypatch.setattr("egapro.db.declaration.owner", mock_owner)
     client.login("other@email.com")
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 403
@@ -221,13 +219,17 @@ async def test_cannot_load_not_owned_declaration(client, monkeypatch):
     }
 
 
-async def test_staff_can_load_not_owned_declaration(client, monkeypatch, declaration):
-    async def mock_owner(*args, **kwargs):
-        return "foo@bar.baz"
+async def test_draft_declaration_is_not_owned(client, declaration):
+    await declaration("514027945", 2019, "foo@bar.baz", déclaration={"brouillon": True})
 
-    await declaration(siren="514027945", year=2019)
+    client.login("other@email.com")
+    resp = await client.get("/declaration/514027945/2019")
+    assert resp.status == 200
+
+
+async def test_staff_can_load_not_owned_declaration(client, monkeypatch, declaration):
+    await declaration(siren="514027945", year=2019, owner="foo@bar.baz")
     monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
-    monkeypatch.setattr("egapro.db.declaration.owner", mock_owner)
     client.login("Staff@email.com")
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 200
