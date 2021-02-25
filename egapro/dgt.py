@@ -53,7 +53,7 @@ def code_naf(code):
 
 
 def value_or_nc(value):
-    return value or "nc"
+    return value if value is not None else "nc"
 
 
 async def get_headers_columns():
