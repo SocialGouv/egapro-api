@@ -1,12 +1,12 @@
 Madame, Monsieur,
 
-Vous venez de procéder à la transmission aux services du ministre chargé du travail de vos indicateurs et de votre niveau de résultat en matière d’écart de rémunération entre les femmes et les hommes pour l'année {{ year }} conformément aux dispositions de l’article D.1142-5 du code du travail. L’administration du travail accuse réception par le présent message de votre due transmission. Cet accusé réception ne vaut pas contrôle de conformité de vos déclarations.
+Vous venez de procéder à la transmission aux services du ministre chargé du travail de vos indicateurs et de votre niveau de résultat en matière d’écart de rémunération entre les femmes et les hommes pour l'année {{ year + 1 }} au titre des données {{ year }} conformément aux dispositions de l’article D.1142-5 du code du travail. L’administration du travail accuse réception par le présent message de votre due transmission. Cet accusé réception ne vaut pas contrôle de conformité de vos déclarations.
 
 Vous avez déclaré un index global {% if déclaration.index is defined and déclaration.index is not none %}de {{ déclaration.index }}{% else %}non calculable{% endif %}, décliné par indicateurs comme suit :
 
 - Indicateur écart de rémunérations : {{ indicateurs.rémunérations.note|default("non calculable") }}
 {% if entreprise.effectif.tranche == "50:250" %}
-- Indicateur écart de taux de promotion (pour les entreprises de plus de 250 salariés) : {{ indicateurs.augmentations_et_promotions.note|default("non calculable") }}
+- Indicateur écart de taux d'augmentations individuelles : {{ indicateurs.augmentations_et_promotions.note|default("non calculable") }}
 {% else %}
 - Indicateur écart de taux d'augmentation : {{ indicateurs.augmentations.note|default("non calculable") }}
 - Indicateur écart de taux de promotion : {{ indicateurs.promotions.note|default("non calculable") }}

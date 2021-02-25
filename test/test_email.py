@@ -90,12 +90,12 @@ def test_success_email_with_small_company():
     assert html == """<html>
   <body>
     <p>Madame, Monsieur,</p>
-    <p>Vous venez de procéder à la transmission aux services du ministre chargé du travail de vos indicateurs et de votre niveau de résultat en matière d’écart de rémunération entre les femmes et les hommes pour l'année 2019 conformément aux dispositions de l’article D.1142-5 du code du travail. L’administration du travail accuse réception par le présent message de votre due transmission. Cet accusé réception ne vaut pas contrôle de conformité de vos déclarations.</p>
+    <p>Vous venez de procéder à la transmission aux services du ministre chargé du travail de vos indicateurs et de votre niveau de résultat en matière d’écart de rémunération entre les femmes et les hommes pour l'année 2020 au titre des données 2019 conformément aux dispositions de l’article D.1142-5 du code du travail. L’administration du travail accuse réception par le présent message de votre due transmission. Cet accusé réception ne vaut pas contrôle de conformité de vos déclarations.</p>
 
     <p>Vous avez déclaré un index global de 65, décliné par indicateurs comme suit :</p>
     <ul>
       <li>Indicateur écart de rémunérations : 38</li>
-      <li>Indicateur écart de taux de promotion (pour les entreprises de plus de 250 salariés) : 0</li>
+      <li>Indicateur écart de taux d'augmentations individuelles : 0</li>
       <li>Indicateur retour de congés maternité : non calculable</li>
       <li>Indicateur hautes rémunérations: 0</li>
     </ul>
@@ -107,12 +107,12 @@ def test_success_email_with_small_company():
 </html>"""
     assert txt == """Madame, Monsieur,
 
-Vous venez de procéder à la transmission aux services du ministre chargé du travail de vos indicateurs et de votre niveau de résultat en matière d’écart de rémunération entre les femmes et les hommes pour l'année 2019 conformément aux dispositions de l’article D.1142-5 du code du travail. L’administration du travail accuse réception par le présent message de votre due transmission. Cet accusé réception ne vaut pas contrôle de conformité de vos déclarations.
+Vous venez de procéder à la transmission aux services du ministre chargé du travail de vos indicateurs et de votre niveau de résultat en matière d’écart de rémunération entre les femmes et les hommes pour l'année 2020 au titre des données 2019 conformément aux dispositions de l’article D.1142-5 du code du travail. L’administration du travail accuse réception par le présent message de votre due transmission. Cet accusé réception ne vaut pas contrôle de conformité de vos déclarations.
 
 Vous avez déclaré un index global de 65, décliné par indicateurs comme suit :
 
 - Indicateur écart de rémunérations : 38
-- Indicateur écart de taux de promotion (pour les entreprises de plus de 250 salariés) : 0
+- Indicateur écart de taux d'augmentations individuelles : 0
 - Indicateur retour de congés maternité : non calculable
 - Indicateur hautes rémunérations: 0
 
@@ -307,7 +307,7 @@ def test_success_email_with_big_company():
     txt, html = emails.success(url=data.uri, **data)
     assert "Indicateur écart de taux d'augmentation : 20" in html
     assert "Indicateur écart de taux de promotion : 15" in html
-    assert "(pour les entreprises de plus de 250 salariés)" not in html
+    assert "Indicateur écart de taux d'augmentations individuelles" not in html
     assert "Indicateur écart de taux d'augmentation : 20" in txt
     assert "Indicateur écart de taux de promotion : 15" in txt
-    assert "(pour les entreprises de plus de 250 salariés)" not in txt
+    assert "Indicateur écart de taux d'augmentations individuelles" not in txt
