@@ -18,7 +18,7 @@ LABELS = {
     "absaugi": "Absence d'augmentations individuelles",
     "absprom": "Absence de promotions",
     "etsno5f5h": "L'entreprise ne comporte pas au moins 5 femmes et 5 hommes",
-    "absrcm": "Absence de retours de congé de maternité",
+    "absrcm": "Absence de retours de congé maternité",
     "absaugpdtcm": "Absence d'augmentations pendant ce congé",
 }
 
@@ -71,30 +71,30 @@ class PDF(fpdf.FPDF):
         self.cell(0, 10, txt, 0, 0, "C")
 
     def write_pair(self, key, value):
-        line_height = self.font_size * 2.2
         self.set_font("Marianne", "B", 11)
-        cell_width = self.epw / 2
-        self.multi_cell(
-            cell_width,
-            line_height,
-            f"{key} ",
-            ln=3,
-            max_line_height=self.font_size,
-            align="L",
-        )
-        self.set_font("Marianne", "", 11)
+        key = f"{key} "
         if value is None:
             value = " - "
-        value = LABELS.get(value, value)
-        self.multi_cell(
-            cell_width,
-            line_height,
-            str(value),
-            ln=3,
-            max_line_height=self.font_size,
-            align="R",
-        )
-        self.ln(line_height)
+        if isinstance(value, float):
+            value = f"{value:.2f}"
+        value = str(LABELS.get(value, value))
+        # Compute each cell width, and total height
+        key_len = len(key)
+        value_len = len(value)
+        key_part = key_len / (value_len + key_len)
+        # epw is the effetive page width.
+        # Make sure we always let at least 50 mm for each cell.
+        key_width = min(max(50, self.epw * key_part), self.epw - 50)
+        value_width = self.epw - key_width
+        max_len = max(key_len, value_len)
+        # A char is more or less 2 mm width.
+        letters_per_row = max(key_width, value_width) / 2
+        height = (int(max_len / letters_per_row) + 1) * 5
+        # print(key, value, key_width, value_width, max_len, letters_per_row, height)
+        self.multi_cell(key_width, height, key, ln=3, align="L", max_line_height=5)
+        self.set_font("Marianne", "", 11)
+        self.multi_cell(value_width, height, value, ln=3, align="R", max_line_height=5)
+        self.ln(height)
 
     def write_headline(self, value):
         self.ln(8)
@@ -136,7 +136,7 @@ def attachment(data):
         cells.append(
             (
                 "Nombre d'entreprises composant l'UES",
-                len(data.path("entreprise.ues.entreprises")),
+                len(data.path("entreprise.ues.entreprises")) + 1,
             ),
         )
     pdf.write_table(
@@ -160,15 +160,17 @@ def attachment(data):
     if non_calculable:
         cells = [("Motif de non calculabilité", non_calculable)]
     else:
+        mode = data.path("indicateurs.rémunérations.mode")
+        nb_niveaux = len(data.path("indicateurs.rémunérations.catégories"))
         cells = (
-            ("Modalité de calcul", data.path("indicateurs.rémunérations.mode")),
+            ("Modalité de calcul", mode),
             (
                 "Date de consultation du CSE",
-                data.path("indicateurs.rémunérations.date_consultation_cse"),
+                as_date(data.path("indicateurs.rémunérations.date_consultation_cse")),
             ),
             (
                 "Nombre de niveaux ou coefficients",
-                len(data.path("indicateurs.rémunérations.catégories")),
+                nb_niveaux if mode != "csp" else None,
             ),
             (
                 "Résultat final en %",

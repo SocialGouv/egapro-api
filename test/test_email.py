@@ -124,7 +124,7 @@ SMALL_COMPANY_NC = models.Data(
         "entreprise": {
             "raison_sociale": "FooBar",
             "siren": "514027945",
-            "code_naf": "47.25Z",
+            "code_naf": "87.90B",
             "code_postal": "12345",
             "région": "76",
             "département": "12",

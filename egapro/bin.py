@@ -266,6 +266,17 @@ async def receipt(siren, year, destination=None):
 
 
 @minicli.cli
+async def receipts(limit=10):
+    records = await db.declaration.fetch(
+        "SELECT * FROM declaration WHERE declared_at IS NOT NULL"
+        " ORDER BY declared_at DESC LIMIT $1", limit
+    )
+    for record in records:
+        pdf, _ = attachment(record.data)
+        pdf.output(f"tmp/receipts/{record.siren}-{record.year}.pdf")
+
+
+@minicli.cli
 def shell():
     """Run an ipython already connected to PSQL."""
     try:
