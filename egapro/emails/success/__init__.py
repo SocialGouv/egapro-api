@@ -24,6 +24,8 @@ LABELS = {
 
 
 def as_date(s):
+    if not s:
+        return None
     return datetime.fromisoformat(s).date().strftime("%d/%m/%Y")
 
 
@@ -225,8 +227,7 @@ def attachment(data):
                 ),
             )
         pdf.write_table(
-            "Indicateur relatif à l'écart de taux d'augmentations individuelles "
-            "entre les femmes et les hommes",
+            "Indicateur relatif à l'écart de taux d'augmentations individuelles",
             cells,
         )
     else:
@@ -249,7 +250,9 @@ def attachment(data):
                 ),
             )
         pdf.write_table(
-            "Indicateur relatif à l'écart de taux d'augmentations individuelles", cells
+            "Indicateur relatif à l'écart de taux d'augmentations individuelles "
+            "(hors promotions)",
+            cells,
         )
 
         pdf.write_headline("Indicateur relatif à l'écart de taux de promotions")
@@ -274,10 +277,6 @@ def attachment(data):
     else:
         cells = (
             ("Résultat final en %", data.path("indicateurs.congés_maternité.résultat")),
-            (
-                "Population envers laquelle l'écart est favorable",
-                data.path("indicateurs.congés_maternité.population_favorable"),
-            ),
             (
                 "Nombre de points obtenus",
                 data.path("indicateurs.congés_maternité.note"),
