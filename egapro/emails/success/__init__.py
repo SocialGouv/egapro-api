@@ -4,11 +4,7 @@ from pathlib import Path
 from fpdf import fpdf
 
 from egapro import constants
-
-
-# Disabled, waiting for new release so we can control the cache path.
-fpdf.FPDF_CACHE_MODE = 1
-
+from egapro.models import Data
 
 LABELS = {
     "niveau_branche": "Par niveau ou coefficient hiérarchique en application de la classification de branche",
@@ -31,6 +27,7 @@ def as_date(s):
 
 class PDF(fpdf.FPDF):
     def __init__(self, data, *args, **kwargs):
+        kwargs["font_cache_dir"] = "/tmp/"
         super().__init__(*args, **kwargs)
         self.data = data
         root = Path(__file__).parent
@@ -41,6 +38,9 @@ class PDF(fpdf.FPDF):
         self.add_font("Marianne", "B", root / "font/Marianne-Bold.ttf", uni=True)
         self.add_font("Marianne", "BI", root / "font/Marianne-BoldItalic.ttf", uni=True)
         self.set_title(f"Index Egapro {data.siren}/{data.year}")
+
+    def __call__(self, path=None):
+        return self.output(path)
 
     def header(self):
         self.image(Path(__file__).parent / "logo.png", 10, 8, 33)
@@ -112,6 +112,7 @@ class PDF(fpdf.FPDF):
 
 
 def attachment(data):
+    data = Data(data)
     pdf = PDF(data)
     pdf.add_page()
     tranche_effectif = data.path("entreprise.effectif.tranche")
@@ -161,7 +162,7 @@ def attachment(data):
         cells = [("Motif de non calculabilité", non_calculable)]
     else:
         mode = data.path("indicateurs.rémunérations.mode")
-        nb_niveaux = len(data.path("indicateurs.rémunérations.catégories"))
+        nb_niveaux = len(data.path("indicateurs.rémunérations.catégories") or [])
         cells = (
             ("Modalité de calcul", mode),
             (

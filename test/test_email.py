@@ -1,24 +1,10 @@
 import datetime
 from pathlib import Path
 
-import pytest
-
 from egapro import emails, models
 from egapro.emails.success import attachment as success_attachment
 
-FAKE_TIME = datetime.datetime(2020, 12, 25, 17, 5, 55)
-
-
-@pytest.fixture
-def patch_datetime(monkeypatch):
-    class mydatetime:
-        @classmethod
-        def now(cls):
-            return FAKE_TIME
-
-    monkeypatch.setattr(datetime, "datetime", mydatetime)
-    # Workaround "from datetime import dateime" import style in fpdf.
-    monkeypatch.setattr("fpdf.fpdf.datetime", mydatetime)
+FAKE_NOW = datetime.datetime(2020, 12, 25, 17, 5, 55)
 
 
 SMALL_COMPANY = models.Data(
@@ -343,19 +329,22 @@ def test_success_email_with_big_company():
     assert "(pour les entreprises de plus de 250 salariés)" not in txt
 
 
-def test_success_email_attachment_big_company(patch_datetime):
-    pdf, _ = success_attachment(BIG_COMPANY)
+def test_success_email_attachment_big_company():
+    pdf, _ = success_attachment(dict(BIG_COMPANY))
+    pdf.set_creation_date(FAKE_NOW)
     # pdf.output("test/data/big_company.pdf")
     assert bytes(pdf.output()) == Path("test/data/big_company.pdf").read_bytes()
 
 
-def test_success_email_attachment_small_company(patch_datetime):
-    pdf, _ = success_attachment(SMALL_COMPANY)
+def test_success_email_attachment_small_company():
+    pdf, _ = success_attachment(dict(SMALL_COMPANY))
+    pdf.set_creation_date(FAKE_NOW)
     # pdf.output("test/data/small_company.pdf")
     assert bytes(pdf.output()) == Path("test/data/small_company.pdf").read_bytes()
 
 
-def test_success_email_attachment_small_company_non_calculable(patch_datetime):
-    pdf, _ = success_attachment(SMALL_COMPANY_NC)
+def test_success_email_attachment_small_company_non_calculable():
+    pdf, _ = success_attachment(dict(SMALL_COMPANY_NC))
+    pdf.set_creation_date(FAKE_NOW)
     # pdf.output("test/data/small_company_nc.pdf")
     assert bytes(pdf.output()) == Path("test/data/small_company_nc.pdf").read_bytes()

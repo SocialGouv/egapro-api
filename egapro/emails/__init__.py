@@ -43,6 +43,8 @@ def send(to, subject, txt, html=None, reply_to=None, attachment=None):
         msg.add_alternative(html, subtype="html")
     if attachment:
         blob, filename = attachment
+        if callable(blob):
+            blob = blob()
         ctype, encoding = mimetypes.guess_type(filename)
         maintype, subtype = ctype.split("/", 1)
         msg.add_attachment(blob, maintype=maintype, subtype=subtype, filename=filename)
@@ -76,7 +78,7 @@ class Email:
         reply_to = REPLY_TO.get(context.get("departement"))
         attachment = None
         if self.attachment:
-            attachment = self.attachment(context).output()
+            attachment = self.attachment(context)
         send(to, self.subject, txt, html, reply_to=reply_to, attachment=attachment)
 
     def __call__(self, **context):
