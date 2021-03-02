@@ -681,7 +681,9 @@ async def test_declaration_with_ues_and_duplicate_siren_from_entreprise(client, 
     }
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
-    assert json.loads(resp.body) == {"error": "L'entreprise déclarante ne doit pas être dupliquée dans les entreprises de l'UES"}
+    assert json.loads(resp.body) == {
+        "error": "L'entreprise déclarante ne doit pas être dupliquée dans les entreprises de l'UES"
+    }
 
 
 async def test_basic_declaration_with_niveau_branche(client, body):
@@ -773,6 +775,49 @@ async def test_put_declaration_without_source(client, body):
     assert json.loads(resp.body) == {
         "error": "data must contain ['source', 'déclaration', 'déclarant', 'entreprise'] properties"
     }
+
+
+async def test_get_empty_entreprise_should_sync_with_api_entreprises(
+    client, declaration, monkeypatch
+):
+    async def mocked(siren):
+        return {
+            "adresse": "2 RUE FOOBAR",
+            "code_naf": "6202A",
+            "code_postal": "75002",
+            "commune": "75102",
+            "département": "75",
+            "raison_sociale": "FOOBAR",
+            "région": "11",
+        }
+
+    monkeypatch.setattr("egapro.helpers.load_from_api_entreprises", mocked)
+
+    await db.declaration.put("123456782", "2020", "foo@bar.org", {})
+    record = await db.declaration.get("123456782", 2020)
+    assert not record.data["entreprise"].get("raison_sociale")
+    resp = await client.get("/declaration/123456782/2020")
+    body = json.loads(resp.body)
+    assert body["data"]["entreprise"]["raison_sociale"] == "FOOBAR"
+    assert body["data"]["entreprise"]["commune"] == "75102"
+
+
+async def test_get_filled_entreprise_should_not_sync_with_api_entreprises(
+    client, declaration, monkeypatch
+):
+    async def mocked(siren):
+        raise ValueError("Should not be called")
+
+    monkeypatch.setattr("egapro.helpers.load_from_api_entreprises", mocked)
+
+    await db.declaration.put(
+        "123456782", "2020", "foo@bar.org", {"entreprise": {"raison_sociale": "foobar"}}
+    )
+    record = await db.declaration.get("123456782", 2020)
+    assert record.data["entreprise"].get("raison_sociale") == "foobar"
+    resp = await client.get("/declaration/123456782/2020")
+    body = json.loads(resp.body)
+    assert body["data"]["entreprise"]["raison_sociale"] == "foobar"
 
 
 async def test_declare_with_legacy_schema(client, body):

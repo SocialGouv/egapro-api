@@ -167,7 +167,9 @@ async def get_declaration(request, response, siren, year):
         record = await db.declaration.get(siren, year)
     except db.NoData:
         raise HttpError(404, f"No declaration with siren {siren} and year {year}")
-    response.json = record.as_resource()
+    resource = record.as_resource()
+    await helpers.patch_from_api_entreprises(resource["data"])
+    response.json = resource
     response.status = 200
 
 

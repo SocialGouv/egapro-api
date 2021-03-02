@@ -219,7 +219,7 @@ async def get(*args, **kwargs):
 
 
 async def load_from_api_entreprises(siren):
-    if not config.API_ENTREPRISES:
+    if not siren or not config.API_ENTREPRISES:
         return {}
     url = f"https://entreprise.api.gouv.fr/v2/entreprises/{siren}"
     params = {
@@ -248,3 +248,12 @@ async def load_from_api_entreprises(siren):
         "commune": commune,
         "code_postal": code_postal,
     }
+
+
+async def patch_from_api_entreprises(data):
+    entreprise = data.setdefault("entreprise", {})
+    siren = entreprise.get("siren")
+    if not entreprise.get("raison_sociale"):
+        extra = await load_from_api_entreprises(siren)
+        for key, value in extra.items():
+            entreprise.setdefault(key, value)
