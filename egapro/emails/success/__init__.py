@@ -43,18 +43,17 @@ class PDF(fpdf.FPDF):
         return self.output(path)
 
     def header(self):
-        self.image(Path(__file__).parent / "logo.png", 10, 8, 33)
-        self.set_font("Marianne", "B", 16)
+        self.image(Path(__file__).parent / "logo.png", 9, 8.7, 33)
+        self.set_font("Marianne", "B", 15)
         # Move to the right
         self.cell(35)
-        self.cell(
-            0,
-            txt="Récapitulatif de la déclaration de votre index de l'égalité",
-            h=14,
-            ln=2,
+        txt = (
+            "Récapitulatif de la déclaration de votre index de l'égalité "
+            "professionnelle entre les femmes et les hommes "
+            f"pour l'année {self.data.year + 1} au titre des données {self.data.year}"
         )
-        self.cell(0, txt="professionnelle entre les femmes et les hommes")
-        self.ln(10)
+        self.multi_cell(0, 18, txt=txt, max_line_height=6, ln=3, align="L")
+        self.ln(20)
 
     def footer(self):
         # Position at 1.5 cm from bottom
@@ -328,7 +327,10 @@ def attachment(data):
             "Nombre de points maximum pouvant être obtenus",
             data.path("déclaration.points_calculables"),
         ),
-        ("Résultats final sur 100 points", data.grade),
+        (
+            "Résultat final sur 100 points",
+            data.grade if data.grade is not None else "Non calculable",
+        ),
         (
             "Mesures de corrections prévues",
             data.path("déclaration.mesures_correctives"),
