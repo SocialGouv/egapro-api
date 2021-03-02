@@ -7,6 +7,7 @@ import ujson as json
 
 from . import config, constants, models, sql, utils, helpers
 from .schema.legacy import from_legacy
+from .loggers import logger
 
 
 class NoData(Exception):
@@ -208,17 +209,20 @@ class search(table):
         note = data.path("déclaration.index")
         declared_at = datetime.fromisoformat(data.path("déclaration.date"))
         async with cls.pool.acquire() as conn:
-            await conn.execute(
-                sql.index_declaration,
-                siren,
-                year,
-                declared_at,
-                ft,
-                region,
-                departement,
-                code_naf,
-                note,
-            )
+            try:
+                await conn.execute(
+                    sql.index_declaration,
+                    siren,
+                    year,
+                    declared_at,
+                    ft,
+                    region,
+                    departement,
+                    code_naf,
+                    note,
+                )
+            except PostgresError as err:
+                logger.error(f"Cannot index {siren}/{year}: {err}")
 
     @classmethod
     async def run(cls, query=None, limit=10, offset=0, **filters):
