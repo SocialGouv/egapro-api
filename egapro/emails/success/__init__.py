@@ -70,26 +70,8 @@ class PDF(fpdf.FPDF):
         )
         self.cell(0, 10, txt, 0, 0, "C")
 
-    def write_pair(self, key, value):
+    def write_pair(self, key, value, height, key_width, value_width):
         self.set_font("Marianne", "B", 11)
-        key = f"{key} "
-        if value is None:
-            value = " - "
-        if isinstance(value, float):
-            value = f"{value:.2f}"
-        value = str(LABELS.get(value, value))
-        # Compute each cell width, and total height
-        key_len = len(key)
-        value_len = len(value)
-        key_part = key_len / (value_len + key_len)
-        # epw is the effetive page width.
-        # Make sure we always let at least 50 mm for each cell.
-        key_width = min(max(50, self.epw * key_part), self.epw - 50)
-        value_width = self.epw - key_width
-        max_len = max(key_len, value_len)
-        # A char is more or less 2 mm width.
-        letters_per_row = max(key_width, value_width) / 2
-        height = (int(max_len / letters_per_row) + 1) * 5
         # print(key, value, key_width, value_width, max_len, letters_per_row, height)
         self.multi_cell(key_width, height, key, ln=3, align="L", max_line_height=5)
         self.set_font("Marianne", "", 11)
@@ -105,10 +87,41 @@ class PDF(fpdf.FPDF):
         self.ln(2)
 
     def write_table(self, title, cells):
-        with self.unbreakable() as pdf:
-            pdf.write_headline(title)
-            for key, value in cells:
-                pdf.write_pair(key, value)
+        h = (len(title) / 80 + 1) * 10
+        table = []
+        for key, value in cells:
+            key, value = self.normalize_pair(key, value)
+            height, key_width, value_width = self.compute_row_height(key, value)
+            h += height
+            table.append((key, value, height, key_width, value_width))
+        self.perform_page_break_if_need_be(h)
+        self.write_headline(title)
+        for key, value, height, key_width, value_width in table:
+            self.write_pair(key, value, height, key_width, value_width)
+
+    def compute_row_height(self, key, value):
+        # Compute each cell width, and total height
+        key_len = len(key)
+        value_len = len(value)
+        key_part = key_len / (value_len + key_len)
+        # epw is the effetive page width.
+        # Make sure we always let at least 50 mm for each cell.
+        key_width = min(max(50, self.epw * key_part), self.epw - 50)
+        value_width = self.epw - key_width
+        max_len = max(key_len, value_len)
+        # A char is more or less 2 mm width.
+        letters_per_row = max(key_width, value_width) / 2
+        height = (int(max_len / letters_per_row) + 1) * 5
+        return height, key_width, value_width
+
+    def normalize_pair(self, key, value):
+        key = f"{key} "
+        if value is None:
+            value = " - "
+        if isinstance(value, float):
+            value = f"{value:.2f}"
+        value = str(LABELS.get(value, value))
+        return key, value
 
 
 def attachment(data):
@@ -258,21 +271,19 @@ def attachment(data):
             cells,
         )
 
-        pdf.write_headline("Indicateur relatif à l'écart de taux de promotions")
         non_calculable = data.path("indicateurs.promotions.non_calculable")
         if non_calculable:
-            pdf.write_pair("Motif de non calculabilité", non_calculable)
+            cells = [("Motif de non calculabilité", non_calculable)]
         else:
-            pdf.write_pair(
-                "Résultat final en %", data.path("indicateurs.promotions.résultat")
-            )
-            pdf.write_pair(
-                "Population envers laquelle l'écart est favorable",
-                data.path("indicateurs.promotions.population_favorable"),
-            )
-            pdf.write_pair(
-                "Nombre de points obtenus", data.path("indicateurs.promotions.note")
-            )
+            cells = [
+                ("Résultat final en %", data.path("indicateurs.promotions.résultat")),
+                (
+                    "Population envers laquelle l'écart est favorable",
+                    data.path("indicateurs.promotions.population_favorable"),
+                ),
+                ("Nombre de points obtenus", data.path("indicateurs.promotions.note")),
+            ]
+        pdf.write_table("Indicateur relatif à l'écart de taux de promotions", cells)
 
     non_calculable = data.path("indicateurs.congés_maternité.non_calculable")
     if non_calculable:
