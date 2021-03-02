@@ -213,10 +213,14 @@ def extract_ft(data):
 async def get(*args, **kwargs):
     async with httpx.AsyncClient() as client:
         response = await client.get(*args, **kwargs)
+        if response.status_code != httpx.codes.OK:
+            return None
         return response.json()
 
 
 async def load_from_api_entreprises(siren):
+    if not config.API_ENTREPRISES:
+        return {}
     url = f"https://entreprise.api.gouv.fr/v2/entreprises/{siren}"
     params = {
         "token": config.API_ENTREPRISES,
@@ -225,6 +229,8 @@ async def load_from_api_entreprises(siren):
         "object": "egapro",
     }
     data = await get(url, params=params)
+    if not data:
+        return {}
     entreprise = data.get("entreprise", {})
     siege = data.get("etablissement_siege", {})
     code_postal = siege.get("adresse", {}).get("code_postal")

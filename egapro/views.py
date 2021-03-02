@@ -164,11 +164,10 @@ async def declare(request, response, siren, year):
 @ensure_owner
 async def get_declaration(request, response, siren, year):
     try:
-        response.json = db.declaration.as_resource(
-            await db.declaration.get(siren, year)
-        )
+        record = await db.declaration.get(siren, year)
     except db.NoData:
         raise HttpError(404, f"No declaration with siren {siren} and year {year}")
+    response.json = record.as_resource()
     response.status = 200
 
 
@@ -208,7 +207,8 @@ class SimulationResource:
         if not isinstance(data, dict):
             raise HttpError(400, "JSON invalide")
         await db.simulation.put(uuid, data)
-        response.json = db.simulation.as_resource(await db.simulation.get(uuid))
+        record = await db.simulation.get(uuid)
+        response.json = record.as_resource()
         response.status = 200
         draft = data.get("declaration", {}).get("formValidated") != "Valid"
         email = data.get("informationsDeclarant", {}).get("email")
@@ -219,7 +219,7 @@ class SimulationResource:
     async def on_get(self, request, response, uuid):
         record = await db.simulation.get(uuid)
         try:
-            response.json = db.simulation.as_resource(record)
+            response.json = record.as_resource()
         except db.NoData:
             raise HttpError(404, f"No simulation found with uuid {uuid}")
         response.status = 200

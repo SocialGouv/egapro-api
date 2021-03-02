@@ -15,11 +15,22 @@ class NoData(Exception):
 
 
 class Record(asyncpg.Record):
+    fields = []
+
     def __getattr__(self, key):
         return self.get(key)
 
+    def as_resource(self):
+        return {k: getattr(self, k) for k in self.fields}
+
+
+class SimulationRecord(Record):
+    fields = ["id", "data", "modified_at"]
+
 
 class DeclarationRecord(Record):
+    fields = ["siren", "year", "data", "modified_at", "declared_at"]
+
     @property
     def data(self):
         data = self.get("draft") or self.get("data") or self.get("legacy")
@@ -32,7 +43,6 @@ class table:
 
     conn = None
     pool = None
-    fields = []
     record_class = Record
 
     @classmethod
@@ -57,17 +67,12 @@ class table:
         return row
 
     @classmethod
-    def as_resource(cls, row):
-        return {k: getattr(row, k) for k in cls.fields}
-
-    @classmethod
     async def execute(cls, sql, *params):
         async with cls.pool.acquire() as conn:
             return await conn.execute(sql, *params)
 
 
 class declaration(table):
-    fields = ["siren", "year", "data", "modified_at", "declared_at"]
     record_class = DeclarationRecord
 
     @classmethod
@@ -162,7 +167,7 @@ class declaration(table):
 
 
 class simulation(table):
-    fields = ["id", "data", "modified_at"]
+    record_class = SimulationRecord
 
     @classmethod
     async def get(cls, uuid):

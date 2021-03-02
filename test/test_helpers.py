@@ -263,6 +263,7 @@ async def test_api_entreprise(monkeypatch):
             "gateway_error": False,
         }
 
+    monkeypatch.setattr("egapro.config.API_ENTREPRISES", "foobar")
     monkeypatch.setattr("egapro.helpers.get", mock_get)
     data = await helpers.load_from_api_entreprises("481912999")
     assert data == {
