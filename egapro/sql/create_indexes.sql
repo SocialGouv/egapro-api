@@ -3,5 +3,5 @@ CREATE INDEX IF NOT EXISTS idx_status ON declaration (declared_at) WHERE declare
 CREATE INDEX IF NOT EXISTS idx_ft ON search USING GIN (ft);
 CREATE INDEX IF NOT EXISTS idx_departement ON search(region);
 CREATE INDEX IF NOT EXISTS idx_departement ON search(departement);
-CREATE INDEX IF NOT EXISTS idx_naf ON search(code_naf);
+CREATE INDEX IF NOT EXISTS idx_naf ON search(section_naf);
 CREATE INDEX IF NOT EXISTS idx_declared_at ON search (declared_at);

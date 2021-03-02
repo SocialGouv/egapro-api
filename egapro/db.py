@@ -205,7 +205,8 @@ class search(table):
         year = data.year
         region = data.path("entreprise.région")
         departement = data.path("entreprise.département")
-        code_naf = data.path("entreprise.code_naf")
+        section_naf = data.path("entreprise.code_naf")
+        section_naf = section_naf[-1] if section_naf else None
         note = data.path("déclaration.index")
         declared_at = datetime.fromisoformat(data.path("déclaration.date"))
         async with cls.pool.acquire() as conn:
@@ -218,7 +219,7 @@ class search(table):
                     ft,
                     region,
                     departement,
-                    code_naf,
+                    section_naf,
                     note,
                 )
             except PostgresError as err:

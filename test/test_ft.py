@@ -226,6 +226,53 @@ async def test_search_with_filters(client):
     }
 
 
+async def test_search_from_section_naf(client):
+    await db.declaration.put(
+        "12345671",
+        2019,
+        "foo@bar.org",
+        {
+            "entreprise": {
+                "raison_sociale": "Oran Bar",
+                "effectif": {"tranche": "1000:"},
+                "département": "77",
+                "région": "11",
+                "code_naf": "33.11Z",
+            },
+            "déclaration": {"date": datetime.now()},
+        },
+    )
+    await db.declaration.put(
+        "987654321",
+        2019,
+        "foo@bar.org",
+        {
+            "entreprise": {
+                "raison_sociale": "Open Bar",
+                "effectif": {"tranche": "1000:"},
+                "département": "78",
+                "région": "11",
+                "code_naf": "47.11F",
+            },
+            "déclaration": {"date": datetime.now()},
+        },
+    )
+    results = await db.search.run("bar", section_naf="F")
+    assert len(results) == 1
+    assert results[0] == {
+        "entreprise": {
+            "département": "78",
+            "ues": None,
+            "raison_sociale": "Open Bar",
+            "région": "11",
+            "siren": "987654321",
+            "code_naf": "47.11F",
+            "effectif": {"tranche": "1000:"},
+        },
+        "notes": {"2019": None},
+    }
+
+
 async def test_filters_without_query(client):
     await db.declaration.put(
         "12345671",
@@ -333,8 +380,12 @@ async def test_search_with_offset(client):
 
 
 async def test_search_with_siren(declaration):
-    await declaration("123456712", year=2019, entreprise={"effectif": {"tranche": "1000:"}})
-    await declaration("987654321", year=2019, entreprise={"effectif": {"tranche": "1000:"}})
+    await declaration(
+        "123456712", year=2019, entreprise={"effectif": {"tranche": "1000:"}}
+    )
+    await declaration(
+        "987654321", year=2019, entreprise={"effectif": {"tranche": "1000:"}}
+    )
     results = await db.search.run("987654321")
     assert len(results) == 1
     assert results[0]["entreprise"]["siren"] == "987654321"

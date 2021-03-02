@@ -249,14 +249,14 @@ async def search(request, response):
     q = request.query.get("q", "").strip()
     limit = request.query.int("limit", 10)
     offset = request.query.int("offset", 0)
-    code_naf = request.query.get("code_naf", None)
+    section_naf = request.query.get("section_naf", None)
     departement = request.query.get("departement", None)
     region = request.query.get("region", None)
     results = await db.search.run(
         query=q,
         limit=limit,
         offset=offset,
-        code_naf=code_naf,
+        section_naf=section_naf,
         departement=departement,
         region=region,
     )
@@ -264,7 +264,7 @@ async def search(request, response):
     stats = await db.search.stats(
         year,
         query=q,
-        code_naf=code_naf,
+        section_naf=section_naf,
         departement=departement,
         region=region,
     )
@@ -281,6 +281,7 @@ async def get_config(request, response):
         "REGIONS": constants.REGIONS,
         "REGIONS_TO_DEPARTEMENTS": constants.REGIONS_TO_DEPARTEMENTS,
         "NAF": dict(NAF.pairs()),
+        "SECTIONS_NAF": NAF.section,
     }
     response.json = {k: v for k, v in data.items() if not keys or k in keys}
 
