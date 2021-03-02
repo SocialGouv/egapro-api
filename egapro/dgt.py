@@ -341,7 +341,7 @@ def ues_data(sheet, data):
 def prepare_record(data):
 
     # Before flattening.
-    data["URL_declaration"] = f"'https://index-egapro.travail.gouv.fr/{data.uri}"
+    data["URL_declaration"] = f"'https://index-egapro.travail.gouv.fr{data.uri}"
     effectif = data["entreprise"]["effectif"]["tranche"]
     prepare_entreprise(data["entreprise"])
     prepare_declaration(data["déclaration"])

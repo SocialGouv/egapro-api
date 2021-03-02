@@ -10,7 +10,18 @@ import yaml
 import ujson as json
 from openpyxl import load_workbook
 
-from egapro import config, constants, db, dgt, exporter, models, schema, tokens, loggers
+from egapro import (
+    config,
+    constants,
+    db,
+    dgt,
+    emails,
+    exporter,
+    models,
+    schema,
+    tokens,
+    loggers,
+)
 from egapro.emails.success import attachment
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro.solen import *  # noqa: expose to minicli
@@ -269,11 +280,24 @@ async def receipt(siren, year, destination=None):
 async def receipts(limit=10):
     records = await db.declaration.fetch(
         "SELECT * FROM declaration WHERE declared_at IS NOT NULL"
-        " ORDER BY declared_at DESC LIMIT $1", limit
+        " ORDER BY declared_at DESC LIMIT $1",
+        limit,
     )
     for record in records:
         pdf, _ = attachment(record.data)
         pdf.output(f"tmp/receipts/{record.siren}-{record.year}.pdf")
+
+
+@minicli.cli
+async def send_receipts():
+    records = await db.declaration.fetch(
+        "SELECT * FROM declaration WHERE declared_at IS NOT NULL AND year=2020"
+    )
+    bar = progressist.ProgressBar(prefix="Sending mails", total=len(records))
+    for record in bar.iter(records):
+        data = record.data
+        url = config.DOMAIN + data.uri
+        emails.success.send(data.email, url=url, **data)
 
 
 @minicli.cli
