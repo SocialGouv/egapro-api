@@ -282,6 +282,9 @@ async def as_xlsx(max_rows=None, debug=False):
 
 def ues_data(sheet, data):
     data = models.Data(data)
+    entreprises = data.path("entreprise.ues.entreprises")
+    if not entreprises:
+        return
     region = constants.REGIONS.get(data.path("entreprise.région"))
     departement = constants.DEPARTEMENTS.get(data.path("entreprise.département"))
     adresse = data.path("entreprise.adresse")
@@ -305,7 +308,7 @@ def ues_data(sheet, data):
             data.siren,
         ]
     )
-    for ues in data.path("entreprise.ues.entreprises") or []:
+    for ues in entreprises or []:
         sheet.append(
             [
                 data.year,

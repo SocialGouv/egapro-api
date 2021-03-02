@@ -708,12 +708,17 @@ async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
             "augmentations": {},
         },
     )
+    # Not an UES, should not be in the UES tab.
+    await declaration(
+        siren="12345678",
+        year=2020,
+    )
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook["BDD REPONDANTS"]
     assert sheet["Q1"].value == "Structure"
-    assert sheet["Q2"].value == "Unité Economique et Sociale (UES)"
+    assert sheet["Q3"].value == "Unité Economique et Sociale (UES)"
     assert sheet["X1"].value == "Nb_ets_UES"
-    assert sheet["X2"].value == 3
+    assert sheet["X3"].value == 3
     sheet = workbook["BDD UES détail entreprises"]
     assert list(sheet.values) == [
         (
