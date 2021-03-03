@@ -64,29 +64,3 @@ async def public_data(path: Path):
             ]
         )
     writer.writerows(rows)
-
-
-def clean_digdash(d):
-    if isinstance(d, list):
-        [clean_digdash(v) for v in d]
-    elif isinstance(d, dict):
-        for key in list(d.keys()):
-            value = d[key]
-            if ":" in key:
-                d[key.replace(":", "-")] = d.pop(key)
-            clean_digdash(value)
-
-
-async def digdash(dest):
-    # Don't put all data in memory.
-    dest.write("[")
-    first = True
-    for record in await db.declaration.completed():
-        if not first:
-            dest.write(",")
-        first = False
-        data = record.data.raw
-        clean_digdash(data)
-        dumped = utils.json_dumps(data)
-        dest.write(dumped)
-    dest.write("]")
