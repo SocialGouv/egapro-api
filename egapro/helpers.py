@@ -234,8 +234,9 @@ async def load_from_api_entreprises(siren):
     entreprise = data.get("entreprise", {})
     siege = data.get("etablissement_siege", {})
     code_postal = siege.get("adresse", {}).get("code_postal")
-    commune = siege.get("adresse", {}).get("code_insee_localite")
-    departement = commune[:2] if commune else None
+    commune = siege.get("adresse", {}).get("localite")
+    code_insee = siege.get("adresse", {}).get("code_insee_localite")
+    departement = code_insee[:2] if code_insee else None
     adresse = siege.get("adresse", {})
     adresse = [adresse.get(k) for k in ["numero_voie", "type_voie", "nom_voie"]]
     adresse = " ".join(v for v in adresse if v)

@@ -270,7 +270,7 @@ async def test_api_entreprise(monkeypatch):
         "adresse": "2 RUE FOOBAR",
         "code_naf": "6202A",
         "code_postal": "75002",
-        "commune": "75102",
+        "commune": "PARIS 2",
         "département": "75",
         "raison_sociale": "FOOBAR",
         "région": "11",

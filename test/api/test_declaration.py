@@ -799,7 +799,7 @@ async def test_get_empty_entreprise_should_sync_with_api_entreprises(
             "adresse": "2 RUE FOOBAR",
             "code_naf": "6202A",
             "code_postal": "75002",
-            "commune": "75102",
+            "commune": "PARIS 2",
             "département": "75",
             "raison_sociale": "FOOBAR",
             "région": "11",
@@ -813,7 +813,7 @@ async def test_get_empty_entreprise_should_sync_with_api_entreprises(
     resp = await client.get("/declaration/123456782/2020")
     body = json.loads(resp.body)
     assert body["data"]["entreprise"]["raison_sociale"] == "FOOBAR"
-    assert body["data"]["entreprise"]["commune"] == "75102"
+    assert body["data"]["entreprise"]["commune"] == "PARIS 2"
 
 
 async def test_get_filled_entreprise_should_not_sync_with_api_entreprises(
