@@ -1,5 +1,4 @@
 import sys
-
 from functools import wraps
 from traceback import print_exc
 
@@ -10,7 +9,7 @@ from asyncpg.exceptions import DataError
 from roll.extensions import cors, options
 from stdnum.fr.siren import is_valid as siren_is_valid
 
-from . import config, constants, db, emails, helpers, models, tokens, schema
+from . import config, constants, db, emails, helpers, models, tokens, utils, schema
 from .schema.legacy import from_legacy
 from . import loggers
 
@@ -146,6 +145,9 @@ async def declare(request, response, siren, year):
     else:
         # Do not force new declarant, in case this is a staff person editing
         declarant = current["owner"]
+        declared_at = current["declared_at"]
+        if declared_at and declared_at < utils.remove_one_year(utils.utcnow()):
+            raise HttpError(403, "Le délai de modification est écoulé.")
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:

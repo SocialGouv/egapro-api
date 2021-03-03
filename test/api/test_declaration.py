@@ -1,9 +1,10 @@
 import json
+from datetime import timedelta
 from unittest import mock
 
 import pytest
 
-from egapro import db
+from egapro import db, utils
 
 pytestmark = pytest.mark.asyncio
 
@@ -206,6 +207,19 @@ async def test_basic_declaration_should_remove_data_namespace_if_present(client,
     del data["data"]["déclaration"]["date"]
     del body["déclaration"]["date"]
     assert data["data"] == body
+
+
+async def test_cannot_edit_declaration_after_one_year(client, declaration, body):
+    await declaration(
+        "514027945",
+        2019,
+        "foo@bar.org",
+        modified_at=utils.utcnow() - timedelta(days=366),
+    )
+
+    resp = await client.put("/declaration/514027945/2019", body)
+    assert resp.status == 403
+    assert json.loads(resp.body) == {"error": "Le délai de modification est écoulé."}
 
 
 async def test_cannot_load_not_owned_declaration(client, declaration):
