@@ -7,6 +7,7 @@ from datetime import date
 import arrow
 from naf import DB as NAF
 from openpyxl import Workbook, load_workbook
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from progressist import ProgressBar
 
 from egapro import constants, db, models
@@ -231,6 +232,12 @@ async def get_headers_columns():
     return (headers, columns)
 
 
+def clean_cell(value):
+    if isinstance(value, str):
+        value = ILLEGAL_CHARACTERS_RE.sub("", value).strip()
+    return value
+
+
 async def as_xlsx(max_rows=None, debug=False):
     """Export des données au format souhaité par la DGT.
 
@@ -276,7 +283,7 @@ async def as_xlsx(max_rows=None, debug=False):
         ues_data(ws_ues, data)
         data = prepare_record(data)
         data["modified_at"] = record["modified_at"]
-        ws.append([fmt(data.get(c)) for c, fmt in columns])
+        ws.append([clean_cell(fmt(data.get(c))) for c, fmt in columns])
     return wb
 
 

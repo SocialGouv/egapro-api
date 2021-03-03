@@ -684,6 +684,31 @@ async def test_dgt_dump_should_compute_declaration_url_for_solen_data(declaratio
     )
 
 
+async def test_dgt_dump_with_non_ascii_chars(declaration):
+    await declaration(
+        siren="123456782",
+        year=2020,
+        uid="123456781234-123456789012",
+        source="solen-2019",
+        entreprise={
+            "siren": "123456782",
+            "adresse": "ZI DU FOO BAR BP 658 \x01",
+            "commune": "QUIMPER",
+            "région": "53",
+            "code_naf": "28.29B",
+            "effectif": {"total": 401, "tranche": "251:999"},
+            "code_postal": "29556",
+            "département": "29",
+            "raison_sociale": "FOOBAR",
+        },
+    )
+
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook.active
+    assert sheet["K1"].value == "Adresse"
+    assert sheet["K2"].value == "ZI DU FOO BAR BP 658"
+
+
 async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
     await declaration(
         company="Mirabar",
