@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 import asyncpg
+from naf import DB as NAF
 from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
 import ujson as json
 
@@ -210,8 +211,13 @@ class search(table):
         year = data.year
         region = data.path("entreprise.région")
         departement = data.path("entreprise.département")
-        section_naf = data.path("entreprise.code_naf")
-        section_naf = section_naf[-1] if section_naf else None
+        code_naf = data.path("entreprise.code_naf")
+        section_naf = None
+        if code_naf:
+            try:
+                section_naf = NAF[code_naf].section.code
+            except KeyError:
+                pass
         note = data.path("déclaration.index")
         declared_at = datetime.fromisoformat(data.path("déclaration.date"))
         async with cls.pool.acquire() as conn:

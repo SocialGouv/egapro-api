@@ -257,7 +257,7 @@ async def test_search_from_section_naf(client):
             "déclaration": {"date": datetime.now()},
         },
     )
-    results = await db.search.run("bar", section_naf="F")
+    results = await db.search.run("bar", section_naf="G")
     assert len(results) == 1
     assert results[0] == {
         "entreprise": {
