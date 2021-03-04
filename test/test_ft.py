@@ -100,6 +100,60 @@ async def test_small_companies_are_not_searchable(declaration):
     assert names == {"Mala Bar"}
 
 
+async def test_company_should_return_a_note_for_each_year(declaration):
+    await declaration(
+        company="Mala Bar",
+        siren="87654321",
+        year=2019,
+        entreprise={"effectif": {"tranche": "1000:"}},
+    )
+    await declaration(
+        company="Mala Bar",
+        siren="87654321",
+        year=2018,
+        entreprise={"effectif": {"tranche": "1000:"}},
+    )
+    results = await db.search.run("bar")
+    assert len(results) == 1
+    assert set(results[0]["notes"].keys()) == {"2018", "2019"}
+
+
+async def test_small_companies_upgrading_tranche_is_not_searchable(declaration):
+    await declaration(
+        company="Mala Bar",
+        siren="87654321",
+        year=2018,
+        entreprise={"effectif": {"tranche": "50:250"}},
+    )
+    await declaration(
+        company="Mala Bar",
+        siren="87654321",
+        year=2019,
+        entreprise={"effectif": {"tranche": "1000:"}},
+    )
+    results = await db.search.run("bar")
+    assert len(results) == 1
+    assert list(results[0]["notes"].keys()) == ["2019"]
+
+
+async def test_small_companies_downgrading_tranche_is_not_searchable(declaration):
+    await declaration(
+        company="Mala Bar",
+        siren="87654321",
+        year=2018,
+        entreprise={"effectif": {"tranche": "1000:"}},
+    )
+    await declaration(
+        company="Mala Bar",
+        siren="87654321",
+        year=2019,
+        entreprise={"effectif": {"tranche": "50:250"}},
+    )
+    results = await db.search.run("bar")
+    assert len(results) == 1
+    assert list(results[0]["notes"].keys()) == ["2018"]
+
+
 async def test_search_from_ues_name(client):
     await db.declaration.put(
         "12345671",

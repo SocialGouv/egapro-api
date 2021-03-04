@@ -1,9 +1,10 @@
-SELECT array_agg(data ORDER BY declared_at DESC) as data, jsonb_object_agg(year::text, (data->'déclaration'->>'index')::int) as notes FROM declaration WHERE siren in (
-    SELECT siren FROM search
+SELECT
+    array_agg(declaration.data ORDER BY declaration.declared_at DESC) as data,
+    jsonb_object_agg(declaration.year::text, (declaration.data->'déclaration'->>'index')::int) as notes
+FROM declaration
+JOIN search ON declaration.siren=search.siren AND declaration.year=search.year
     {where}
-    GROUP BY siren
-    ORDER BY max(declared_at) DESC
-    LIMIT $1
-    OFFSET $2
-)
-GROUP BY siren
+GROUP BY declaration.siren
+ORDER BY max(declaration.declared_at) DESC
+LIMIT $1
+OFFSET $2

@@ -261,11 +261,11 @@ class search(table):
         elif query:
             query = utils.prepare_query(query)
             args.append(query)
-            where.append(f"ft @@ to_tsquery('ftdict', ${len(args)})")
+            where.append(f"search.ft @@ to_tsquery('ftdict', ${len(args)})")
         for name, value in filters.items():
             if value is not None:
                 args.append(value)
-                where.append(f"{name}=${len(args)}")
+                where.append(f"search.{name}=${len(args)}")
         if where:
             where = "WHERE " + " AND ".join(where)
         return args, where
