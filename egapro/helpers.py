@@ -240,9 +240,12 @@ async def load_from_api_entreprises(siren):
     adresse = siege.get("adresse", {})
     adresse = [adresse.get(k) for k in ["numero_voie", "type_voie", "nom_voie"]]
     adresse = " ".join(v for v in adresse if v)
+    code_naf = entreprise.get("naf_entreprise")
+    if code_naf:  # 4774Z => 47.74Z
+        code_naf = f"{code_naf[:2]}.{code_naf[2:]}"
     return {
         "raison_sociale": entreprise.get("raison_sociale"),
-        "code_naf": entreprise.get("naf_entreprise"),
+        "code_naf": code_naf,
         "région": siege.get("region_implantation", {}).get("code"),
         "département": departement,
         "adresse": adresse,

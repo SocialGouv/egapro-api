@@ -797,7 +797,7 @@ async def test_get_empty_entreprise_should_sync_with_api_entreprises(
     async def mocked(siren):
         return {
             "adresse": "2 RUE FOOBAR",
-            "code_naf": "6202A",
+            "code_naf": "62.02A",
             "code_postal": "75002",
             "commune": "PARIS 2",
             "département": "75",
