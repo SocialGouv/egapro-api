@@ -1,5 +1,6 @@
 """DGT specific utils"""
 
+import re
 import time
 from collections import defaultdict
 from datetime import date
@@ -232,9 +233,12 @@ async def get_headers_columns():
     return (headers, columns)
 
 
+WHITE_SPACES = re.compile(r"\s+")
+
+
 def clean_cell(value):
     if isinstance(value, str):
-        value = ILLEGAL_CHARACTERS_RE.sub("", value).strip()
+        value = WHITE_SPACES.sub(" ", ILLEGAL_CHARACTERS_RE.sub("", value).strip())
     return value
 
 

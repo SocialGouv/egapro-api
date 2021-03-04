@@ -692,14 +692,14 @@ async def test_dgt_dump_with_non_ascii_chars(declaration):
         source="solen-2019",
         entreprise={
             "siren": "123456782",
-            "adresse": "ZI DU FOO BAR BP 658 \x01",
-            "commune": "QUIMPER",
+            "adresse": "ZI   DU FOO\t BAR BP 658 \x01",
+            "commune": " QUIMPER\n",
             "région": "53",
             "code_naf": "28.29B",
             "effectif": {"total": 401, "tranche": "251:999"},
             "code_postal": "29556",
             "département": "29",
-            "raison_sociale": "FOOBAR",
+            "raison_sociale": "FOOBAR  ",
         },
     )
 
@@ -707,6 +707,10 @@ async def test_dgt_dump_with_non_ascii_chars(declaration):
     sheet = workbook.active
     assert sheet["K1"].value == "Adresse"
     assert sheet["K2"].value == "ZI DU FOO BAR BP 658"
+    assert sheet["M1"].value == "Commune"
+    assert sheet["M2"].value == "QUIMPER"
+    assert sheet["T1"].value == "Nom_Entreprise"
+    assert sheet["T2"].value == "FOOBAR"
 
 
 async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
