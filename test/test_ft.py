@@ -95,9 +95,9 @@ async def test_small_companies_are_not_searchable(declaration):
         year=2020,
     )
     results = await db.search.run("bar")
-    assert len(results) == 1
+    assert len(results) == 2
     names = {r["entreprise"]["raison_sociale"] for r in results}
-    assert names == {"Mala Bar"}
+    assert names == {"Mala Bar", "Karam Bar"}
 
 
 async def test_company_should_return_a_note_for_each_year(declaration):

@@ -202,9 +202,7 @@ class simulation(table):
 class search(table):
     @classmethod
     async def index(cls, data):
-        if data.path("entreprise.effectif.tranche") != "1000:":
-            return
-        if data.year not in constants.YEARS[:-1]:  # Exclude 2020 for now.
+        if not data.is_public():
             return
         ft = helpers.extract_ft(data)
         siren = data.siren

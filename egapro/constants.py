@@ -1,12 +1,16 @@
 YEARS = [2018, 2019, 2020]
 
-CURRENT_YEAR = "2019"
+CURRENT_YEAR = YEARS[-1]
+
 
 EFFECTIFS = {
     "50:250": "De 50 à 250 inclus",
     "251:999": "De 251 à 999 inclus",
     "1000:": "De 1000 ou plus",
 }
+
+PUBLIC_YEARS = YEARS
+PUBLIC_EFFECTIFS = ["251:999", "1000:"]
 
 REGIONS = {
     "01": "Guadeloupe",

@@ -843,7 +843,7 @@ async def test_export_public_data(declaration):
         "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
         "Mirabar;87654321;2019;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
         "FooBar;87654322;2018;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
-        # "KaramBar;87654324;2020;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+        "KaramBar;87654324;2020;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
     )
 
 

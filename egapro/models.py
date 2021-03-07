@@ -1,5 +1,7 @@
-class Data(dict):
+from . import constants
 
+
+class Data(dict):
     def __init__(self, data=None):
         if isinstance(data, Data):
             data = data.raw
@@ -37,6 +39,12 @@ class Data(dict):
 
     def is_draft(self):
         return self.path("déclaration.brouillon")
+
+    def is_public(self):
+        return (
+            self.path("entreprise.effectif.tranche") in constants.PUBLIC_EFFECTIFS
+            and self.year in constants.PUBLIC_YEARS
+        )
 
     @property
     def year(self):

@@ -1,3 +1,1 @@
-SELECT data FROM declaration
-WHERE data->'entreprise'->'effectif'->>'tranche' = '1000:'
-AND year IN ('2018', '2019')
+SELECT data FROM declaration JOIN search ON declaration.siren=search.siren AND declaration.year=search.year

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import ujson as json
 
-from egapro import constants, db, sql, utils
+from egapro import constants, db, sql
 
 
 async def dump(path: Path):
