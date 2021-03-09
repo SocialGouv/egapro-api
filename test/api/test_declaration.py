@@ -311,6 +311,7 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch, body
         assert "/declaration/?siren=514027945&year=2019" in txt
         assert "/declaration/?siren=514027945&year=2019" in html
         assert reply_to == "Foo Bar <foo@baz.fr>"
+        assert attachment[1] == "declaration_514027945_2020.pdf"
         nonlocal calls
         calls += 1
 

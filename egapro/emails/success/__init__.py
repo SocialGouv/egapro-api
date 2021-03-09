@@ -358,4 +358,4 @@ def attachment(data):
         ),
     )
     pdf.write_table("Publication du niveau de résultat global", cells)
-    return pdf, "declaration.pdf"
+    return pdf, f"declaration_{data.siren}_{data.year + 1}.pdf"
