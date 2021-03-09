@@ -19,10 +19,12 @@ LABELS = {
 }
 
 
-def as_date(s):
-    if not s:
+def as_date(d):
+    if not d:
         return None
-    return datetime.fromisoformat(s).date().strftime("%d/%m/%Y")
+    if not isinstance(d, datetime):
+        d = datetime.fromisoformat(d)
+    return d.date().strftime("%d/%m/%Y")
 
 
 class PDF(fpdf.FPDF):
@@ -57,21 +59,28 @@ class PDF(fpdf.FPDF):
 
     def footer(self):
         # Position at 1.5 cm from bottom
-        self.set_y(-15)
+        anchor = -16
+        modified_at = as_date(self.data.get("modified_at"))
+        at = as_date(self.data.path("déclaration.date"))
+        if modified_at and modified_at != at:
+            anchor = -20
+        self.set_y(anchor)
         # Marianne italic 8
         self.set_font("Marianne", "I", 8)
-        # Page number
-        page_number = self.page_no()
-        at = as_date(self.data.path("déclaration.date"))
         txt = (
-            f"Page {page_number}/{{nb}} • Déclaration du {at} pour le Siren "
+            f"Déclaration du {at} pour le Siren "
             f"{self.data.siren} et l'année {self.data.year}"
         )
         self.cell(0, 10, txt, 0, 0, "C")
+        self.ln(4)
+        if modified_at and modified_at != at:
+            self.cell(0, 10, f"Dernière modification: {modified_at}", 0, 0, "C")
+            self.ln(4)
+        page_number = self.page_no()
+        self.cell(0, 10, f"Page {page_number}/{{nb}}", 0, 0, "C")
 
     def write_pair(self, key, value, height, key_width, value_width):
         self.set_font("Marianne", "B", 11)
-        # print(key, value, key_width, value_width, max_len, letters_per_row, height)
         self.multi_cell(key_width, height, key, ln=3, align="L", max_line_height=5)
         self.set_font("Marianne", "", 11)
         self.multi_cell(value_width, height, value, ln=3, align="R", max_line_height=5)
@@ -82,10 +91,12 @@ class PDF(fpdf.FPDF):
         self.set_font("Marianne", "B", 14)
         self.write(6, str(value))
         self.ln(6)
+        # Sort of hr.
         self.line(self.l_margin, self.y, self.w - self.r_margin, self.y)
         self.ln(2)
 
     def write_table(self, title, cells):
+        # 80 chars per line; each line is 10 height.
         h = (len(title) / 80 + 1) * 10
         table = []
         for key, value in cells:

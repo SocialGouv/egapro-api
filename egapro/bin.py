@@ -271,8 +271,9 @@ def compute_reply_to():
 
 @minicli.cli
 async def receipt(siren, year, destination=None):
-    declaration = await db.declaration.get(siren, year)
-    pdf, _ = attachment(declaration.data)
+    record = await db.declaration.get(siren, year)
+    data = {"modified_at": record["modified_at"], **record.data}
+    pdf, _ = attachment(data)
     print(pdf.output(destination) or f"Saved to {destination}")
 
 
@@ -284,7 +285,8 @@ async def receipts(limit=10):
         limit,
     )
     for record in records:
-        pdf, _ = attachment(record.data)
+        data = {"modified_at": record["modified_at"], **record.data}
+        pdf, _ = attachment(data)
         pdf.output(f"tmp/receipts/{record.siren}-{record.year}.pdf")
 
 
@@ -297,7 +299,9 @@ async def send_receipts():
     for record in bar.iter(records):
         data = record.data
         url = config.DOMAIN + data.uri
-        emails.success.send(data.email, url=url, **data)
+        emails.success.send(
+            data.email, url=url, modified_at=record["modified_at"], **data
+        )
 
 
 @minicli.cli
