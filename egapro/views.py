@@ -44,8 +44,8 @@ class Request(BaseRequest):
     @property
     def domain(self):
         domain = self.origin or f"https://{self.host}"
-        if not domain.endswith("/"):
-            domain += "/"
+        if domain.endswith("/"):
+            domain += domain[:-1]
         return domain
 
     @property

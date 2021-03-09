@@ -27,6 +27,7 @@ SENTRY_DSN = ""
 FLAVOUR = "local"
 API_ENTREPRISES = ""
 ALLOWED_IPS = []
+DOMAIN = "https://index-egapro.travail.gouv.fr"
 
 
 def init():

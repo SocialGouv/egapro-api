@@ -11,7 +11,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from progressist import ProgressBar
 
-from egapro import constants, db, models
+from egapro import config, constants, db, models
 from egapro.solen import ExcelData, RowProcessor
 from egapro.utils import flatten, remove_one_year
 from egapro.schema.legacy import from_legacy
@@ -341,7 +341,7 @@ def ues_data(sheet, data):
 def prepare_record(data):
 
     # Before flattening.
-    data["URL_declaration"] = f"'https://index-egapro.travail.gouv.fr/{data.uri}"
+    data["URL_declaration"] = f"'{config.DOMAIN}{data.uri}"
     effectif = data["entreprise"]["effectif"]["tranche"]
     prepare_entreprise(data["entreprise"])
     prepare_declaration(data["déclaration"])

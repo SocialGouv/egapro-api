@@ -6,7 +6,7 @@ from naf import DB as NAF
 from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
 import ujson as json
 
-from . import config, constants, models, sql, utils, helpers
+from . import config, models, sql, utils, helpers
 from .schema.legacy import from_legacy
 from .loggers import logger
 

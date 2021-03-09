@@ -1,3 +1,5 @@
+import importlib
+import mimetypes
 import smtplib
 import ssl
 import sys
@@ -29,7 +31,7 @@ class SilentUndefined(Undefined):
         return None
 
 
-def send(to, subject, txt, html=None, reply_to=None):
+def send(to, subject, txt, html=None, reply_to=None, attachment=None):
     msg = EmailMessage()
     msg["From"] = config.FROM_EMAIL
     msg["To"] = to
@@ -39,6 +41,13 @@ def send(to, subject, txt, html=None, reply_to=None):
     msg.set_content(txt)
     if html:
         msg.add_alternative(html, subtype="html")
+    if attachment:
+        blob, filename = attachment
+        if callable(blob):
+            blob = blob()
+        ctype, encoding = mimetypes.guess_type(filename)
+        maintype, subtype = ctype.split("/", 1)
+        msg.add_attachment(blob, maintype=maintype, subtype=subtype, filename=filename)
     if not config.SEND_EMAILS:
         print("Sending email", str(msg))
         print("email txt:", txt)
@@ -58,15 +67,19 @@ def send(to, subject, txt, html=None, reply_to=None):
 
 
 class Email:
-    def __init__(self, subject, txt, html):
+    def __init__(self, subject, txt, html, attachment):
         self.subject = subject
         self.txt = self.load(txt)
         self.html = self.load(html)
+        self.attachment = attachment
 
     def send(self, to, **context):
         txt, html = self(**context)
         reply_to = REPLY_TO.get(context.get("departement"))
-        send(to, self.subject, txt, html, reply_to=reply_to)
+        attachment = None
+        if self.attachment:
+            attachment = self.attachment(context)
+        send(to, self.subject, txt, html, reply_to=reply_to, attachment=attachment)
 
     def __call__(self, **context):
         return self.txt.render(**context), (self.html or "").render(**context)
@@ -95,7 +108,12 @@ def load():
                 html = html.read_text()
             else:
                 html = None
-            globals()[path.name] = Email(subject, txt, html)
+            attachment = None
+            pymodule = path / "__init__.py"
+            if pymodule.exists():
+                pymodule = importlib.import_module(f"egapro.emails.{path.name}")
+                attachment = pymodule.attachment
+            globals()[path.name] = Email(subject, txt, html, attachment)
 
     REPLY_TO.update(yaml.safe_load((root / "reply_to.yml").read_text()))
 

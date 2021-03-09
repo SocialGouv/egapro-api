@@ -1,3 +1,5 @@
+from naf import DB as NAF
+
 from . import constants
 
 
@@ -66,6 +68,13 @@ class Data(dict):
         return self.path("déclarant.email")
 
     @property
+    def naf(self):
+        code = self.path("entreprise.code_naf")
+        if not code:
+            return None
+        return f"{code} - {NAF[code]}"
+
+    @property
     def company(self):
         return self.path("entreprise.raison_sociale")
 
@@ -96,8 +105,8 @@ class Data(dict):
     @property
     def uri(self):
         if self.get("source") == "simulateur":
-            return f"simulateur/{self.id}"
-        return f"declaration/?siren={self.siren}&year={self.year}"
+            return f"/simulateur/{self.id}"
+        return f"/declaration/?siren={self.siren}&year={self.year}"
 
     def path(self, path):
         data = self
