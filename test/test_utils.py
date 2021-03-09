@@ -70,3 +70,11 @@ def test_remove_one_year(input, output):
 )
 def test_check_dep_and_cp(dep, cp, expected):
     assert utils.check_dep_and_cp(dep, cp) == expected
+
+
+@pytest.mark.parametrize(
+    "code,expected",
+    [("77480", "77"), ("97480", "974"), ("2A123", "2A"), (None, None)],
+)
+def test_code_insee_to_departement(code, expected):
+    assert utils.code_insee_to_departement(code) == expected

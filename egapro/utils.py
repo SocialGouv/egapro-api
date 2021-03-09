@@ -21,7 +21,7 @@ def utcnow():
 def remove_one_year(end):
     try:
         return end.replace(end.year - 1) + timedelta(days=1)
-    except ValueError:   # 29 February
+    except ValueError:  # 29 February
         return (end + timedelta(days=1)).replace(end.year - 1)
 
 
@@ -96,3 +96,11 @@ def check_dep_and_cp(dep, cp):
     if dep in ["2A", "2B"]:
         return cp.startswith("20")
     return cp.startswith(dep)
+
+
+def code_insee_to_departement(code):
+    if not code:
+        return None
+    if code.startswith("97"):
+        return code[:3]
+    return code[:2]

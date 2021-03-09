@@ -4,7 +4,7 @@ import math
 
 import httpx
 
-from egapro import config, constants, schema
+from egapro import config, schema, utils
 from egapro.schema.utils import clean_readonly
 
 
@@ -236,7 +236,7 @@ async def load_from_api_entreprises(siren):
     code_postal = siege.get("adresse", {}).get("code_postal")
     commune = siege.get("adresse", {}).get("localite")
     code_insee = siege.get("adresse", {}).get("code_insee_localite")
-    departement = code_insee[:2] if code_insee else None
+    departement = utils.code_insee_to_departement(code_insee)
     adresse = siege.get("adresse", {})
     adresse = [adresse.get(k) for k in ["numero_voie", "type_voie", "nom_voie"]]
     adresse = " ".join(v for v in adresse if v)
