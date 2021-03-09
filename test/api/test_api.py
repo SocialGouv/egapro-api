@@ -85,10 +85,6 @@ async def test_search_endpoint(client):
                 "notes": {"2020": 95},
             },
         ],
-        "count": 1,
-        "max": 95,
-        "min": 95,
-        "avg": 95,
     }
     resp = await client.get("/search?q=bio&limit=1")
     assert resp.status == 200
@@ -96,6 +92,68 @@ async def test_search_endpoint(client):
     resp = await client.get("/search")
     assert resp.status == 200
     assert len(json.loads(resp.body)["data"]) == 1
+
+
+async def test_stats_endpoint(client):
+    await db.declaration.put(
+        "12345671",
+        2020,
+        "foo@bar.org",
+        {
+            "déclaration": {"index": 95, "année_indicateurs": 2020},
+            "id": "12345678-1234-5678-9012-123456789013",
+            "entreprise": {
+                "raison_sociale": "Bio c Bon",
+                "effectif": {"tranche": "1000:"},
+                "département": "12",
+            },
+        },
+    )
+    # Small
+    await db.declaration.put(
+        "12345672",
+        2020,
+        "foo@bar.org",
+        {
+            "déclaration": {"index": 93, "année_indicateurs": 2020},
+            "id": "12345678-1234-5678-9012-123456789012",
+            "entreprise": {
+                "raison_sociale": "Biocoop",
+                "effectif": {"tranche": "50:250"},
+                "département": "11",
+            },
+        },
+    )
+    await db.declaration.put(
+        "123456782",
+        2020,
+        "foo@bar.org",
+        {
+            "déclaration": {"index": 93, "année_indicateurs": 2020},
+            "id": "12345678-1234-5678-9012-123456789012",
+            "entreprise": {
+                "raison_sociale": "RoboCoop",
+                "effectif": {"tranche": "251:999"},
+                "département": "11",
+            },
+        },
+    )
+    resp = await client.get("/stats")
+    assert resp.status == 200
+    assert json.loads(resp.body) == {
+        "count": 2,
+        "max": 95,
+        "min": 93,
+        "avg": 94,
+    }
+    resp = await client.get("/stats?departement=11")
+    assert resp.status == 200
+    assert json.loads(resp.body) == {
+        "count": 1,
+        "max": 93,
+        "min": 93,
+        "avg": 93,
+    }
 
 
 async def test_config_endpoint(client):

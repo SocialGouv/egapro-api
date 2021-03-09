@@ -245,13 +245,13 @@ class search(table):
         ]
 
     @classmethod
-    async def stats(cls, year, query=None, **filters):
+    async def stats(cls, year, **filters):
         args = [year]
-        args, where = cls.build_query(args, query, **filters)
+        args, where = cls.build_query(args, **filters)
         return await cls.fetchrow(sql.search_stats.format(where=where or ""), *args)
 
     @staticmethod
-    def build_query(args, query, **filters):
+    def build_query(args, query=None, **filters):
         where = []
         if query and len(query) == 9 and query.isdigit():
             filters["siren"] = query

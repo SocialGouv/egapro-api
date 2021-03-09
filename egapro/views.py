@@ -264,15 +264,22 @@ async def search(request, response):
         departement=departement,
         region=region,
     )
+    response.json = {"data": results}
+
+
+@app.route("/stats")
+async def stats(request, response):
+    section_naf = request.query.get("section_naf", None)
+    departement = request.query.get("departement", None)
+    region = request.query.get("region", None)
     year = request.query.int("year", constants.CURRENT_YEAR)
     stats = await db.search.stats(
         year,
-        query=q,
         section_naf=section_naf,
         departement=departement,
         region=region,
     )
-    response.json = {"data": results, **stats}
+    response.json = dict(stats)
 
 
 @app.route("/config")
