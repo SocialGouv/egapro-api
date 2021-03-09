@@ -807,7 +807,9 @@ async def test_get_empty_entreprise_should_sync_with_api_entreprises(
 
     monkeypatch.setattr("egapro.helpers.load_from_api_entreprises", mocked)
 
-    await db.declaration.put("123456782", "2020", "foo@bar.org", {})
+    await db.declaration.put(
+        "123456782", "2020", "foo@bar.org", {"déclarant": {"nom": "Mr Babar"}}
+    )
     record = await db.declaration.get("123456782", 2020)
     assert not record.data["entreprise"].get("raison_sociale")
     resp = await client.get("/declaration/123456782/2020")
