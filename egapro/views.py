@@ -265,7 +265,12 @@ async def search(request, response):
         departement=departement,
         region=region,
     )
-    response.json = {"data": results}
+    response.json = {
+        "data": results,
+        "count": await db.search.count(
+            query=q, section_naf=section_naf, departement=departement, region=region
+        ),
+    }
 
 
 @app.route("/stats")

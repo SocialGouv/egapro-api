@@ -86,6 +86,7 @@ async def test_search_endpoint(client):
                 "label": "Bio c Bon",
             },
         ],
+        "count": 1,
     }
     resp = await client.get("/search?q=bio&limit=1")
     assert resp.status == 200

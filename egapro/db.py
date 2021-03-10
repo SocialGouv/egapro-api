@@ -239,7 +239,7 @@ class search(table):
     async def run(cls, query=None, limit=10, offset=0, **filters):
         args = [limit, offset]
         args, where = cls.build_query(args, query, **filters)
-        rows = await cls.fetch(sql.search.format(where=where or ""), *args)
+        rows = await cls.fetch(sql.search.format(where=where), *args)
         return [
             {
                 **declaration.public_data(row["data"][0]),
@@ -254,7 +254,13 @@ class search(table):
     async def stats(cls, year, **filters):
         args = [year]
         args, where = cls.build_query(args, **filters)
-        return await cls.fetchrow(sql.search_stats.format(where=where or ""), *args)
+        return await cls.fetchrow(sql.search_stats.format(where=where), *args)
+
+    @classmethod
+    async def count(cls, query, **filters):
+        query = "SELECT COUNT(DISTINCT(siren)) as count FROM search {where}"
+        args, where = cls.build_query([], **filters)
+        return await cls.fetchval(query.format(where=where), *args)
 
     @staticmethod
     def build_query(args, query=None, **filters):
@@ -272,7 +278,7 @@ class search(table):
                 where.append(f"search.{name}=${len(args)}")
         if where:
             where = "WHERE " + " AND ".join(where)
-        return args, where
+        return args, where or ""
 
     @classmethod
     async def truncate(cls):
