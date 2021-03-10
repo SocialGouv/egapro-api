@@ -241,7 +241,11 @@ class search(table):
         args, where = cls.build_query(args, query, **filters)
         rows = await cls.fetch(sql.search.format(where=where or ""), *args)
         return [
-            {**declaration.public_data(row["data"][0]), "notes": row["notes"]}
+            {
+                **declaration.public_data(row["data"][0]),
+                "notes": row["notes"],
+                "label": cls.compute_label(query, row["data"][0]),
+            }
             for row in rows
         ]
 
@@ -273,6 +277,18 @@ class search(table):
     @classmethod
     async def truncate(cls):
         await cls.execute("TRUNCATE table search")
+
+    @classmethod
+    def compute_label(cls, query, data):
+        entreprise = data["entreprise"]
+        declarante = entreprise.get("raison_sociale")
+        ues = entreprise.get("ues", {})
+        nom_ues = ues.get("nom")
+        others = ues.get("entreprises")
+        if not nom_ues or not others or not query:
+            return declarante
+        others = [o["raison_sociale"] for o in others]
+        return helpers.compute_label(query, nom_ues, declarante, *others)
 
 
 class archive(table):

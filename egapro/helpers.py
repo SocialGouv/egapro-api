@@ -1,6 +1,7 @@
 """Unlike utils, helpers may import business logic"""
 
 import math
+from difflib import SequenceMatcher
 
 import httpx
 
@@ -261,3 +262,26 @@ async def patch_from_api_entreprises(data):
         extra = await load_from_api_entreprises(siren)
         for key, value in extra.items():
             entreprise.setdefault(key, value)
+
+
+def compare_str(wanted, candidate):
+    candidate = candidate.lower()
+    if wanted == candidate:
+        return 1
+    if wanted in candidate:
+        return 0.9
+    return SequenceMatcher(a=wanted, b=candidate).ratio()
+
+
+def compute_label(query, label, *others):
+    if not others:
+        return label
+    query = query.lower()
+    main_score = compare_str(query, label)
+    candidates = sorted(
+        ((c, compare_str(query, c)) for c in others), reverse=True, key=lambda x: x[1]
+    )
+    candidate, score = candidates[0]
+    if score > main_score:
+        label = f"{label} ({candidate})"
+    return label

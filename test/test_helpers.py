@@ -4,6 +4,35 @@ from egapro import helpers, models
 
 
 @pytest.mark.parametrize(
+    "query,selected,candidates",
+    [
+        (
+            "foobar",
+            "Réseau Foobar",
+            [
+                "Réseau Foobar",
+                "FOOBAR TRANSACTION FRANCE",
+                "FOOBAR AGENCE CENTRALE",
+                "Foobar Immobibaz",
+            ],
+        ),
+        (
+            "immobibaz",
+            "Réseau Foobar (Foobar Immobibaz)",
+            [
+                "Réseau Foobar",
+                "FOOBAR TRANSACTION FRANCE",
+                "FOOBAR AGENCE CENTRALE",
+                "Foobar Immobibaz",
+            ],
+        ),
+    ],
+)
+def test_compute_label(query, selected, candidates):
+    assert helpers.compute_label(query, *candidates) == selected
+
+
+@pytest.mark.parametrize(
     "input,output",
     [
         (None, None),

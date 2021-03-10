@@ -83,6 +83,7 @@ async def test_search_endpoint(client):
                     "ues": None,
                 },
                 "notes": {"2020": 95},
+                "label": "Bio c Bon",
             },
         ],
     }
