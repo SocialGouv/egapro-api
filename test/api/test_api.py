@@ -12,7 +12,7 @@ async def test_request_token(client, monkeypatch):
 
     def mock_send(to, subject, body):
         assert to == "foo@bar.org"
-        assert "/?token=" in body
+        assert "/declaration/?token=" in body
         nonlocal calls
         calls += 1
 
