@@ -121,7 +121,7 @@ def from_legacy(data):
     if declaration.get("dateDeclaration"):
         declaration["date"] = parse_datetime(declaration.pop("dateDeclaration"))
     clean_legacy(declaration)
-    index = declaration.get("index") or 0
+    index = declaration.get("index")
     if index is None or index >= 75:
         declaration.pop("mesures_correctives", None)
     elif not declaration.get("mesures_correctives"):
