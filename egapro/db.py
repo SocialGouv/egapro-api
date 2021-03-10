@@ -3,7 +3,7 @@ from datetime import datetime
 
 import asyncpg
 from naf import DB as NAF
-from async_lru import alru_cache
+from asyncstdlib.functools import lru_cache
 from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
 import ujson as json
 
@@ -246,7 +246,7 @@ class search(table):
         ]
 
     @classmethod
-    @alru_cache(maxsize=128)
+    @lru_cache(maxsize=128)
     async def stats(cls, year, **filters):
         args = [year]
         args, where = cls.build_query(args, **filters)
