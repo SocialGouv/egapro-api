@@ -145,7 +145,7 @@ class declaration(table):
     @classmethod
     async def own(cls, siren, year, owner):
         await cls.execute(
-            "UPDATE declaration SET owner=$1 WHERE siren=$2 AND year=$3",
+            "UPDATE declaration SET owner=$3 WHERE siren=$1 AND year=$2",
             siren,
             int(year),
             owner,

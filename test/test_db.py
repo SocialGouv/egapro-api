@@ -149,3 +149,15 @@ async def test_put_declaration_should_not_update_declared_at():
     assert record["modified_at"] != modified_at
     assert record["declared_at"] == modified_at
     assert record.data.path("déclaration.date") == modified_at.isoformat()
+
+
+async def test_declaration_own():
+    await db.declaration.put(
+        "123456782",
+        2020,
+        "foo@bar.com",
+        {},
+    )
+    await db.declaration.own("123456782", 2020, "foo@foo.io")
+    record = await db.declaration.get("123456782", 2020)
+    assert record["owner"] == "foo@foo.io"

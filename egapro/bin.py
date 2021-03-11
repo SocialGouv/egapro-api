@@ -236,6 +236,12 @@ async def load_one(path: Path):
 
 
 @minicli.cli
+async def set_owner(siren, year, owner):
+    await db.declaration.own(siren, year, owner)
+    print("Done!")
+
+
+@minicli.cli
 def read_token(token):
     print("—" * 20)
     print(tokens.read(token))
@@ -304,7 +310,7 @@ async def send_receipts(recipient=None, offset=0, limit=0):
         url = config.DOMAIN + data.uri
         try:
             emails.success.send(
-                recipient or data.email,
+                recipient or record["owner"],
                 url=url,
                 modified_at=record["modified_at"],
                 **data,
