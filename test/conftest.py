@@ -90,10 +90,12 @@ def declaration():
         data["déclarant"].setdefault("prénom", "Martin")
         data["déclarant"].setdefault("nom", "Martine")
         data["indicateurs"].setdefault("rémunérations", {"mode": "csp"})
-        data["indicateurs"].setdefault("augmentations_et_promotions", {})
         data["indicateurs"].setdefault("congés_maternité", {})
-        data["indicateurs"].setdefault("augmentations", {})
-        data["indicateurs"].setdefault("promotions", {})
+        if data["entreprise"]["effectif"]["tranche"] == "50:250":
+            data["indicateurs"].setdefault("augmentations_et_promotions", {})
+        else:
+            data["indicateurs"].setdefault("augmentations", {})
+            data["indicateurs"].setdefault("promotions", {})
         if compute_notes:
             helpers.compute_notes(models.Data(data))
         await db.declaration.put(siren, year, owner, data, modified_at=modified_at)

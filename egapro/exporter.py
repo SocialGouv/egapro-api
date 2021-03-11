@@ -5,7 +5,7 @@ from pathlib import Path
 
 import ujson as json
 
-from egapro import constants, db, sql
+from egapro import constants, db, sql, utils
 
 
 async def dump(path: Path):
@@ -64,3 +64,8 @@ async def public_data(path: Path):
             ]
         )
     writer.writerows(rows)
+
+
+async def full(dest):
+    records = await db.declaration.completed()
+    dest.write(utils.json_dumps([r["data"] for r in records]))

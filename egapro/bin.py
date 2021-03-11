@@ -70,6 +70,15 @@ async def export_public_data(path: Path):
 
 
 @minicli.cli
+async def full(path: Path):
+    """Create a full JSON export."""
+    print("Writing to", path)
+    with path.open("w") as f:
+        await exporter.full(f)
+    print("Done")
+
+
+@minicli.cli
 async def migrate(*migrations):
     ROOT = Path(__file__).parent / "migrations"
 
