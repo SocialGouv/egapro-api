@@ -16,13 +16,13 @@ async def init_db():
 
 async def test_search(client):
     rows = [
-        ("12345671", "Total"),
-        ("12345672", "Somme"),
-        ("12345673", "Biocoop"),
-        ("12345674", "Bio c bon"),
-        ("12345675", "Bio c pas bon"),
-        ("12345676", "Pyrénées"),
-        ("12345677", "Decathlon"),
+        ("123456781", "Total"),
+        ("123456782", "Somme"),
+        ("123456783", "Biocoop"),
+        ("123456784", "Bio c bon"),
+        ("123456785", "Bio c pas bon"),
+        ("123456786", "Pyrénées"),
+        ("123456787", "Decathlon"),
     ]
     for siren, nom in rows:
         await db.declaration.put(
@@ -53,9 +53,12 @@ async def test_search(client):
             "raison_sociale": "Total",
             "département": "77",
             "région": "11",
-            "siren": "12345671",
+            "siren": "123456781",
             "ues": {
-                "entreprises": [{"raison_sociale": "foobabar", "siren": "987654321"}],
+                "entreprises": [
+                    {"raison_sociale": "Total", "siren": "123456781"},
+                    {"raison_sociale": "foobabar", "siren": "987654321"},
+                ],
                 "nom": "Nom UES",
             },
             "code_naf": "33.11Z",
@@ -157,7 +160,7 @@ async def test_small_companies_downgrading_tranche_is_not_searchable(declaration
 
 async def test_search_from_ues_name(client):
     await db.declaration.put(
-        "12345671",
+        "123456781",
         2019,
         "foo@bar.org",
         {
@@ -183,11 +186,14 @@ async def test_search_from_ues_name(client):
             "raison_sociale": "Babar",
             "département": "77",
             "région": "11",
-            "siren": "12345671",
+            "siren": "123456781",
             "code_naf": None,
             "effectif": {"tranche": "1000:"},
             "ues": {
-                "entreprises": [{"raison_sociale": "foobabar", "siren": "987654321"}],
+                "entreprises": [
+                    {"raison_sociale": "Babar", "siren": "123456781"},
+                    {"raison_sociale": "foobabar", "siren": "987654321"},
+                ],
                 "nom": "Nom UES",
             },
         },
@@ -198,7 +204,7 @@ async def test_search_from_ues_name(client):
 
 async def test_search_from_ues_member_name(client):
     await db.declaration.put(
-        "12345671",
+        "123456781",
         2019,
         "foo@bar.org",
         {
@@ -225,9 +231,12 @@ async def test_search_from_ues_member_name(client):
             "raison_sociale": "Babar",
             "département": "77",
             "région": "11",
-            "siren": "12345671",
+            "siren": "123456781",
             "ues": {
-                "entreprises": [{"raison_sociale": "foobabar", "siren": "987654321"}],
+                "entreprises": [
+                    {"raison_sociale": "Babar", "siren": "123456781"},
+                    {"raison_sociale": "foobabar", "siren": "987654321"},
+                ],
                 "nom": "Nom UES",
             },
             "code_naf": None,
@@ -240,7 +249,7 @@ async def test_search_from_ues_member_name(client):
 
 async def test_search_with_filters(client):
     await db.declaration.put(
-        "12345671",
+        "123456781",
         2019,
         "foo@bar.org",
         {
@@ -286,7 +295,7 @@ async def test_search_with_filters(client):
 
 async def test_search_from_section_naf(client):
     await db.declaration.put(
-        "12345671",
+        "123456781",
         2019,
         "foo@bar.org",
         {
@@ -334,7 +343,7 @@ async def test_search_from_section_naf(client):
 
 async def test_filters_without_query(client):
     await db.declaration.put(
-        "12345671",
+        "123456781",
         2019,
         "foo@bar.org",
         {
@@ -380,7 +389,7 @@ async def test_filters_without_query(client):
 
 async def test_search_with_offset(client):
     await db.declaration.put(
-        "12345671",
+        "123456781",
         2019,
         "foo@bar.org",
         {
@@ -432,7 +441,7 @@ async def test_search_with_offset(client):
             "ues": None,
             "raison_sociale": "Oran Bar",
             "région": "11",
-            "siren": "12345671",
+            "siren": "123456781",
             "code_naf": None,
             "effectif": {"tranche": "1000:"},
         },

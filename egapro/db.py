@@ -154,14 +154,21 @@ class declaration(table):
     @classmethod
     def public_data(cls, data):
         data = models.Data(data)
+        raison_sociale = data.company
+        siren = data.siren
+        ues = data.path("entreprise.ues")
+        if ues:
+            ues["entreprises"].insert(
+                0, {"raison_sociale": raison_sociale, "siren": siren}
+            )
         out = {
             "entreprise": {
-                "raison_sociale": data.path("entreprise.raison_sociale"),
-                "siren": data.path("entreprise.siren"),
+                "raison_sociale": raison_sociale,
+                "siren": siren,
                 "région": data.path("entreprise.région"),
                 "département": data.path("entreprise.département"),
                 "code_naf": data.path("entreprise.code_naf"),
-                "ues": data.path("entreprise.ues"),
+                "ues": ues,
                 "effectif": {"tranche": data.path("entreprise.effectif.tranche")},
             },
         }
