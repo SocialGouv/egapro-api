@@ -300,17 +300,30 @@ async def receipts(limit=10):
 
 
 @minicli.cli
-async def send_receipts():
+async def send_receipts(recipient=None, offset=0, limit=0):
     records = await db.declaration.fetch(
-        "SELECT * FROM declaration WHERE declared_at IS NOT NULL AND year=2020"
+        "SELECT * FROM declaration "
+        "WHERE declared_at IS NOT NULL AND year=2020 "
+        "ORDER BY declared_at ASC "
+        "LIMIT $1 OFFSET $2",
+        int(limit) if limit else None,
+        int(offset),
     )
     bar = progressist.ProgressBar(prefix="Sending mails", total=len(records))
     for record in bar.iter(records):
         data = record.data
         url = config.DOMAIN + data.uri
-        emails.success.send(
-            data.email, url=url, modified_at=record["modified_at"], **data
-        )
+        try:
+            emails.success.send(
+                recipient or data.email,
+                url=url,
+                modified_at=record["modified_at"],
+                **data,
+            )
+        except Exception as ex:
+            print(ex)
+            print(data)
+            continue
 
 
 @minicli.cli
