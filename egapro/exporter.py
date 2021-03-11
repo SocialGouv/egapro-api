@@ -68,4 +68,5 @@ async def public_data(path: Path):
 
 async def full(dest):
     records = await db.declaration.completed()
-    dest.write(utils.json_dumps([r["data"] for r in records]))
+    for record in records:
+        dest.write(utils.json_dumps(record["data"]) + "\n")
