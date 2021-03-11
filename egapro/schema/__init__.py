@@ -84,20 +84,28 @@ def _cross_validate(data):
             annee_periode_reference = date.fromisoformat(periode_reference).year
         except ValueError:
             annee_periode_reference = None
-        assert annee_periode_reference == data.year, "L'année de la date de fin de période ne peut pas être différente de l'année au titre de laquelle les indicateurs sont calculés."
+        assert (
+            annee_periode_reference == data.year
+        ), "L'année de la date de fin de période ne peut pas être différente de l'année au titre de laquelle les indicateurs sont calculés."
 
-    tranche = data.path("entreprise.effectif.tranche")
-    if tranche == "50:250":
-        paths = ("indicateurs.promotions", "indicateurs.augmentations")
-        for path in paths:
-            msg = (
-                f"L'indicateur {path} ne doit pas être défini pour la tranche 50 à 250"
-            )
-            assert not data.path(path), msg
-    else:
-        path = "indicateurs.augmentations_et_promotions"
-        msg = f"L'indicateur {path } ne peut être défini que pour la tranche 50 à 250"
-        assert not data.path(path), msg
+        tranche = data.path("entreprise.effectif.tranche")
+        indicateurs_gt_250 = ("indicateurs.promotions", "indicateurs.augmentations")
+        indicateurs_lt_250 = "indicateurs.augmentations_et_promotions"
+        if tranche == "50:250":
+            for path in indicateurs_gt_250:
+                msg = (
+                    f"L'indicateur {path} ne doit pas être défini pour la tranche 50 à 250"
+                )
+                assert not data.path(path), msg
+            msg = f"L'indicateur {indicateurs_lt_250} doit être défini pour la tranche 50 à 250"
+            assert data.path(indicateurs_lt_250), msg
+        else:
+            msg = f"L'indicateur {indicateurs_lt_250} ne peut être défini que pour la tranche 50 à 250"
+            assert not data.path(indicateurs_lt_250), msg
+            for path in indicateurs_gt_250:
+                msg = f"L'indicateur {path} doit être défini"
+                assert data.path(path), msg
+
     for key in SCHEMA.indicateurs_keys:
         path = f"indicateurs.{key}"
         if data.path(f"{path}.non_calculable"):
@@ -113,6 +121,7 @@ def _cross_validate(data):
                 # field. However, this latter field is only provided if the
                 # `résultat` is not `0`.
                 assert resultat is not None, msg
+
     keys = ["rémunérations", "augmentations", "promotions"]
     for key in keys:
         path = f"indicateurs.{key}"
@@ -125,7 +134,9 @@ def _cross_validate(data):
     all_siren = [e["siren"] for e in entreprises]
     duplicates = [v for v, c in Counter(all_siren).items() if c > 1]
     assert not duplicates, f"Valeur de siren en double: {','.join(duplicates)}"
-    assert data.siren not in all_siren, "L'entreprise déclarante ne doit pas être dupliquée dans les entreprises de l'UES"
+    assert (
+        data.siren not in all_siren
+    ), "L'entreprise déclarante ne doit pas être dupliquée dans les entreprises de l'UES"
     for ues in entreprises:
         msg = f"Invalid siren: {ues['siren']}"
         assert siren_is_valid(ues["siren"]), msg

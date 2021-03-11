@@ -37,6 +37,13 @@ def body():
             "commune": "Y",
             "effectif": {"total": 312, "tranche": "251:999"},
         },
+        "indicateurs": {
+            "rémunérations": {"mode": "csp", "résultat": 1.28},
+            "augmentations": {"résultat": 1.03},
+            "promotions": {"résultat": 2.03},
+            "congés_maternité": {"résultat": 88},
+            "hautes_rémunérations": {"résultat": 3},
+        },
     }
 
 
@@ -109,7 +116,46 @@ async def test_basic_declaration_should_save_data(client, body, monkeypatch):
     del data["declared_at"]
     del data["data"]["déclaration"]["date"]
     del body["déclaration"]["date"]
-    assert data == {"data": body, "siren": "514027945", "year": 2019}
+    expected = {
+        "siren": "514027945",
+        "year": 2019,
+        "data": {
+            "id": "1234",
+            "source": "formulaire",
+            "déclarant": {
+                "nom": "Bar",
+                "email": "foo@bar.org",
+                "prénom": "Foo",
+                "téléphone": "+33123456789",
+            },
+            "entreprise": {
+                "siren": "514027945",
+                "adresse": "12, rue des adresses",
+                "commune": "Y",
+                "région": "76",
+                "code_naf": "47.25Z",
+                "effectif": {"total": 312, "tranche": "251:999"},
+                "code_postal": "12345",
+                "département": "12",
+                "raison_sociale": "FooBar",
+            },
+            "indicateurs": {
+                "promotions": {"note": 15, "résultat": 2.03},
+                "augmentations": {"note": 20, "résultat": 1.03},
+                "rémunérations": {"mode": "csp", "note": 38, "résultat": 1.28},
+                "congés_maternité": {"note": 0, "résultat": 88},
+                "hautes_rémunérations": {"note": 5, "résultat": 3},
+            },
+            "déclaration": {
+                "index": 78,
+                "points": 78,
+                "année_indicateurs": 2019,
+                "points_calculables": 100,
+                "fin_période_référence": "2019-12-31",
+            },
+        },
+    }
+    assert data == expected
     # Just to make sure we have the same result on an existing declaration
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
@@ -121,7 +167,7 @@ async def test_basic_declaration_should_save_data(client, body, monkeypatch):
     assert data["declared_at"]
     del data["declared_at"]
     del data["data"]["déclaration"]["date"]
-    assert data == {"data": body, "siren": "514027945", "year": 2019}
+    assert data == expected
     count = await db.table.fetchval(
         "SELECT COUNT(*) FROM archive WHERE siren=$1 AND year=$2;", "514027945", 2019
     )
@@ -141,13 +187,51 @@ async def test_draft_declaration_should_save_data(client, body):
     assert not data.get("declared_at")
     assert "date" not in data["data"]["déclaration"]
     assert data["data"]["déclaration"]["brouillon"] is True
-    del body["déclaration"]["date"]
-    assert data == {
-        "data": body,
+    del data["data"]["déclaration"]["brouillon"]
+    assert not data.get("declared_at")
+    del data["declared_at"]
+
+    # With notes.
+    expected = {
         "siren": "514027945",
         "year": 2019,
-        "declared_at": None,
+        "data": {
+            "id": "1234",
+            "source": "formulaire",
+            "déclarant": {
+                "nom": "Bar",
+                "email": "foo@bar.org",
+                "prénom": "Foo",
+                "téléphone": "+33123456789",
+            },
+            "entreprise": {
+                "siren": "514027945",
+                "adresse": "12, rue des adresses",
+                "commune": "Y",
+                "région": "76",
+                "code_naf": "47.25Z",
+                "effectif": {"total": 312, "tranche": "251:999"},
+                "code_postal": "12345",
+                "département": "12",
+                "raison_sociale": "FooBar",
+            },
+            "indicateurs": {
+                "promotions": {"note": 15, "résultat": 2.03},
+                "augmentations": {"note": 20, "résultat": 1.03},
+                "rémunérations": {"mode": "csp", "note": 38, "résultat": 1.28},
+                "congés_maternité": {"note": 0, "résultat": 88},
+                "hautes_rémunérations": {"note": 5, "résultat": 3},
+            },
+            "déclaration": {
+                "index": 78,
+                "points": 78,
+                "année_indicateurs": 2019,
+                "points_calculables": 100,
+                "fin_période_référence": "2019-12-31",
+            },
+        },
     }
+    assert data == expected
 
     # Real
     del body["déclaration"]["brouillon"]
@@ -162,8 +246,7 @@ async def test_draft_declaration_should_save_data(client, body):
     del data["declared_at"]
     assert data["data"]["déclaration"]["date"]
     del data["data"]["déclaration"]["date"]
-    assert data == {"data": body, "siren": "514027945", "year": 2019}
-
+    assert data == expected
     # Draft again
     body["déclaration"]["brouillon"] = True
     resp = await client.put("/declaration/514027945/2019", body=body)
@@ -178,7 +261,8 @@ async def test_draft_declaration_should_save_data(client, body):
     assert data["data"]["déclaration"]["date"]
     del data["data"]["déclaration"]["date"]
     assert data["data"]["déclaration"]["brouillon"] is True
-    assert data == {"data": body, "siren": "514027945", "year": 2019}
+    expected["data"]["déclaration"]["brouillon"] = True
+    assert data == expected
 
 
 async def test_basic_declaration_without_declarant_should_be_ok(client, body):
@@ -206,7 +290,14 @@ async def test_basic_declaration_should_remove_data_namespace_if_present(client,
     data = await db.declaration.get("514027945", "2019")
     del data["data"]["déclaration"]["date"]
     del body["déclaration"]["date"]
-    assert data["data"] == body
+    assert set(data["data"].keys()) == {
+        "indicateurs",
+        "déclaration",
+        "déclarant",
+        "entreprise",
+        "id",
+        "source",
+    }
 
 
 async def test_cannot_edit_declaration_after_one_year(client, declaration, body):
@@ -290,7 +381,6 @@ async def test_owner_check_is_lower_case(client, body):
 async def test_declaring_twice_should_not_duplicate(client, app, body):
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
-    body["indicateurs"] = {}
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     async with db.declaration.pool.acquire() as conn:
@@ -416,6 +506,26 @@ async def test_uncaught_error_is_sent_to_sentry(client, monkeypatch, body):
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 500
     assert capture_exception.called_once
+
+
+async def test_must_set_augmentation_et_promotions_if_tranche_is_50_250(client, body):
+    body["indicateurs"] = {
+        "rémunérations": {"non_calculable": "egvi40pcet"},
+        "congés_maternité": {"non_calculable": "absaugpdtcm"},
+        "hautes_rémunérations": {
+            "note": 0,
+            "résultat": 1,
+            "population_favorable": "femmes",
+        },
+        "augmentations_et_promotions": {},
+    }
+    body["entreprise"]["effectif"]["tranche"] = "50:250"
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert (
+        json.loads(resp.body)["error"]
+        == "L'indicateur indicateurs.augmentations_et_promotions doit être défini pour la tranche 50 à 250"
+    )
 
 
 async def test_cannot_set_augmentations_if_tranche_is_not_50_250(client, body):
@@ -621,6 +731,8 @@ async def test_date_consultation_cse_must_be_empty_if_mode_is_csp(client, body):
             "date_consultation_cse": "2020-01-18",
             "résultat": 10,
         },
+        "promotions": {"résultat": 1},
+        "augmentations": {"résultat": 1},
     }
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
@@ -631,22 +743,18 @@ async def test_date_consultation_cse_must_be_empty_if_mode_is_csp(client, body):
 
 
 async def test_basic_declaration_with_ues(client, body):
-    body["entreprise"]["ues"] = {
+    ues = {
         "nom": "Nom UES",
         "entreprises": [{"siren": "123456782", "raison_sociale": "Foobarbaz"}],
     }
+    body["entreprise"]["ues"] = ues
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 200
     data = json.loads(resp.body)
     assert "modified_at" in data
-    del data["modified_at"]
-    assert data["declared_at"]
-    del data["declared_at"]
-    del data["data"]["déclaration"]["date"]
-    del body["déclaration"]["date"]
-    assert data == {"data": body, "siren": "514027945", "year": 2019}
+    assert data["data"]["entreprise"]["ues"] == ues
 
 
 async def test_basic_declaration_with_ues_and_invalid_siren(client, body):
@@ -702,24 +810,20 @@ async def test_declaration_with_ues_and_duplicate_siren_from_entreprise(client, 
 
 
 async def test_basic_declaration_with_niveau_branche(client, body):
-    body["indicateurs"] = {
-        "rémunérations": {
-            "mode": "niveau_branche",
-            "date_consultation_cse": "2020-12-12",
-            "résultat": 35,
-        }
+    body["indicateurs"]["rémunérations"] = {
+        "mode": "niveau_branche",
+        "date_consultation_cse": "2020-12-12",
+        "résultat": 5,
     }
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
 
 
 async def test_basic_declaration_with_wrong_date_consultation_cse_format(client, body):
-    body["indicateurs"] = {
-        "rémunérations": {
-            "mode": "niveau_branche",
-            "date_consultation_cse": "12/12/2020",
-            "résultat": 35,
-        }
+    body["indicateurs"]["rémunérations"] = {
+        "mode": "niveau_branche",
+        "date_consultation_cse": "12/12/2020",
+        "résultat": 35,
     }
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
@@ -729,7 +833,7 @@ async def test_basic_declaration_with_wrong_date_consultation_cse_format(client,
 
 
 async def test_basic_declaration_with_niveau_branche_without_cse(client, body):
-    body["indicateurs"] = {"rémunérations": {"mode": "niveau_branche", "résultat": 15}}
+    body["indicateurs"]["rémunérations"] = {"mode": "niveau_branche", "résultat": 5}
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
@@ -738,7 +842,8 @@ async def test_basic_declaration_with_niveau_branche_without_cse(client, body):
 
 
 async def test_basic_declaration_without_resultat(client, body):
-    body["indicateurs"] = {"augmentations": {"catégories": [1, 2, 3, 4]}}
+    body["indicateurs"]["augmentations"] = {"catégories": [1, 2, 3, 4]}
+    body["déclaration"]["mesures_correctives"] = "me"
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
@@ -747,8 +852,9 @@ async def test_basic_declaration_without_resultat(client, body):
 
 
 async def test_remunerations_declaration_without_resultat(client, body):
-    body["indicateurs"] = {
-        "rémunérations": {"mode": "csp", "population_favorable": "femmes"}
+    body["indicateurs"]["rémunérations"] = {
+        "mode": "csp",
+        "population_favorable": "femmes",
     }
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
