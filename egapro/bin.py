@@ -252,23 +252,12 @@ def compute_reply_to():
     ws = wb.active
     referents = {}
     for line in ws.values:
-        if line[0] and line[2] and "@" in line[2]:
-            if "(" in line[0]:
-                dep = line[0][-3:-1]
-            elif "GUADELOUPE" in line[0]:
-                dep = "971"
-            elif "MARTINIQUE" in line[0]:
-                dep = "972"
-            elif "GUYANE" in line[0]:
-                dep = "973"
-            elif "REUNION" in line[0]:
-                dep = "974"
-            elif "MAYOTTE" in line[0]:
-                dep = "976"
-            else:
+        if line[1] and line[4] and "@" in line[4]:
+            dep = line[1]
+            if dep in referents:
                 continue
-            name = line[1].split("\n")[0].strip() if line[1] else f"Egapro {line[0]}"
-            email = line[2]
+            name = line[3].split("\n")[0].strip() if line[3] else f"Egapro {line[2]}"
+            email = line[4]
             referents[dep] = f"{name} <{email}>"
     blob = yaml.dump(referents, default_flow_style=False, allow_unicode=True)
     destination = Path(__file__).parent / "emails/reply_to.yml"
