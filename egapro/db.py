@@ -257,10 +257,10 @@ class search(table):
         return await cls.fetchrow(sql.search_stats.format(where=where), *args)
 
     @classmethod
-    async def count(cls, query, **filters):
-        query = "SELECT COUNT(DISTINCT(siren)) as count FROM search {where}"
-        args, where = cls.build_query([], **filters)
-        return await cls.fetchval(query.format(where=where), *args)
+    async def count(cls, query=None, **filters):
+        tpl = "SELECT COUNT(DISTINCT(siren)) as count FROM search {where}"
+        args, where = cls.build_query([], query, **filters)
+        return await cls.fetchval(tpl.format(where=where), *args)
 
     @staticmethod
     def build_query(args, query=None, **filters):

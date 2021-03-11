@@ -451,3 +451,28 @@ async def test_search_with_siren(declaration):
     results = await db.search.run("987654321")
     assert len(results) == 1
     assert results[0]["entreprise"]["siren"] == "987654321"
+
+
+async def test_count_with_query(declaration):
+    await declaration(
+        "123456712",
+        year=2019,
+        company="Zanzi Bar",
+        entreprise={"effectif": {"tranche": "1000:"}},
+    )
+    await declaration(
+        "987654321",
+        year=2019,
+        company="Sli Bar",
+        entreprise={"effectif": {"tranche": "1000:"}},
+    )
+    await declaration(
+        "123456782",
+        year=2019,
+        company="Foo Foo",
+        entreprise={"effectif": {"tranche": "1000:"}},
+    )
+    count = await db.search.count()
+    assert count == 3
+    count = await db.search.count(query="bar")
+    assert count == 2
