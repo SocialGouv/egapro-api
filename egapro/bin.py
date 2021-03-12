@@ -295,7 +295,10 @@ async def receipts(limit=10):
 
 
 @minicli.cli
-async def send_receipts(recipient=None, offset=0, limit=0):
+async def send_receipts(recipient=None, offset=0, limit=0, skip: Path = None):
+    to_skip = []
+    if skip:
+        to_skip = skip.read_text().split("\n")
     records = await db.declaration.fetch(
         "SELECT * FROM declaration "
         "WHERE declared_at IS NOT NULL AND year=2020 "
@@ -308,9 +311,12 @@ async def send_receipts(recipient=None, offset=0, limit=0):
     for record in bar.iter(records):
         data = record.data
         url = config.DOMAIN + data.uri
+        recipient_ = recipient or record["owner"]
+        if recipient_ in to_skip:
+            continue
         try:
             emails.success.send(
-                recipient or record["owner"],
+                recipient_,
                 url=url,
                 modified_at=record["modified_at"],
                 **data,
