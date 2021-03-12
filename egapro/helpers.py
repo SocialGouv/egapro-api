@@ -72,7 +72,7 @@ def compute_note(resultat, thresholds):
     if resultat is None:
         return None
     try:
-        resultat = round(float(resultat), 2)
+        resultat = float(resultat)
     except ValueError:
         return None
     previous = 0
