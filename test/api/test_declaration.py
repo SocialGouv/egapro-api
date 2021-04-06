@@ -742,6 +742,14 @@ async def test_date_consultation_cse_must_be_empty_if_mode_is_csp(client, body):
     )
 
 
+async def test_effectif_total_must_be_integer(client, body):
+    body["entreprise"]["effectif"]["total"] = 343.21
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    body = json.loads(resp.body)
+    assert body == {"error": "data.entreprise.effectif.total must be integer"}
+
+
 async def test_basic_declaration_with_ues(client, body):
     ues = {
         "nom": "Nom UES",
