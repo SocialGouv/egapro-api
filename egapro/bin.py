@@ -282,39 +282,6 @@ async def receipt(siren, year, destination=None):
 
 
 @minicli.cli
-async def send_receipts(recipient=None, offset=0, limit=0, skip: Path = None):
-    to_skip = []
-    if skip:
-        to_skip = skip.read_text().split("\n")
-    records = await db.declaration.fetch(
-        "SELECT * FROM declaration "
-        "WHERE declared_at IS NOT NULL AND year=2020 "
-        "ORDER BY declared_at ASC "
-        "LIMIT $1 OFFSET $2",
-        int(limit) if limit else None,
-        int(offset),
-    )
-    bar = progressist.ProgressBar(prefix="Sending mails", total=len(records))
-    for record in bar.iter(records):
-        data = record.data
-        url = config.DOMAIN + data.uri
-        recipient_ = recipient or record["owner"]
-        if recipient_ in to_skip:
-            continue
-        try:
-            emails.success.send(
-                recipient_,
-                url=url,
-                modified_at=record["modified_at"],
-                **data,
-            )
-        except Exception as ex:
-            print(ex)
-            print(data)
-            continue
-
-
-@minicli.cli
 def shell():
     """Run an ipython already connected to PSQL."""
     try:
