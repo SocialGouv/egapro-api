@@ -36,7 +36,9 @@ def require(view):
         except ValueError:
             logger.debug("Invalid token on %s (token: %s)", request.path, token)
             raise HttpError(401, "Invalid token")
-        request["email"] = email.lower()
+        email = email.lower()
+        request["email"] = email
+        request["staff"] = email in config.STAFF
         return view(request, response, *args, **kwargs)
 
     return wrapper

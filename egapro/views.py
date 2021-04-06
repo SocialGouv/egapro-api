@@ -102,7 +102,7 @@ def ensure_owner(view):
                     siren,
                     year,
                 )
-                if declarant not in config.STAFF:
+                if not request["staff"]:
                     if request.method == "PUT":
                         msg = "Cette déclaration a déjà été créée par un autre utilisateur"
                     else:
@@ -146,7 +146,11 @@ async def declare(request, response, siren, year):
         # Do not force new declarant, in case this is a staff person editing
         declarant = current["owner"]
         declared_at = current["declared_at"]
-        if declared_at and declared_at < utils.remove_one_year(utils.utcnow()):
+        if (
+            not request["staff"]
+            and declared_at
+            and declared_at < utils.remove_one_year(utils.utcnow())
+        ):
             raise HttpError(403, "Le délai de modification est écoulé.")
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204

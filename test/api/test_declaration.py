@@ -313,6 +313,22 @@ async def test_cannot_edit_declaration_after_one_year(client, declaration, body)
     assert json.loads(resp.body) == {"error": "Le délai de modification est écoulé."}
 
 
+async def test_staff_can_edit_declaration_after_one_year(
+    client, declaration, body, monkeypatch
+):
+    await declaration(
+        "514027945",
+        2019,
+        "foo@bar.org",
+        modified_at=utils.utcnow() - timedelta(days=366),
+    )
+
+    monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
+    client.login("Staff@email.com")
+    resp = await client.put("/declaration/514027945/2019", body)
+    assert resp.status == 204
+
+
 async def test_cannot_load_not_owned_declaration(client, declaration):
     await declaration("514027945", 2019, "foo@bar.baz")
 
