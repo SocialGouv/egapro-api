@@ -781,6 +781,18 @@ async def test_basic_declaration_with_ues(client, body):
     assert data["data"]["entreprise"]["ues"] == ues
 
 
+async def test_declaration_without_ues_should_not_have_name(client, body):
+    body["entreprise"]["ues"] = {
+        "nom": "Nom UES",
+        "entreprises": [],
+    }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "Une entreprise ne doit pas avoir de nom d'UES"
+    }
+
+
 async def test_basic_declaration_with_ues_and_invalid_siren(client, body):
     body["entreprise"]["ues"] = {
         "nom": "Nom UES",

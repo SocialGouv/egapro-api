@@ -140,6 +140,9 @@ def _cross_validate(data):
     for ues in entreprises:
         msg = f"Invalid siren: {ues['siren']}"
         assert siren_is_valid(ues["siren"]), msg
+    if not entreprises:
+        msg = "Une entreprise ne doit pas avoir de nom d'UES"
+        assert not data.path("entreprise.ues.nom"), msg
 
     # Rémunérations
     base = "indicateurs.rémunérations"
