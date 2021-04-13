@@ -73,6 +73,15 @@ def _cross_validate(data):
         elif index >= 75:
             msg = "Les mesures correctives ne doivent pas être définies pour un index de 75 ou plus"
             assert not mesures_correctives, msg
+            msg = "La date de publication doit être définie pour un index de 75 ou plus"
+            assert data.path("déclaration.publication.date"), msg
+            msg = (
+                "Les modalités de publication ou le site Internet doit être défini "
+                "pour un index de 75 ou plus"
+            )
+            assert data.path("déclaration.publication.modalités") or data.path(
+                "déclaration.publication.url"
+            ), msg
         else:
             msg = "Les mesures correctives doivent être définies pour un index inférieur à 75"
             assert mesures_correctives, msg
@@ -93,9 +102,7 @@ def _cross_validate(data):
         indicateurs_lt_250 = "indicateurs.augmentations_et_promotions"
         if tranche == "50:250":
             for path in indicateurs_gt_250:
-                msg = (
-                    f"L'indicateur {path} ne doit pas être défini pour la tranche 50 à 250"
-                )
+                msg = f"L'indicateur {path} ne doit pas être défini pour la tranche 50 à 250"
                 assert not data.path(path), msg
             msg = f"L'indicateur {indicateurs_lt_250} doit être défini pour la tranche 50 à 250"
             assert data.path(indicateurs_lt_250), msg

@@ -1,5 +1,6 @@
 import sys
 import urllib.request
+from collections import Counter
 from importlib import import_module
 from io import BytesIO
 from pathlib import Path
@@ -15,7 +16,6 @@ from egapro import (
     constants,
     db,
     dgt,
-    emails,
     exporter,
     models,
     schema,
@@ -142,7 +142,7 @@ def serve(reload=False):
 async def validate(pdb=False, verbose=False):
     from egapro.schema import validate, cross_validate
 
-    errors = set()
+    errors = Counter()
     for row in await db.declaration.completed():
         data = json.loads(json_dumps(row.data.raw))
         try:
@@ -150,7 +150,7 @@ async def validate(pdb=False, verbose=False):
             cross_validate(data)
         except ValueError as err:
             sys.stdout.write("×")
-            errors.add(str(err))
+            errors[str(err)] += 1
             if verbose:
                 print(f"\n\nERROR WITH {row['siren']}/{row['year']}\n")
                 print(err)

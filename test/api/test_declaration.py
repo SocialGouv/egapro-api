@@ -19,6 +19,7 @@ def body():
             "date": "2020-11-04T10:37:06+00:00",
             "année_indicateurs": 2019,
             "fin_période_référence": "2019-12-31",
+            "publication": {"date": "2020-11-01", "modalités": "Affichage"},
         },
         "déclarant": {
             "email": "foo@bar.org",
@@ -152,6 +153,7 @@ async def test_basic_declaration_should_save_data(client, body, monkeypatch):
                 "année_indicateurs": 2019,
                 "points_calculables": 100,
                 "fin_période_référence": "2019-12-31",
+                "publication": {"date": "2020-11-01", "modalités": "Affichage"},
             },
         },
     }
@@ -228,6 +230,7 @@ async def test_draft_declaration_should_save_data(client, body):
                 "année_indicateurs": 2019,
                 "points_calculables": 100,
                 "fin_période_référence": "2019-12-31",
+                "publication": {"date": "2020-11-01", "modalités": "Affichage"},
             },
         },
     }
@@ -1357,3 +1360,22 @@ async def test_declare_with_legacy_schema(client, body):
     assert resp.status == 204
     declaration = await db.declaration.get("514027945", 2019)
     assert declaration.data["id"] == "5e41ad88-5dcc-491d-908a-93d5d2fae344"
+
+
+async def test_publication_is_required_if_calculable(client, body):
+    del body["déclaration"]["publication"]
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "La date de publication doit être définie pour un index de 75 ou plus"
+    }
+
+
+async def test_publication_modalités_or_url_is_required_if_calculable(client, body):
+    del body["déclaration"]["publication"]["modalités"]
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "Les modalités de publication ou le site Internet doit être défini "
+        "pour un index de 75 ou plus"
+    }
