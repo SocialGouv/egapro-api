@@ -321,8 +321,6 @@ async def validate_siren(request, response):
     if not siren_is_valid(siren):
         raise HttpError(422, f"Numéro SIREN invalide: {siren}")
     metadata = await helpers.load_from_api_entreprises(siren)
-    if not metadata:
-        raise HttpError(422, f"Numéro SIREN inconnu: {siren}")
     response.json = metadata
 
 

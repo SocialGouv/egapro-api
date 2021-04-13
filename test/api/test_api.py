@@ -205,14 +205,6 @@ async def test_validate_siren(client, monkeypatch):
     assert resp.status == 200
     assert json.loads(resp.body) == metadata
 
-    async def patch(siren):
-        return {}
-
-    monkeypatch.setattr("egapro.helpers.load_from_api_entreprises", patch)
-    resp = await client.get("/validate-siren?siren=123456782")
-    assert resp.status == 422
-    assert json.loads(resp.body) == {"error": "Numéro SIREN inconnu: 123456782"}
-
 
 async def test_me(client, declaration):
     at = datetime(2021, 2, 3, 4, 5, 6, tzinfo=timezone.utc)
