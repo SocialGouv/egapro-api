@@ -183,7 +183,10 @@ async def get_declaration(request, response, siren, year):
 @app.route("/me", methods=["GET"])
 @tokens.require
 async def me(request, response):
-    response.json = {"email": request["email"]}
+    response.json = {
+        "email": request["email"],
+        "déclarations": await db.declaration.owned(request["email"]),
+    }
 
 
 @app.route("/simulation", methods=["POST"])

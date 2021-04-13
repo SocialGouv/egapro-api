@@ -129,22 +129,13 @@ async def test_declaration_data():
 async def test_put_declaration_should_not_update_declared_at():
     modified_at = datetime(2020, 10, 5, 4, 3, 2, tzinfo=timezone.utc)
     await db.declaration.put(
-        "123456782",
-        2020,
-        "foo@bar.com",
-        {},
-        modified_at=modified_at
+        "123456782", 2020, "foo@bar.com", {}, modified_at=modified_at
     )
     record = await db.declaration.get("123456782", 2020)
     assert record["modified_at"] == modified_at
     assert record["declared_at"] == modified_at
     assert record.data.path("déclaration.date") == modified_at.isoformat()
-    await db.declaration.put(
-        "123456782",
-        2020,
-        "foo@bar.com",
-        {"source": "foo"}
-    )
+    await db.declaration.put("123456782", 2020, "foo@bar.com", {"source": "foo"})
     record = await db.declaration.get("123456782", 2020)
     assert record["modified_at"] != modified_at
     assert record["declared_at"] == modified_at
@@ -152,12 +143,42 @@ async def test_put_declaration_should_not_update_declared_at():
 
 
 async def test_declaration_own():
+    await db.declaration.put("123456782", 2020, "foo@bar.com", {})
+    await db.declaration.own("123456782", 2020, "foo@foo.io")
+    record = await db.declaration.get("123456782", 2020)
+    assert record["owner"] == "foo@foo.io"
+
+
+async def test_declaration_owned():
+    at = datetime(2021, 2, 1, 2, 3, 4, tzinfo=timezone.utc)
     await db.declaration.put(
         "123456782",
         2020,
         "foo@bar.com",
-        {},
+        {"entreprise": {"raison_sociale": "FooBar"}},
+        modified_at=at,
     )
-    await db.declaration.own("123456782", 2020, "foo@foo.io")
-    record = await db.declaration.get("123456782", 2020)
-    assert record["owner"] == "foo@foo.io"
+    await db.declaration.put(
+        "123456782",
+        2019,
+        "foo@bar.com",
+        {"entreprise": {"raison_sociale": "FooBar"}},
+        modified_at=at,
+    )
+    data = await db.declaration.owned("foo@bar.com")
+    assert data == [
+        {
+            "declared_at": at,
+            "modified_at": at,
+            "name": "FooBar",
+            "siren": "123456782",
+            "year": 2020,
+        },
+        {
+            "declared_at": at,
+            "modified_at": at,
+            "name": "FooBar",
+            "siren": "123456782",
+            "year": 2019,
+        },
+    ]

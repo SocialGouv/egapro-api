@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import json
 
 import pytest
@@ -188,10 +189,23 @@ async def test_validate_siren(client):
     assert resp.status == 204
 
 
-async def test_me(client):
+async def test_me(client, declaration):
+    at = datetime(2021, 2, 3, 4, 5, 6, tzinfo=timezone.utc)
+    await declaration(owner="foo@bar.org", modified_at=at)
     resp = await client.get("/me")
     assert resp.status == 200
-    assert json.loads(resp.body) == {"email": "foo@bar.org"}
+    assert json.loads(resp.body) == {
+        "email": "foo@bar.org",
+        "déclarations": [
+            {
+                "modified_at": at.timestamp(),
+                "declared_at": at.timestamp(),
+                "name": "Total Recall",
+                "siren": "123456782",
+                "year": 2020,
+            }
+        ],
+    }
 
 
 async def test_me_without_token(client):

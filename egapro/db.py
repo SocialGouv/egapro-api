@@ -152,6 +152,25 @@ class declaration(table):
         )
 
     @classmethod
+    async def owned(cls, owner):
+        return [
+            cls.metadata(r)
+            for r in await cls.fetch(
+                "SELECT * FROM declaration WHERE owner=$1", owner
+            )
+        ]
+
+    @classmethod
+    def metadata(cls, record):
+        return {
+            "modified_at": record["modified_at"],
+            "declared_at": record["declared_at"],
+            "siren": record["siren"],
+            "year": record["year"],
+            "name": record.data.company,
+        }
+
+    @classmethod
     def public_data(cls, data):
         data = models.Data(data)
         raison_sociale = data.company
