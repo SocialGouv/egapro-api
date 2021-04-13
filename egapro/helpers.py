@@ -213,7 +213,10 @@ def extract_ft(data):
 
 async def get(*args, **kwargs):
     async with httpx.AsyncClient() as client:
-        response = await client.get(*args, **kwargs)
+        try:
+            response = await client.get(*args, **kwargs)
+        except httpx.HTTPError:
+            return None
         if response.status_code != httpx.codes.OK:
             return None
         return response.json()
