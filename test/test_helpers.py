@@ -305,4 +305,5 @@ async def test_api_entreprise(monkeypatch):
         "département": "75",
         "raison_sociale": "FOOBAR",
         "région": "11",
+        "effectif": "03",
     }

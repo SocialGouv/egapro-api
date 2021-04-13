@@ -237,6 +237,7 @@ class search(table):
         region = data.path("entreprise.région")
         departement = data.path("entreprise.département")
         code_naf = data.path("entreprise.code_naf")
+        effectif = data.path("entreprise.effectif.code")
         section_naf = None
         if code_naf:
             try:
@@ -257,6 +258,7 @@ class search(table):
                     departement,
                     section_naf,
                     note,
+                    effectif,
                 )
             except PostgresError as err:
                 logger.error(f"Cannot index {siren}/{year}: {err}")

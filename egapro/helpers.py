@@ -245,6 +245,7 @@ async def load_from_api_entreprises(siren):
     adresse = [adresse.get(k) for k in ["numero_voie", "type_voie", "nom_voie"]]
     adresse = " ".join(v for v in adresse if v)
     code_naf = entreprise.get("naf_entreprise")
+    effectif = entreprise.get("code_effectif_entreprise")
     if code_naf:  # 4774Z => 47.74Z
         code_naf = f"{code_naf[:2]}.{code_naf[2:]}"
     return {
@@ -255,6 +256,7 @@ async def load_from_api_entreprises(siren):
         "adresse": adresse,
         "commune": commune,
         "code_postal": code_postal,
+        "effectif": effectif,
     }
 
 

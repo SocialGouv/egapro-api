@@ -264,6 +264,7 @@ async def search(request, response):
     section_naf = request.query.get("section_naf", None)
     departement = request.query.get("departement", None)
     region = request.query.get("region", None)
+    effectif = request.query.get("effectif", None)
     results = await db.search.run(
         query=q,
         limit=limit,
@@ -271,6 +272,7 @@ async def search(request, response):
         section_naf=section_naf,
         departement=departement,
         region=region,
+        effectif=effectif
     )
     response.json = {
         "data": results,
@@ -285,12 +287,14 @@ async def stats(request, response):
     section_naf = request.query.get("section_naf", None)
     departement = request.query.get("departement", None)
     region = request.query.get("region", None)
+    effectif = request.query.get("effectif", None)
     year = request.query.int("year", constants.CURRENT_YEAR)
     stats = await db.search.stats(
         year,
         section_naf=section_naf,
         departement=departement,
         region=region,
+        effectif=effectif,
     )
     response.json = dict(stats)
 

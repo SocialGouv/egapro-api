@@ -38,6 +38,7 @@ id: string
   effectif:
     total: integer # Nombre de salariés pris en compte pour le calcul des indicateurs sur la période de référence
     tranche: "50:250|251:999|1000:" # Tranche d'effectifs de la structure
+    code: string # Code effectif INSEE cf. https://www.sirene.fr/sirene/public/variable/tefen
   ues:
     nom: string
     entreprises:
