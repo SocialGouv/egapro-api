@@ -180,13 +180,38 @@ async def test_config_endpoint(client):
     ]
 
 
-async def test_validate_siren(client):
+async def test_validate_siren(client, monkeypatch):
+    metadata = {
+        "adresse": "2 RUE FOOBAR",
+        "code_naf": "62.02A",
+        "code_postal": "75002",
+        "commune": "PARIS 2",
+        "département": "75",
+        "raison_sociale": "FOOBAR",
+        "région": "11",
+    }
+
+    async def patch(siren):
+        return metadata
+
+    monkeypatch.setattr("egapro.helpers.load_from_api_entreprises", patch)
     resp = await client.get("/validate-siren?siren=1234567")
     assert resp.status == 422
+    assert json.loads(resp.body) == {"error": "Numéro SIREN invalide: 1234567"}
     resp = await client.get("/validate-siren?siren=123456789")
     assert resp.status == 422
+    assert json.loads(resp.body) == {"error": "Numéro SIREN invalide: 123456789"}
     resp = await client.get("/validate-siren?siren=123456782")
-    assert resp.status == 204
+    assert resp.status == 200
+    assert json.loads(resp.body) == metadata
+
+    async def patch(siren):
+        return {}
+
+    monkeypatch.setattr("egapro.helpers.load_from_api_entreprises", patch)
+    resp = await client.get("/validate-siren?siren=123456782")
+    assert resp.status == 422
+    assert json.loads(resp.body) == {"error": "Numéro SIREN inconnu: 123456782"}
 
 
 async def test_me(client, declaration):
