@@ -320,22 +320,21 @@ def ues_data(sheet, data):
         ]
     )
     for ues in entreprises or []:
-        sheet.append(
-            [
-                data.year,
-                region,
-                departement,
-                adresse,
-                cp,
-                commune,
-                tranche,
-                nom,
-                data.siren,
-                data.company,
-                ues["raison_sociale"],
-                ues["siren"],
-            ]
-        )
+        row = [
+            data.year,
+            region,
+            departement,
+            adresse,
+            cp,
+            commune,
+            tranche,
+            nom,
+            data.siren,
+            data.company,
+            ues["raison_sociale"],
+            ues["siren"],
+        ]
+        sheet.append(clean_cell(cell) for cell in row)
 
 
 def prepare_record(data):
