@@ -1,20 +1,16 @@
 """DGT specific utils"""
 
 import re
-import time
-from collections import defaultdict
 from datetime import date
 
 import arrow
 from naf import DB as NAF
-from openpyxl import Workbook, load_workbook
+from openpyxl import Workbook
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from progressist import ProgressBar
 
 from egapro import config, constants, db, models
-from egapro.solen import ExcelData, RowProcessor
 from egapro.utils import flatten, remove_one_year
-from egapro.schema.legacy import from_legacy
 
 
 AGES = {
@@ -282,8 +278,6 @@ async def as_xlsx(max_rows=None, debug=False):
         data = record.data
         if not data:
             continue
-        if "déclaration" not in data:  # Legacy schema
-            from_legacy(data)
         ues_data(ws_ues, data)
         data = prepare_record(data)
         data["modified_at"] = record["modified_at"]
@@ -430,67 +424,3 @@ def prepare_conges_maternite(data):
     data["non_calculable_bool"] = calculable
     if not calculable:
         data["note"] = "nc"
-
-
-async def duplicates(current_export, *solen_data):  # pragma: no cover
-    before = time.perf_counter()
-    headers, columns = await get_headers_columns()
-    columns = [c for c, _ in columns]
-    reversed_headers = dict(zip(headers, columns))
-    data = defaultdict(list)
-    raw = list(
-        load_workbook(current_export, read_only=True, data_only=True).active.values
-    )
-    timer, before = time.perf_counter() - before, time.perf_counter()
-    print(f"Done reading current data ({timer})")
-    own_headers = raw[0]
-    year_idx = own_headers.index("Annee_indicateurs")
-    siren_idx = own_headers.index("SIREN")
-    for row in raw[1:]:
-        if row[0].startswith("solen"):
-            continue
-        year = row[year_idx]
-        siren = row[siren_idx]
-        key = f"{year}.{siren}"
-        # Align to current headers (which change according to data in DB)
-        record = {
-            reversed_headers[own_headers[i]]: row[i]
-            for i in range(len(row))
-            if own_headers[i] in reversed_headers
-        }
-        data[key].append(record)
-    timer, before = time.perf_counter() - before, time.perf_counter()
-    print(f"Done filtering current data ({timer})")
-    for path in solen_data:
-        _, year = path.stem.split("-")
-        raw = ExcelData(path)
-        for row in raw.repondants.values():
-            record = flatten(
-                RowProcessor(
-                    year,
-                    None,
-                    row,
-                ).run()["data"]
-            )
-            url = (
-                f"'https://solen1.enquetes.social.gouv.fr/cgi-bin/HE/P?P={record['id']}"
-            )
-            record["URL_declaration"] = url
-            siren = record["entreprise.siren"]
-            year = record["déclaration.année_indicateurs"]
-            key = f"{year}.{siren}"
-            data[key].append(record)
-    timer, before = time.perf_counter() - before, time.perf_counter()
-    print(f"Done reading solen data: ({timer})")
-    print(f"Unique entries: {len(data)}")
-    duplicates = {k: v for k, v in data.items() if len(v) > 1}
-    timer, before = time.perf_counter() - before, time.perf_counter()
-    print(f"Done computing duplicates ({timer})")
-    wb = Workbook(write_only=True)
-    ws = wb.create_sheet()
-    wb.active = ws
-    ws.append(headers)
-    for entry in duplicates.values():
-        for record in entry:
-            ws.append([record.get(c) for c in columns])
-    return wb

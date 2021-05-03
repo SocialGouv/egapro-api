@@ -24,7 +24,6 @@ from egapro import (
 )
 from egapro.emails.success import attachment
 from egapro.exporter import dump  # noqa: expose to minicli
-from egapro.solen import *  # noqa: expose to minicli
 from egapro.utils import json_dumps
 
 
@@ -33,21 +32,6 @@ async def dump_dgt(path: Path, max_rows: int = None):
     wb = await dgt.as_xlsx(max_rows)
     print("Writing the XLSX to", path)
     wb.save(path)
-    print("Done")
-
-
-@minicli.cli
-async def compute_duplicates(out: Path, current: Path, legacy: Path, *solen: Path):
-    """Compute duplicates between solen and solen or solen and egapro.
-    Should be removed as soon as we have integrated the solen form.
-
-
-    :current:   Path to current consolidated export.
-    :legacy:    Path to consolidated export from legacy.
-    :solen:     Paths to solen export, in the form solen-YYYY.xlsx"""
-    wb = await dgt.duplicates(current, legacy, *solen)
-    print("Writing the XLSX to", out)
-    wb.save(out)
     print("Done")
 
 

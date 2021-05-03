@@ -8,7 +8,6 @@ from asyncpg.exceptions import DuplicateDatabaseError, PostgresError
 import ujson as json
 
 from . import config, models, sql, utils, helpers
-from .schema.legacy import from_legacy
 from .loggers import logger
 
 
@@ -35,9 +34,7 @@ class DeclarationRecord(Record):
 
     @property
     def data(self):
-        data = self.get("draft") or self.get("data") or self.get("legacy")
-        if "déclaration" not in data:
-            data = from_legacy(data)
+        data = self.get("draft") or self.get("data")
         return models.Data(data)
 
 

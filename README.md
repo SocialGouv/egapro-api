@@ -29,6 +29,5 @@ Create a virtualenv, then
 
 ## Run tests
 
-    pip install -e .[solen]
     createdb test_egapro
     make test

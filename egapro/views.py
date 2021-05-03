@@ -10,7 +10,6 @@ from roll.extensions import cors, options
 from stdnum.fr.siren import is_valid as siren_is_valid
 
 from . import config, constants, db, emails, helpers, models, tokens, utils, schema
-from .schema.legacy import from_legacy
 from . import loggers
 
 
@@ -35,10 +34,7 @@ class Request(BaseRequest):
     @property
     def data(self):
         if self._data is None:
-            data = self.json
-            if data and "déclaration" not in data:
-                data = from_legacy(data)
-            self._data = models.Data(data)
+            self._data = models.Data(self.json)
         return self._data
 
     @property

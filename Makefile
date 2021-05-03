@@ -1,7 +1,7 @@
 .ONESHELL:
 
 develop:
-	pip install -e .[dev,test,solen]
+	pip install -e .[dev,test]
 
 init: SHELL := python3
 init:
