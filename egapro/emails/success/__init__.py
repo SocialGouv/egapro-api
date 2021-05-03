@@ -104,7 +104,7 @@ class PDF(fpdf.FPDF):
             height, key_width, value_width = self.compute_row_height(key, value)
             h += height
             table.append((key, value, height, key_width, value_width))
-        self.perform_page_break_if_need_be(h)
+        self._perform_page_break_if_need_be(h)
         self.write_headline(title)
         for key, value, height, key_width, value_width in table:
             self.write_pair(key, value, height, key_width, value_width)
