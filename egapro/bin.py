@@ -16,6 +16,7 @@ from egapro import (
     constants,
     db,
     dgt,
+    emails,
     exporter,
     models,
     schema,
@@ -263,6 +264,34 @@ async def receipt(siren, year, destination=None):
     data = {"modified_at": record["modified_at"], **record.data}
     pdf, _ = attachment(data)
     print(pdf.output(destination) or f"Saved to {destination}")
+
+
+@minicli.cli
+async def send_receipts(recipient=None, offset=0, limit=0):
+    records = await db.declaration.fetch(
+        "SELECT data, owner, modified_at FROM declaration "
+        "WHERE draft IS NOT NULL AND year=2020 AND declared_at<'2021-03-10'"
+        "ORDER BY declared_at ASC "
+        "LIMIT $1 OFFSET $2",
+        int(limit) if limit else None,
+        int(offset),
+    )
+    bar = progressist.ProgressBar(prefix="Sending mails", total=len(records))
+    for record in bar.iter(records):
+        data = record.data
+        url = config.DOMAIN + data.uri
+        recipient_ = recipient or record["owner"]
+        try:
+            emails.success.send(
+                recipient_,
+                url=url,
+                modified_at=record["modified_at"],
+                **data,
+            )
+        except Exception as ex:
+            print(ex)
+            print(data)
+            continue
 
 
 @minicli.cli
