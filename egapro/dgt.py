@@ -297,7 +297,7 @@ def ues_data(sheet, data):
     commune = data.path("entreprise.commune")
     tranche = EFFECTIF.get(data.path("entreprise.effectif.tranche"))
     nom = data.path("entreprise.ues.nom")
-    sheet.append(
+    rows = [
         [
             data.year,
             region,
@@ -312,22 +312,25 @@ def ues_data(sheet, data):
             data.path("entreprise.raison_sociale"),
             data.siren,
         ]
-    )
+    ]
     for ues in entreprises or []:
-        row = [
-            data.year,
-            region,
-            departement,
-            adresse,
-            cp,
-            commune,
-            tranche,
-            nom,
-            data.siren,
-            data.company,
-            ues["raison_sociale"],
-            ues["siren"],
-        ]
+        rows.append(
+            [
+                data.year,
+                region,
+                departement,
+                adresse,
+                cp,
+                commune,
+                tranche,
+                nom,
+                data.siren,
+                data.company,
+                ues["raison_sociale"],
+                ues["siren"],
+            ]
+        )
+    for row in rows:
         sheet.append(clean_cell(cell) for cell in row)
 
 
