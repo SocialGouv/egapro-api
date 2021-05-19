@@ -988,7 +988,7 @@ async def test_publication_is_required_if_calculable(client, body):
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
-        "error": "La date de publication doit être définie pour un index de 75 ou plus"
+        "error": "La date de publication doit être définie"
     }
 
 
@@ -997,6 +997,24 @@ async def test_publication_modalités_or_url_is_required_if_calculable(client, b
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
-        "error": "Les modalités de publication ou le site Internet doit être défini "
-        "pour un index de 75 ou plus"
+        "error": "Les modalités de publication ou le site Internet doit être défini"
+    }
+
+
+async def test_publication_modalités_or_url_is_required_for_2020(client, body):
+    body["déclaration"]["année_indicateurs"] = 2019
+    # Non calculable
+    body["indicateurs"]["rémunérations"] = {"non_calculable": "egvi40pcet"}
+    body["indicateurs"]["congés_maternité"] = {"non_calculable": "absaugpdtcm"}
+    # Remove modalités
+    del body["déclaration"]["publication"]["modalités"]
+    # OK for 2019
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    # NOK for 2019
+    body["déclaration"]["année_indicateurs"] = 2020
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "Les modalités de publication ou le site Internet doit être défini"
     }

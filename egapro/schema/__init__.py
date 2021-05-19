@@ -67,21 +67,19 @@ def _cross_validate(data):
         assert check_dep_and_cp(dep, cp), msg
         index = data.path("déclaration.index")
         mesures_correctives = data.path("déclaration.mesures_correctives")
+        if data.year >= 2020 or index is not None:
+            msg = "La date de publication doit être définie"
+            assert data.path("déclaration.publication.date"), msg
+            msg = "Les modalités de publication ou le site Internet doit être défini"
+            assert data.path("déclaration.publication.modalités") or data.path(
+                "déclaration.publication.url"
+            ), msg
         if index is None:
             msg = "Les mesures correctives ne doivent pas être définies si l'index n'est pas calculable"
             assert not mesures_correctives, msg
         elif index >= 75:
             msg = "Les mesures correctives ne doivent pas être définies pour un index de 75 ou plus"
             assert not mesures_correctives, msg
-            msg = "La date de publication doit être définie pour un index de 75 ou plus"
-            assert data.path("déclaration.publication.date"), msg
-            msg = (
-                "Les modalités de publication ou le site Internet doit être défini "
-                "pour un index de 75 ou plus"
-            )
-            assert data.path("déclaration.publication.modalités") or data.path(
-                "déclaration.publication.url"
-            ), msg
         else:
             msg = "Les mesures correctives doivent être définies pour un index inférieur à 75"
             assert mesures_correctives, msg
