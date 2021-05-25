@@ -267,18 +267,11 @@ async def receipt(siren, year, destination=None):
 
 
 @minicli.cli
-async def send_receipts(recipient=None, offset=0, limit=0):
-    records = await db.declaration.fetch(
-        "SELECT data, owner, modified_at FROM declaration "
-        "WHERE draft IS NOT NULL AND year=2020 AND declared_at<'2021-03-10'"
-        "ORDER BY declared_at ASC "
-        "LIMIT $1 OFFSET $2",
-        int(limit) if limit else None,
-        int(offset),
-    )
-    bar = progressist.ProgressBar(prefix="Sending mails", total=len(records))
-    for record in bar.iter(records):
-        data = record.data
+async def resend_receipts(*sirens, recipient=None):
+    """Resend receipt for a list of sirens in the current year"""
+    for siren in sirens:
+        record = await db.declaration.get(siren, constants.CURRENT_YEAR)
+        data = models.Data(record.get("data"))
         url = config.DOMAIN + data.uri
         recipient_ = recipient or record["owner"]
         try:
