@@ -85,25 +85,17 @@ def ensure_owner(view):
     @wraps(view)
     async def wrapper(request, response, siren, year, *args, **kwargs):
         declarant = request["email"]
-        try:
-            owner = await db.declaration.owner(siren, year)
-        except db.NoData:
-            pass
-        else:
-            if owner != declarant:
-                loggers.logger.debug(
-                    "Non owner (%s instead of %s) accessing resource %s %s",
-                    declarant,
-                    owner,
-                    siren,
-                    year,
-                )
-                if not request["staff"]:
-                    if request.method == "PUT":
-                        msg = "Cette déclaration a déjà été créée par un autre utilisateur"
-                    else:
-                        msg = "Cette déclaration a été créée par un autre utilisateur"
-                    raise HttpError(403, msg)
+        owners = await db.ownership.emails(siren)
+        if owners and declarant not in owners:
+            loggers.logger.debug(
+                "Non owner (%s) accessing resource %s %s", declarant, siren, year
+            )
+            if not request["staff"]:
+                if request.method == "PUT":
+                    msg = "Cette déclaration a déjà été créée par un autre utilisateur"
+                else:
+                    msg = "Cette déclaration a été créée par un autre utilisateur"
+                raise HttpError(403, msg)
         if request._body:  # This is a PUT.
             request.data.setdefault("déclarant", {})
             # Use token email as default for declarant email.
@@ -142,16 +134,15 @@ async def declare(request, response, siren, year):
         # Do not force new declarant, in case this is a staff person editing
         declarant = current["owner"]
         declared_at = current["declared_at"]
-        if (
-            not request["staff"]
-            and declared_at
-            and declared_at < utils.remove_one_year(utils.utcnow())
-        ):
+        expired = declared_at and declared_at < utils.remove_one_year(utils.utcnow())
+        if expired and not request["staff"]:
             raise HttpError(403, "Le délai de modification est écoulé.")
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:
         await db.archive.put(siren, year, data, by=declarant, ip=request.ip)
+        if not request["staff"]:
+            await db.ownership.put(siren, request["email"])
         # Do not send the success email on update for now (we send too much emails that
         # are unwanted, mainly because when someone loads the frontend app a PUT is
         # automatically sent, without any action from the user.)

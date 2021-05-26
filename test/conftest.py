@@ -18,6 +18,8 @@ def pytest_configure(config):
             await conn.execute("DROP TABLE IF EXISTS declaration")
             await conn.execute("DROP TABLE IF EXISTS declaration")
             await conn.execute("DROP TABLE IF EXISTS search")
+            await conn.execute("DROP TABLE IF EXISTS archive")
+            await conn.execute("DROP TABLE IF EXISTS ownership")
         await db.init()
 
     loop = asyncio.get_event_loop()
@@ -38,6 +40,7 @@ def pytest_runtest_setup(item):
             await conn.execute("TRUNCATE TABLE simulation;")
             await conn.execute("TRUNCATE TABLE search;")
             await conn.execute("TRUNCATE TABLE archive;")
+            await conn.execute("TRUNCATE TABLE ownership;")
         await db.terminate()
 
     asyncio.get_event_loop().run_until_complete(setup())
@@ -98,6 +101,7 @@ def declaration():
         if compute_notes:
             helpers.compute_notes(models.Data(data))
         await db.declaration.put(siren, year, owner, data, modified_at=modified_at)
+        await db.ownership.put(siren, owner)
         return data
 
     return factory
@@ -105,6 +109,7 @@ def declaration():
 
 class Client(BaseClient):
     def login(self, email):
+        print(f"Login as {email}")
         token = tokens.create(email)
         self.default_headers["API-Key"] = token
 

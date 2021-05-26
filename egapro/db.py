@@ -131,29 +131,12 @@ class declaration(table):
             await conn.execute(query, *args)
 
     @classmethod
-    async def owner(cls, siren, year):
-        return await cls.fetchval(
-            "SELECT owner FROM declaration WHERE siren=$1 AND year=$2 "
-            "AND declared_at IS NOT NULL",
-            siren,
-            int(year),
-        )
-
-    @classmethod
-    async def own(cls, siren, year, owner):
-        await cls.execute(
-            "UPDATE declaration SET owner=$3 WHERE siren=$1 AND year=$2",
-            siren,
-            int(year),
-            owner,
-        )
-
-    @classmethod
     async def owned(cls, owner):
+        sirens = await ownership.sirens(owner)
         return [
             cls.metadata(r)
             for r in await cls.fetch(
-                "SELECT * FROM declaration WHERE owner=$1", owner
+                "SELECT * FROM declaration WHERE siren = any($1::text[])", sirens
             )
         ]
 
@@ -189,6 +172,30 @@ class declaration(table):
             },
         }
         return out
+
+
+class ownership(table):
+    @classmethod
+    async def put(cls, siren, email):
+        async with cls.pool.acquire() as conn:
+            created = await conn.fetchval(
+                "INSERT INTO ownership (siren, email) VALUES ($1, $2) "
+                "ON CONFLICT DO NOTHING RETURNING true",
+                siren,
+                email,
+            )
+        if created:
+            logger.info(f"Adding owner for {siren}: {email}")
+
+    @classmethod
+    async def emails(cls, siren):
+        records = await cls.fetch("SELECT email FROM ownership WHERE siren=$1", siren)
+        return [r["email"] for r in records]
+
+    @classmethod
+    async def sirens(cls, email):
+        records = await cls.fetch("SELECT siren FROM ownership WHERE email=$1", email)
+        return [r["siren"] for r in records]
 
 
 class simulation(table):

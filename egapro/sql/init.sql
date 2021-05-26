@@ -17,3 +17,4 @@ CREATE TABLE IF NOT EXISTS search
 PRIMARY KEY (siren, year));
 CREATE TABLE IF NOT EXISTS archive
 (siren TEXT, year INT, at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), by TEXT, ip INET, data JSONB);
+CREATE TABLE IF NOT EXISTS ownership (siren TEXT, email TEXT, PRIMARY KEY (siren, email));
