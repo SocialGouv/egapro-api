@@ -199,6 +199,7 @@ async def me(request, response):
     response.json = {
         "email": request["email"],
         "déclarations": await db.declaration.owned(request["email"]),
+        "ownership": await db.ownership.sirens(request["email"]),
     }
 
 
