@@ -132,7 +132,7 @@ async def declare(request, response, siren, year):
         current = None
     else:
         # Do not force new declarant, in case this is a staff person editing
-        declarant = current["owner"]
+        declarant = current["declarant"]
         declared_at = current["declared_at"]
         expired = declared_at and declared_at < utils.remove_one_year(utils.utcnow())
         if expired and not request["staff"]:

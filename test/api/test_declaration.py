@@ -375,7 +375,7 @@ async def test_staff_can_put_not_owned_declaration(
     resp = await client.put("/declaration/514027945/2019", body)
     assert resp.status == 204
     saved = await db.declaration.get(siren="514027945", year=2019)
-    assert saved["owner"] == "foo@bar.baz"
+    assert saved["declarant"] == "foo@bar.baz"
     assert saved["data"]["entreprise"]["raison_sociale"] == "New Name"
     # Staff should not be set as owner.
     assert await db.ownership.emails("514027945") == ["foo@bar.baz"]
