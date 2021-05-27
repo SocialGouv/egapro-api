@@ -421,7 +421,7 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch, body
     del body["id"]
 
     def mock_send(to, subject, txt, html, reply_to, attachment):
-        assert to == "foo@bar.org"
+        assert to == ["foo@bar.org", "foo@foo.foo"]
         assert "/declaration/?siren=514027945&year=2019" in txt
         assert "/declaration/?siren=514027945&year=2019" in html
         assert reply_to == "Foo Bar <foo@baz.fr>"
@@ -429,6 +429,9 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch, body
         nonlocal calls
         calls += 1
 
+    await db.ownership.put("514027945", "foo@bar.org")
+    # Add another owner, that should be in the email recipients
+    await db.ownership.put("514027945", "foo@foo.foo")
     body["déclaration"]["brouillon"] = True
     monkeypatch.setattr("egapro.emails.send", mock_send)
     monkeypatch.setattr("egapro.emails.REPLY_TO", {"12": "Foo Bar <foo@baz.fr>"})
@@ -449,7 +452,7 @@ async def test_confirmed_declaration_should_send_email_for_legacy_call(
     body["source"] = "simulateur"
 
     def mock_send(to, subject, txt, html, reply_to, attachment):
-        assert to == "foo@bar.org"
+        assert to == ["foo@bar.org"]
         assert id in txt
         assert id in html
         nonlocal calls

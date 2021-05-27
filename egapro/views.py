@@ -147,8 +147,9 @@ async def declare(request, response, siren, year):
         # automatically sent, without any action from the user.)
         loggers.logger.info(f"{siren}/{year} BY {declarant} FROM {request.ip}")
         if not current or not current.data.validated:
+            owners = await db.ownership.emails(siren)
             url = request.domain + data.uri
-            emails.success.send(declarant, url=url, **data)
+            emails.success.send(owners, url=url, **data)
 
 
 @app.route("/declaration/{siren}/{year}", methods=["GET"])
