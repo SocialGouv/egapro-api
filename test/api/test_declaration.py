@@ -339,7 +339,7 @@ async def test_cannot_load_not_owned_declaration(client, declaration):
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 403
     assert json.loads(resp.body) == {
-        "error": "Cette déclaration a été créée par un autre utilisateur"
+        "error": "Vous n'avez pas les droits nécessaires pour le siren 514027945"
     }
 
 
@@ -387,7 +387,7 @@ async def test_cannot_put_not_owned_declaration(client, monkeypatch):
     resp = await client.put("/declaration/514027945/2019")
     assert resp.status == 403
     assert json.loads(resp.body) == {
-        "error": "Cette déclaration a déjà été créée par un autre utilisateur"
+        "error": "Vous n'avez pas les droits nécessaires pour le siren 514027945"
     }
 
 
