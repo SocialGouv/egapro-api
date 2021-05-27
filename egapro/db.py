@@ -190,11 +190,13 @@ class ownership(table):
     @classmethod
     async def delete(cls, siren, email):
         async with cls.pool.acquire() as conn:
-            created = await conn.fetchval(
-                "DELETE FROM ownership WHERE siren=$1 AND email=$2", siren, email
+            deleted = await conn.fetchval(
+                "DELETE FROM ownership WHERE siren=$1 AND email=$2 RETURNING true",
+                siren,
+                email,
             )
-        if created:
-            logger.info(f"Adding owner for {siren}: {email}")
+        if deleted:
+            logger.info(f"Deleting owner for {siren}: {email}")
 
     @classmethod
     async def emails(cls, siren):
