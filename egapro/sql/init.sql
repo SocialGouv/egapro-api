@@ -8,7 +8,7 @@ EXCEPTION
       NULL;  -- ignore error
 END;$$;
 CREATE TABLE IF NOT EXISTS declaration
-(siren TEXT, year INT, modified_at TIMESTAMP WITH TIME ZONE, declared_at TIMESTAMP WITH TIME ZONE, owner TEXT, data JSONB, draft JSONB, legacy JSONB, ft TSVECTOR,
+(siren TEXT, year INT, modified_at TIMESTAMP WITH TIME ZONE, declared_at TIMESTAMP WITH TIME ZONE, declarant TEXT, data JSONB, draft JSONB, legacy JSONB, ft TSVECTOR,
 PRIMARY KEY (siren, year));
 CREATE TABLE IF NOT EXISTS simulation
 (id uuid PRIMARY KEY, modified_at TIMESTAMP WITH TIME ZONE, data JSONB);
@@ -17,3 +17,4 @@ CREATE TABLE IF NOT EXISTS search
 PRIMARY KEY (siren, year));
 CREATE TABLE IF NOT EXISTS archive
 (siren TEXT, year INT, at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), by TEXT, ip INET, data JSONB);
+CREATE TABLE IF NOT EXISTS ownership (siren TEXT, email TEXT, PRIMARY KEY (siren, email));

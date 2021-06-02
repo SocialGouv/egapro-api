@@ -83,33 +83,20 @@ async def json_error_response(request, response, error):
 
 def ensure_owner(view):
     @wraps(view)
-    async def wrapper(request, response, siren, year, *args, **kwargs):
+    async def wrapper(request, response, siren, *args, **kwargs):
         declarant = request["email"]
-        try:
-            owner = await db.declaration.owner(siren, year)
-        except db.NoData:
-            pass
-        else:
-            if owner != declarant:
-                loggers.logger.debug(
-                    "Non owner (%s instead of %s) accessing resource %s %s",
-                    declarant,
-                    owner,
-                    siren,
-                    year,
-                )
-                if not request["staff"]:
-                    if request.method == "PUT":
-                        msg = "Cette déclaration a déjà été créée par un autre utilisateur"
-                    else:
-                        msg = "Cette déclaration a été créée par un autre utilisateur"
-                    raise HttpError(403, msg)
-        if request._body:  # This is a PUT.
-            request.data.setdefault("déclarant", {})
-            # Use token email as default for declarant email.
-            if not request.data["déclarant"].get("email"):
-                request.data["déclarant"]["email"] = declarant
-        return await view(request, response, siren, year, *args, **kwargs)
+        owners = await db.ownership.emails(siren)
+        if declarant in owners:
+            request["is_owner"] = True
+        # Allow to create a declaration for a siren without any owner yet.
+        elif owners:
+            loggers.logger.debug(
+                "Non owner (%s) accessing owned resource %s %s", declarant, siren, args
+            )
+            if not request["staff"]:
+                msg = f"Vous n'avez pas les droits nécessaires pour le siren {siren}"
+                raise HttpError(403, msg)
+        return await view(request, response, siren, *args, **kwargs)
 
     return wrapper
 
@@ -130,35 +117,39 @@ async def declare(request, response, siren, year):
             422, f"Il est possible de déclarer seulement pour les années {years}"
         )
     data = request.data
+    declarant = request["email"]
+    data.setdefault("déclarant", {})
+    # Use token email as default for declarant email.
+    if not data["déclarant"].get("email"):
+        data["déclarant"]["email"] = declarant
     schema.validate(data.raw)
     helpers.compute_notes(data)
     schema.cross_validate(data.raw)
-    declarant = request["email"]
     try:
         current = await db.declaration.get(siren, year)
     except db.NoData:
         current = None
     else:
         # Do not force new declarant, in case this is a staff person editing
-        declarant = current["owner"]
+        declarant = current["declarant"]
         declared_at = current["declared_at"]
-        if (
-            not request["staff"]
-            and declared_at
-            and declared_at < utils.remove_one_year(utils.utcnow())
-        ):
+        expired = declared_at and declared_at < utils.remove_one_year(utils.utcnow())
+        if expired and not request["staff"]:
             raise HttpError(403, "Le délai de modification est écoulé.")
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:
         await db.archive.put(siren, year, data, by=declarant, ip=request.ip)
+        if not request["staff"]:
+            await db.ownership.put(siren, request["email"])
         # Do not send the success email on update for now (we send too much emails that
         # are unwanted, mainly because when someone loads the frontend app a PUT is
         # automatically sent, without any action from the user.)
         loggers.logger.info(f"{siren}/{year} BY {declarant} FROM {request.ip}")
         if not current or not current.data.validated:
+            owners = await db.ownership.emails(siren)
             url = request.domain + data.uri
-            emails.success.send(declarant, url=url, **data)
+            emails.success.send(owners, url=url, **data)
 
 
 @app.route("/declaration/{siren}/{year}", methods=["GET"])
@@ -173,7 +164,34 @@ async def get_declaration(request, response, siren, year):
     if record.data.path("déclarant.nom"):
         await helpers.patch_from_api_entreprises(resource["data"])
     response.json = resource
-    response.status = 200
+
+
+@app.route("/ownership/{siren}", methods=["GET"])
+@tokens.require
+@ensure_owner
+async def get_owners(request, response, siren):
+    response.json = {"owners": await db.ownership.emails(siren)}
+
+
+@app.route("/ownership/{siren}/{email}", methods=["PUT"])
+@tokens.require
+@ensure_owner
+async def put_owner(request, response, siren, email):
+    if "is_owner" not in request:
+        raise HttpError(403, "Vous n'avez pas les droits nécessaires")
+    await db.ownership.put(siren, email)
+    response.status = 204
+
+
+@app.route("/ownership/{siren}/{email}", methods=["DELETE"])
+@tokens.require
+@ensure_owner
+async def delete_owner(request, response, siren, email):
+    owners = await db.ownership.emails(siren)
+    if len(owners) == 1:
+        raise HttpError(403, "Impossible de supprimer le dernier propriétaire.")
+    await db.ownership.delete(siren, email)
+    response.status = 204
 
 
 @app.route("/me", methods=["GET"])
@@ -182,6 +200,7 @@ async def me(request, response):
     response.json = {
         "email": request["email"],
         "déclarations": await db.declaration.owned(request["email"]),
+        "ownership": await db.ownership.sirens(request["email"]),
     }
 
 

@@ -222,6 +222,7 @@ async def test_me(client, declaration):
                 "year": 2020,
             }
         ],
+        "ownership": ["123456782"],
     }
 
 

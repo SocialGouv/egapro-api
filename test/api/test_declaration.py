@@ -285,7 +285,7 @@ async def test_owner_email_should_be_lower_cased(client, body):
     client.login("FoO@BAZ.baR")
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
-    assert await db.declaration.owner("514027945", 2019) == "foo@baz.bar"
+    assert await db.ownership.emails("514027945") == ["foo@baz.bar"]
 
 
 async def test_basic_declaration_should_remove_data_namespace_if_present(client, body):
@@ -339,16 +339,22 @@ async def test_cannot_load_not_owned_declaration(client, declaration):
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 403
     assert json.loads(resp.body) == {
-        "error": "Cette déclaration a été créée par un autre utilisateur"
+        "error": "Vous n'avez pas les droits nécessaires pour le siren 514027945"
     }
 
 
-async def test_draft_declaration_is_not_owned(client, declaration):
-    await declaration("514027945", 2019, "foo@bar.baz", déclaration={"brouillon": True})
-
+async def test_draft_declaration_is_not_owned(client, declaration, body):
+    body["déclaration"]["brouillon"] = True
+    client.login("foo@bar.baz")
+    resp = await client.put("/declaration/514027945/2019", body)
+    assert resp.status == 204
     client.login("other@email.com")
-    resp = await client.get("/declaration/514027945/2019")
-    assert resp.status == 200
+    del body["déclaration"]["brouillon"]
+    resp = await client.put("/declaration/514027945/2019", body)
+    assert resp.status == 204
+    client.login("foo@bar.baz")
+    resp = await client.put("/declaration/514027945/2019", body)
+    assert resp.status == 403
 
 
 async def test_staff_can_load_not_owned_declaration(client, monkeypatch, declaration):
@@ -369,20 +375,19 @@ async def test_staff_can_put_not_owned_declaration(
     resp = await client.put("/declaration/514027945/2019", body)
     assert resp.status == 204
     saved = await db.declaration.get(siren="514027945", year=2019)
-    assert saved["owner"] == "foo@bar.baz"
+    assert saved["declarant"] == "foo@bar.baz"
     assert saved["data"]["entreprise"]["raison_sociale"] == "New Name"
+    # Staff should not be set as owner.
+    assert await db.ownership.emails("514027945") == ["foo@bar.baz"]
 
 
 async def test_cannot_put_not_owned_declaration(client, monkeypatch):
-    async def mock_owner(*args, **kwargs):
-        return "foo@bar.baz"
-
-    monkeypatch.setattr("egapro.db.declaration.owner", mock_owner)
+    await db.ownership.put("514027945", "foo@bar.baz")
     client.login("other@email.com")
     resp = await client.put("/declaration/514027945/2019")
     assert resp.status == 403
     assert json.loads(resp.body) == {
-        "error": "Cette déclaration a déjà été créée par un autre utilisateur"
+        "error": "Vous n'avez pas les droits nécessaires pour le siren 514027945"
     }
 
 
@@ -416,7 +421,7 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch, body
     del body["id"]
 
     def mock_send(to, subject, txt, html, reply_to, attachment):
-        assert to == "foo@bar.org"
+        assert to == ["foo@bar.org", "foo@foo.foo"]
         assert "/declaration/?siren=514027945&year=2019" in txt
         assert "/declaration/?siren=514027945&year=2019" in html
         assert reply_to == "Foo Bar <foo@baz.fr>"
@@ -424,6 +429,9 @@ async def test_confirmed_declaration_should_send_email(client, monkeypatch, body
         nonlocal calls
         calls += 1
 
+    await db.ownership.put("514027945", "foo@bar.org")
+    # Add another owner, that should be in the email recipients
+    await db.ownership.put("514027945", "foo@foo.foo")
     body["déclaration"]["brouillon"] = True
     monkeypatch.setattr("egapro.emails.send", mock_send)
     monkeypatch.setattr("egapro.emails.REPLY_TO", {"12": "Foo Bar <foo@baz.fr>"})
@@ -444,7 +452,7 @@ async def test_confirmed_declaration_should_send_email_for_legacy_call(
     body["source"] = "simulateur"
 
     def mock_send(to, subject, txt, html, reply_to, attachment):
-        assert to == "foo@bar.org"
+        assert to == ["foo@bar.org"]
         assert id in txt
         assert id in html
         nonlocal calls
