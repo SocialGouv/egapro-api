@@ -16,6 +16,9 @@ LABELS = {
     "etsno5f5h": "L'entreprise ne comporte pas au moins 5 femmes et 5 hommes",
     "absrcm": "Absence de retours de congé maternité",
     "absaugpdtcm": "Absence d'augmentations pendant ce congé",
+    "me": "mesures envisagées",
+    "mne": "mesures non envisagées",
+    "mmo": "mesures mises en œuvre",
 }
 
 
