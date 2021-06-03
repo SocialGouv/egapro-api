@@ -417,56 +417,48 @@ async def test_declaring_twice_should_not_duplicate(client, app, body):
 
 
 async def test_confirmed_declaration_should_send_email(client, monkeypatch, body):
-    calls = 0
+    sender = mock.Mock()
     del body["id"]
-
-    def mock_send(to, subject, txt, html, reply_to, attachment):
-        assert to == ["foo@bar.org", "foo@foo.foo"]
-        assert "/declaration/?siren=514027945&year=2019" in txt
-        assert "/declaration/?siren=514027945&year=2019" in html
-        assert reply_to == "Foo Bar <foo@baz.fr>"
-        assert attachment[1] == "declaration_514027945_2020.pdf"
-        nonlocal calls
-        calls += 1
-
     await db.ownership.put("514027945", "foo@bar.org")
     # Add another owner, that should be in the email recipients
     await db.ownership.put("514027945", "foo@foo.foo")
     body["déclaration"]["brouillon"] = True
-    monkeypatch.setattr("egapro.emails.send", mock_send)
+    monkeypatch.setattr("egapro.emails.send", sender)
     monkeypatch.setattr("egapro.emails.REPLY_TO", {"12": "Foo Bar <foo@baz.fr>"})
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
-    assert not calls
+    assert not sender.call_count
     del body["déclaration"]["brouillon"]
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
-    assert calls == 1
+    assert sender.call_count == 1
+    to, subject, txt, html = sender.call_args.args
+    assert to == ["foo@bar.org", "foo@foo.foo"]
+    assert "/declaration/?siren=514027945&year=2019" in txt
+    assert "/declaration/?siren=514027945&year=2019" in html
+    assert sender.call_args.kwargs["reply_to"] == "Foo Bar <foo@baz.fr>"
+    assert sender.call_args.kwargs["attachment"][1] == "declaration_514027945_2020.pdf"
 
 
 async def test_confirmed_declaration_should_send_email_for_legacy_call(
     client, monkeypatch, body
 ):
-    calls = 0
+    sender = mock.Mock()
     id = "1234"
     body["source"] = "simulateur"
-
-    def mock_send(to, subject, txt, html, reply_to, attachment):
-        assert to == ["foo@bar.org"]
-        assert id in txt
-        assert id in html
-        nonlocal calls
-        calls += 1
-
     body["déclaration"]["brouillon"] = True
-    monkeypatch.setattr("egapro.emails.send", mock_send)
+    monkeypatch.setattr("egapro.emails.send", sender)
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
-    assert not calls
+    assert not sender.call_count
     del body["déclaration"]["brouillon"]
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
-    assert calls == 1
+    assert sender.call_count == 1
+    to, subject, txt, html = sender.call_args.args
+    assert to == ["foo@bar.org"]
+    assert id in txt
+    assert id in html
 
 
 async def test_confirmed_declaration_should_raise_if_missing_entreprise_data(
