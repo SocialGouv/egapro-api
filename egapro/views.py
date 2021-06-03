@@ -166,6 +166,21 @@ async def get_declaration(request, response, siren, year):
     response.json = resource
 
 
+@app.route("/declaration/{siren}/{year}/receipt", methods=["POST"])
+@tokens.require
+@ensure_owner
+async def resend_receipt(request, response, siren, year):
+    try:
+        record = await db.declaration.get(siren, year)
+    except db.NoData:
+        raise HttpError(404, f"No declaration with siren {siren} and year {year}")
+    owners = await db.ownership.emails(siren)
+    data = record.data
+    url = request.domain + data.uri
+    emails.success.send(owners, url=url, **data)
+    response.status = 204
+
+
 @app.route("/ownership/{siren}", methods=["GET"])
 @tokens.require
 @ensure_owner
