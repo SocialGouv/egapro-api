@@ -1029,16 +1029,7 @@ async def test_publication_modalités_or_url_is_required_for_2020(client, body):
 
 
 async def test_resend_receipt_endpoint(client, monkeypatch, declaration):
-    calls = 0
-
-    def mock_send(to, subject, txt, html, reply_to, attachment):
-        assert to == ["foo@bar.org", "foo@foo.foo"]
-        assert "/declaration/?siren=514027945&year=2020" in txt
-        assert "/declaration/?siren=514027945&year=2020" in html
-        assert attachment[1] == "declaration_514027945_2021.pdf"
-        nonlocal calls
-        calls += 1
-
+    sender = mock.Mock()
     await db.ownership.put("514027945", "foo@bar.org")
     # Add another owner, that should be in the email recipients
     await db.ownership.put("514027945", "foo@foo.foo")
@@ -1052,23 +1043,19 @@ async def test_resend_receipt_endpoint(client, monkeypatch, declaration):
             "commune": "Quatre",
         },
     )
-    monkeypatch.setattr("egapro.emails.send", mock_send)
+    monkeypatch.setattr("egapro.emails.send", sender)
     resp = await client.post("/declaration/514027945/2020/receipt")
     assert resp.status == 204
-    assert calls == 1
+    assert sender.call_count == 1
+    to, subject, txt, html = sender.call_args.args
+    assert to == ["foo@bar.org", "foo@foo.foo"]
+    assert "/declaration/?siren=514027945&year=2020" in txt
+    assert "/declaration/?siren=514027945&year=2020" in html
+    assert sender.call_args.kwargs["attachment"][1] == "declaration_514027945_2021.pdf"
 
 
 async def test_resend_receipt_endpoint_by_staff(client, monkeypatch, declaration):
-    calls = 0
-
-    def mock_send(to, subject, txt, html, reply_to, attachment):
-        assert to == ["foo@bar.org", "foo@foo.foo"]
-        assert "/declaration/?siren=514027945&year=2020" in txt
-        assert "/declaration/?siren=514027945&year=2020" in html
-        assert attachment[1] == "declaration_514027945_2021.pdf"
-        nonlocal calls
-        calls += 1
-
+    sender = mock.Mock()
     await db.ownership.put("514027945", "foo@bar.org")
     # Add another owner, that should be in the email recipients
     await db.ownership.put("514027945", "foo@foo.foo")
@@ -1082,21 +1069,21 @@ async def test_resend_receipt_endpoint_by_staff(client, monkeypatch, declaration
             "commune": "Quatre",
         },
     )
-    monkeypatch.setattr("egapro.emails.send", mock_send)
+    monkeypatch.setattr("egapro.emails.send", sender)
     monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
     client.login("Staff@email.com")
     resp = await client.post("/declaration/514027945/2020/receipt")
     assert resp.status == 204
-    assert calls == 1
+    assert sender.call_count == 1
+    to, subject, txt, html = sender.call_args.args
+    assert to == ["foo@bar.org", "foo@foo.foo"]
+    assert "/declaration/?siren=514027945&year=2020" in txt
+    assert "/declaration/?siren=514027945&year=2020" in html
+    assert sender.call_args.kwargs["attachment"][1] == "declaration_514027945_2021.pdf"
 
 
 async def test_resend_receipt_endpoint_by_non_owner(client, monkeypatch, declaration):
-    calls = 0
-
-    def mock_send(to, subject, txt, html, reply_to, attachment):
-        nonlocal calls
-        calls += 1
-
+    sender = mock.Mock()
     await db.ownership.put("514027945", "foo@bar.org")
     # Add another owner, that should be in the email recipients
     await db.ownership.put("514027945", "foo@foo.foo")
@@ -1110,22 +1097,17 @@ async def test_resend_receipt_endpoint_by_non_owner(client, monkeypatch, declara
             "commune": "Quatre",
         },
     )
-    monkeypatch.setattr("egapro.emails.send", mock_send)
+    monkeypatch.setattr("egapro.emails.send", sender)
     client.login("non@owner.com")
     resp = await client.post("/declaration/514027945/2020/receipt")
     assert resp.status == 403
-    assert not calls
+    assert not sender.called
 
 
 async def test_resend_receipt_endpoint_with_unknown_declaration(client, monkeypatch):
-    calls = 0
-
-    def mock_send(to, subject, txt, html, reply_to, attachment):
-        nonlocal calls
-        calls += 1
-
+    sender = mock.Mock()
     await db.ownership.put("514027945", "foo@bar.org")
-    monkeypatch.setattr("egapro.emails.send", mock_send)
+    monkeypatch.setattr("egapro.emails.send", sender)
     resp = await client.post("/declaration/514027945/2019/receipt")
     assert resp.status == 404
-    assert not calls
+    assert not sender.called
