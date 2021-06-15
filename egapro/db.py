@@ -344,6 +344,12 @@ class archive(table):
         async with cls.pool.acquire() as conn:
             await conn.execute(sql.insert_archive, siren, year, data, by, ip)
 
+    @classmethod
+    async def list(cls, siren, year):
+        return await cls.fetch(
+            "SELECT * FROM archive WHERE siren=$1 AND year=$2 ORDER BY at", siren, year
+        )
+
 
 async def set_type_codecs(conn):
     await conn.set_type_codec(

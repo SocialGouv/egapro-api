@@ -288,6 +288,17 @@ async def resend_receipts(*sirens, recipient=None):
 
 
 @minicli.cli
+async def history(siren, year: int, verbose=False):
+    records = await db.archive.list(siren, year)
+    for record in records:
+        print("-" * 80)
+        print("By {by} at {at} from {ip}".format(**record))
+        data = yaml.dump(record["data"], default_flow_style=False, allow_unicode=True)
+        if verbose:
+            print(data)
+
+
+@minicli.cli
 def shell():
     """Run an ipython already connected to PSQL."""
     try:
