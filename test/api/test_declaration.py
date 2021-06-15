@@ -379,6 +379,9 @@ async def test_staff_can_put_not_owned_declaration(
     assert saved["data"]["entreprise"]["raison_sociale"] == "New Name"
     # Staff should not be set as owner.
     assert await db.ownership.emails("514027945") == ["foo@bar.baz"]
+    # Staff should still be noted as declarant in archive entry
+    history = await db.archive.list("514027945", 2019)
+    assert history[0]["by"] == "staff@email.com"
 
 
 async def test_cannot_put_not_owned_declaration(client, monkeypatch):

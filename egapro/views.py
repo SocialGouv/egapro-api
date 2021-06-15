@@ -139,7 +139,7 @@ async def declare(request, response, siren, year):
     await db.declaration.put(siren, year, declarant, data)
     response.status = 204
     if data.validated:
-        await db.archive.put(siren, year, data, by=declarant, ip=request.ip)
+        await db.archive.put(siren, year, data, by=request["email"], ip=request.ip)
         if not request["staff"]:
             await db.ownership.put(siren, request["email"])
         # Do not send the success email on update for now (we send too much emails that
