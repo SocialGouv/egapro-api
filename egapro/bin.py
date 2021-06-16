@@ -267,10 +267,10 @@ async def receipt(siren, year, destination=None):
 
 
 @minicli.cli
-async def resend_receipts(*sirens, recipient=None):
+async def resend_receipts(*sirens, recipient=None, year=constants.CURRENT_YEAR):
     """Resend receipt for a list of sirens in the current year"""
     for siren in sirens:
-        record = await db.declaration.get(siren, constants.CURRENT_YEAR)
+        record = await db.declaration.get(siren, year)
         data = models.Data(record.get("data"))
         url = config.DOMAIN + data.uri
         recipient_ = recipient or record["owner"]
