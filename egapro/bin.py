@@ -161,13 +161,13 @@ async def explore(*siren_year):
             "SELECT * FROM declaration ORDER BY modified_at DESC LIMIT 10"
         )
         print("# Latest déclarations")
-        print("| siren     | year | modified_at      | declared_at      | owner")
+        print("| siren     | year | modified_at      | declared_at      | declarant")
         for record in records:
             declared_at = (
                 str(record["declared_at"])[:16] if record["declared_at"] else "-" * 16
             )
             print(
-                f"| {record['siren']} | {record['year']} | {str(record['modified_at'])[:16]} | {declared_at} | {record['owner']}"
+                f"| {record['siren']} | {record['year']} | {str(record['modified_at'])[:16]} | {declared_at} | {record['declarant']}"
             )
         return
     for siren, year in zip(siren_year[::2], siren_year[1::2]):
@@ -194,7 +194,7 @@ async def explore(*siren_year):
             for key, value in sequence.items():
                 print(f"{key:<20} | {value}")
         print(sep)
-        for key in ["modified_at", "declared_at", "owner"]:
+        for key in ["modified_at", "declared_at", "declarant"]:
             print(f"{key:<20} | {record[key]}")
 
 
@@ -214,9 +214,9 @@ async def load_one(path: Path):
     record = yaml.safe_load(path.read_text())
     siren = record["siren"]
     year = record["year"]
-    owner = record["owner"]
+    declarant = record["declarant"]
     data = record.get("draft") or record["data"]
-    await db.declaration.put(siren, year, owner, data)
+    await db.declaration.put(siren, year, declarant, data)
     print("Done!")
 
 
@@ -273,7 +273,7 @@ async def resend_receipts(*sirens, recipient=None, year=constants.CURRENT_YEAR):
         record = await db.declaration.get(siren, year)
         data = models.Data(record.get("data"))
         url = config.DOMAIN + data.uri
-        recipient_ = recipient or record["owner"]
+        recipient_ = recipient or record["declarant"]
         try:
             emails.success.send(
                 recipient_,
