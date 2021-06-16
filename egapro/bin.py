@@ -221,8 +221,8 @@ async def load_one(path: Path):
 
 
 @minicli.cli
-async def set_owner(siren, year, owner):
-    await db.declaration.own(siren, year, owner)
+async def add_owner(siren, owner):
+    await db.ownership.put(siren, owner)
     print("Done!")
 
 
