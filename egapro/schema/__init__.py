@@ -157,9 +157,6 @@ def _cross_validate(data):
         if mode == "csp":
             msg = f"{base}.date_consultation_cse ne doit pas être défini si indicateurs.rémunérations.mode vaut 'csp'"
             assert not date_consultation_cse, msg
-        elif mode in ["niveau_autre", "niveau_branche"]:
-            msg = f"{base}.date_consultation_cse doit être défini si indicateurs.rémunérations.mode est différent de 'csp'"
-            assert date_consultation_cse, msg
 
     # Augmentations et promotions
     base = "indicateurs.augmentations_et_promotions"
