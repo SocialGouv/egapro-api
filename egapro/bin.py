@@ -1,5 +1,6 @@
 import sys
 import urllib.request
+import unicodedata
 from collections import Counter
 from importlib import import_module
 from io import BytesIO
@@ -344,35 +345,46 @@ def shell():
 
 @minicli.cli
 async def sync_address(limit=100):
+    def clean(s):
+        s = s.lower()
+        s = s.replace("-", " ").replace("'", " ")
+        s = s.replace("avenue", "av").replace("boulevard", "bd")
+        s = unicodedata.normalize('NFD', s).encode('ascii', 'ignore').decode()
+        return s
+
     rows = await db.declaration.fetch(
-        "SELECT siren, data->'entreprise' as entreprise FROM declaration LIMIT $1",
+        "SELECT siren, data->'entreprise' as entreprise FROM declaration "
+        "WHERE year=2020 AND data IS NOT NULL LIMIT $1",
         limit,
     )
     ROOT = Path(".").parent / "tmp/api_entreprise"
     ROOT.mkdir(exist_ok=True)
-    tpl = "{raison_sociale} ({code_naf}): {adresse} {code_postal} {commune}"
-    for row in rows:
+    tpl = "{code_naf} / {adresse} {code_postal} {commune} {département} {région}"
+    for idx, row in enumerate(rows):
         siren = row["siren"]
         dest = ROOT / f"{siren}.json"
         our = dict(row["entreprise"])
-        del our["siren"]
-        del our["effectif"]
-        if "ues" in our:
-            del our["ues"]
+        raison_sociale = our["raison_sociale"]
+        our["département"] = constants.DEPARTEMENTS.get(our.get("département"))
+        our["région"] = constants.REGIONS.get(our.get("région"))
         if not dest.exists():
             other = await helpers.load_from_api_entreprises(siren)
-            dest.write_text(json_dumps(other))
+            if other:
+                dest.write_text(json_dumps(other))
         else:
             other = json.loads(dest.read_text())
-        if our != other:
-            print("{:—^80}".format(siren))
+        other["département"] = constants.DEPARTEMENTS.get(other.get("département"))
+        other["région"] = constants.REGIONS.get(other.get("région"))
+        our = tpl.format(**our)
+        if not other:
+            continue
+        other = tpl.format(**other)
+        if clean(our) != clean(other):
+            print("{:—^80}".format(f" {idx+1}. {raison_sociale} {siren} "))
             print("{:-^80}".format("our"))
-            print(tpl.format(**our))
+            print(our)
             print("{:-^80}".format("other"))
-            if other:
-                print(tpl.format(**other))
-            else:
-                print("—")
+            print(other)
             print("-"*80)
             # break
 
