@@ -18,6 +18,7 @@ from egapro import (
     dgt,
     emails,
     exporter,
+    helpers,
     models,
     schema,
     tokens,
@@ -226,7 +227,9 @@ async def set_declarant(siren, year: int, email):
         "UPDATE declaration SET declarant=$3, "
         "data = jsonb_set(data, '{déclarant,email}', to_jsonb($3::text)) "
         "WHERE siren=$1 AND year=$2",
-        siren, year, email
+        siren,
+        year,
+        email,
     )
     print("Done!", res)
 
@@ -337,6 +340,41 @@ def shell():
                 "schema": schema,
             },
         )
+
+
+@minicli.cli
+async def sync_address(limit=100):
+    rows = await db.declaration.fetch(
+        "SELECT siren, data->'entreprise' as entreprise FROM declaration LIMIT $1",
+        limit,
+    )
+    ROOT = Path(".").parent / "tmp/api_entreprise"
+    ROOT.mkdir(exist_ok=True)
+    tpl = "{raison_sociale} ({code_naf}): {adresse} {code_postal} {commune}"
+    for row in rows:
+        siren = row["siren"]
+        dest = ROOT / f"{siren}.json"
+        our = dict(row["entreprise"])
+        del our["siren"]
+        del our["effectif"]
+        if "ues" in our:
+            del our["ues"]
+        if not dest.exists():
+            other = await helpers.load_from_api_entreprises(siren)
+            dest.write_text(json_dumps(other))
+        else:
+            other = json.loads(dest.read_text())
+        if our != other:
+            print("{:—^80}".format(siren))
+            print("{:-^80}".format("our"))
+            print(tpl.format(**our))
+            print("{:-^80}".format("other"))
+            if other:
+                print(tpl.format(**other))
+            else:
+                print("—")
+            print("-"*80)
+            # break
 
 
 @minicli.wrap
