@@ -221,9 +221,32 @@ async def load_one(path: Path):
 
 
 @minicli.cli
+async def set_declarant(siren, year: int, email):
+    res = await db.declaration.execute(
+        "UPDATE declaration SET declarant=$3, "
+        "data = jsonb_set(data, '{déclarant,email}', to_jsonb($3::text)) "
+        "WHERE siren=$1 AND year=$2",
+        siren, year, email
+    )
+    print("Done!", res)
+
+
+@minicli.cli
 async def add_owner(siren, owner):
     await db.ownership.put(siren, owner)
     print("Done!")
+
+
+@minicli.cli
+async def owners(siren):
+    print(f"Owners for {siren}:")
+    print(await db.ownership.emails(siren))
+
+
+@minicli.cli
+async def ownership(email):
+    print(f"Ownership of {email}:")
+    print(await db.ownership.sirens(email))
 
 
 @minicli.cli
