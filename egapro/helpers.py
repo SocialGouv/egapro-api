@@ -236,6 +236,12 @@ async def load_from_api_entreprises(siren):
     if not data:
         return {}
     entreprise = data.get("entreprise", {})
+    radiation = entreprise.get("date_radiation")
+    if radiation:
+        raise ValueError(
+            "Le Siren saisi correspond à une entreprise fermée, "
+            "veuillez vérifier votre saisie"
+        )
     siege = data.get("etablissement_siege", {})
     code_postal = siege.get("adresse", {}).get("code_postal")
     commune = siege.get("adresse", {}).get("localite")
