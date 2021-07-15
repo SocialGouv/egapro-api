@@ -13,13 +13,19 @@ async def test_request_token(client, monkeypatch):
 
     def mock_send(to, subject, body):
         assert to == "foo@bar.org"
-        assert "/declaration/?token=" in body
+        assert "https://mycustomurl.org/declaration/token/" in body
         nonlocal calls
         calls += 1
 
     client.logout()
     monkeypatch.setattr("egapro.emails.send", mock_send)
-    resp = await client.post("/token", body={"email": "foo@bar.org"})
+    resp = await client.post(
+        "/token",
+        body={
+            "email": "foo@bar.org",
+            "url": "https://mycustomurl.org/declaration/token/",
+        },
+    )
     assert resp.status == 204
     assert calls == 1
 

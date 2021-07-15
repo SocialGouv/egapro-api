@@ -273,14 +273,15 @@ async def send_token(request, response):
     email = request.json.get("email")
     if not email:
         raise HttpError(400, "Missing email key")
-    token = tokens.create(email)
-    link = f"{request.domain}/declaration/?token={token}"
-    if "localhost" in link or "127.0.0.1" in link:
-        print(link)
     loggers.logger.info(f"Token request FOR {email} FROM {request.ip}")
+    token = tokens.create(email)
     if request.ip in config.ALLOWED_IPS:
         response.json = {"token": token}
     else:
+        url = request.json.get("url", f"{request.domain}/declaration/?token=")
+        link = f"{url}{token}"
+        if "localhost" in link or "127.0.0.1" in link:
+            print(link)
         body = emails.ACCESS_GRANTED.format(link=link)
         emails.send(email, "Déclarer sur Egapro", body)
         response.status = 204
