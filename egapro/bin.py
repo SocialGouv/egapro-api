@@ -25,7 +25,7 @@ from egapro import (
     tokens,
     loggers,
 )
-from egapro.emails.success import attachment
+from egapro.pdf import declaration as declaration_receipt
 from egapro.exporter import dump  # noqa: expose to minicli
 from egapro.utils import json_dumps
 
@@ -289,7 +289,7 @@ def compute_reply_to():
 async def receipt(siren, year, destination=None):
     record = await db.declaration.get(siren, year)
     data = {"modified_at": record["modified_at"], **record.data}
-    pdf, _ = attachment(data)
+    pdf, _ = declaration_receipt.main(data)
     print(pdf.output(destination) or f"Saved to {destination}")
 
 
