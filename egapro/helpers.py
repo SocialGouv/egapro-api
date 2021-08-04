@@ -251,6 +251,12 @@ async def load_from_api_entreprises(siren):
     adresse = [adresse.get(k) for k in ["numero_voie", "type_voie", "nom_voie"]]
     adresse = " ".join(v for v in adresse if v)
     code_naf = entreprise.get("naf_entreprise")
+    code_pays = siege.get("pays_implantation", {}).get("code")
+    if code_pays != "FR":
+        raise ValueError(
+            "Le Siren saisi correspond à une entreprise étrangère, "
+            "veuillez vérifier votre saisie"
+        )
     if code_naf:  # 4774Z => 47.74Z
         code_naf = f"{code_naf[:2]}.{code_naf[2:]}"
     return {

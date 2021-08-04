@@ -2,6 +2,92 @@ import pytest
 
 from egapro import helpers, models
 
+API_ENTREPRISES_SAMPLE = {
+    "entreprise": {
+        "siren": "481912999",
+        "capital_social": 100000,
+        "numero_tva_intracommunautaire": "FR94481912999",
+        "forme_juridique": "SAS, société par actions simplifiée",
+        "forme_juridique_code": "5710",
+        "nom_commercial": "FOOBAR",
+        "procedure_collective": False,
+        "enseigne": None,
+        "libelle_naf_entreprise": "Conseil en systèmes et logiciels informatiques",
+        "naf_entreprise": "6202A",
+        "raison_sociale": "FOOBAR",
+        "siret_siege_social": "48191290000099",
+        "code_effectif_entreprise": "03",
+        "date_creation": 1103065200,
+        "nom": None,
+        "prenom": None,
+        "date_radiation": None,
+        "categorie_entreprise": "PME",
+        "tranche_effectif_salarie_entreprise": {
+            "de": 6,
+            "a": 9,
+            "code": "03",
+            "date_reference": "2018",
+            "intitule": "6 à 9 salariés",
+        },
+        "mandataires_sociaux": [
+            {
+                "nom": "FOO",
+                "prenom": "BAR",
+                "fonction": "PRESIDENT",
+                "date_naissance": "1979-08-06",
+                "date_naissance_timestamp": 302738400,
+                "dirigeant": True,
+                "raison_sociale": "",
+                "identifiant": "",
+                "type": "PP",
+            },
+        ],
+        "etat_administratif": {"value": "A", "date_cessation": None},
+    },
+    "etablissement_siege": {
+        "siege_social": True,
+        "siret": "48191299000099",
+        "naf": "6202A",
+        "libelle_naf": "Conseil en systèmes et logiciels informatiques",
+        "date_mise_a_jour": 1598343993,
+        "tranche_effectif_salarie_etablissement": {
+            "de": 6,
+            "a": 9,
+            "code": "03",
+            "date_reference": "2018",
+            "intitule": "6 à 9 salariés",
+        },
+        "date_creation_etablissement": 1485903600,
+        "region_implantation": {"code": "11", "value": "Île-de-France"},
+        "commune_implantation": {
+            "code": "75102",
+            "value": "Paris 2e Arrondissement",
+        },
+        "pays_implantation": {"code": "FR", "value": "FRANCE"},
+        "diffusable_commercialement": True,
+        "enseigne": None,
+        "adresse": {
+            "l1": "FOOBAR",
+            "l2": None,
+            "l3": None,
+            "l4": "2 RUE FOOBAR",
+            "l5": None,
+            "l6": "75002 PARIS 2",
+            "l7": "FRANCE",
+            "numero_voie": "2",
+            "type_voie": "RUE",
+            "nom_voie": "FOOBAR",
+            "complement_adresse": None,
+            "code_postal": "75002",
+            "localite": "PARIS 2",
+            "code_insee_localite": "75102",
+            "cedex": None,
+        },
+        "etat_administratif": {"value": "A", "date_fermeture": None},
+    },
+    "gateway_error": False,
+}
+
 
 @pytest.mark.parametrize(
     "query,selected,candidates",
@@ -207,94 +293,8 @@ def test_extract_ft():
 
 @pytest.mark.asyncio
 async def test_api_entreprise(monkeypatch):
-    sample = {
-        "entreprise": {
-            "siren": "481912999",
-            "capital_social": 100000,
-            "numero_tva_intracommunautaire": "FR94481912999",
-            "forme_juridique": "SAS, société par actions simplifiée",
-            "forme_juridique_code": "5710",
-            "nom_commercial": "FOOBAR",
-            "procedure_collective": False,
-            "enseigne": None,
-            "libelle_naf_entreprise": "Conseil en systèmes et logiciels informatiques",
-            "naf_entreprise": "6202A",
-            "raison_sociale": "FOOBAR",
-            "siret_siege_social": "48191290000099",
-            "code_effectif_entreprise": "03",
-            "date_creation": 1103065200,
-            "nom": None,
-            "prenom": None,
-            "date_radiation": None,
-            "categorie_entreprise": "PME",
-            "tranche_effectif_salarie_entreprise": {
-                "de": 6,
-                "a": 9,
-                "code": "03",
-                "date_reference": "2018",
-                "intitule": "6 à 9 salariés",
-            },
-            "mandataires_sociaux": [
-                {
-                    "nom": "FOO",
-                    "prenom": "BAR",
-                    "fonction": "PRESIDENT",
-                    "date_naissance": "1979-08-06",
-                    "date_naissance_timestamp": 302738400,
-                    "dirigeant": True,
-                    "raison_sociale": "",
-                    "identifiant": "",
-                    "type": "PP",
-                },
-            ],
-            "etat_administratif": {"value": "A", "date_cessation": None},
-        },
-        "etablissement_siege": {
-            "siege_social": True,
-            "siret": "48191299000099",
-            "naf": "6202A",
-            "libelle_naf": "Conseil en systèmes et logiciels informatiques",
-            "date_mise_a_jour": 1598343993,
-            "tranche_effectif_salarie_etablissement": {
-                "de": 6,
-                "a": 9,
-                "code": "03",
-                "date_reference": "2018",
-                "intitule": "6 à 9 salariés",
-            },
-            "date_creation_etablissement": 1485903600,
-            "region_implantation": {"code": "11", "value": "Île-de-France"},
-            "commune_implantation": {
-                "code": "75102",
-                "value": "Paris 2e Arrondissement",
-            },
-            "pays_implantation": {"code": "FR", "value": "FRANCE"},
-            "diffusable_commercialement": True,
-            "enseigne": None,
-            "adresse": {
-                "l1": "FOOBAR",
-                "l2": None,
-                "l3": None,
-                "l4": "2 RUE FOOBAR",
-                "l5": None,
-                "l6": "75002 PARIS 2",
-                "l7": "FRANCE",
-                "numero_voie": "2",
-                "type_voie": "RUE",
-                "nom_voie": "FOOBAR",
-                "complement_adresse": None,
-                "code_postal": "75002",
-                "localite": "PARIS 2",
-                "code_insee_localite": "75102",
-                "cedex": None,
-            },
-            "etat_administratif": {"value": "A", "date_fermeture": None},
-        },
-        "gateway_error": False,
-    }
-
     async def mock_get(*args, **kwargs):
-        return sample
+        return API_ENTREPRISES_SAMPLE
 
     monkeypatch.setattr("egapro.config.API_ENTREPRISES", "foobar")
     monkeypatch.setattr("egapro.helpers.get", mock_get)
@@ -309,15 +309,38 @@ async def test_api_entreprise(monkeypatch):
         "région": "11",
     }
 
-    sample["entreprise"]["date_radiation"] = "2021-06-06"
+
+@pytest.mark.asyncio
+async def test_api_entreprise_with_date_radiation(monkeypatch):
+    API_ENTREPRISES_SAMPLE["entreprise"]["date_radiation"] = "2021-06-06"
 
     async def mock_get(*args, **kwargs):
-        return sample
+        return API_ENTREPRISES_SAMPLE
 
     monkeypatch.setattr("egapro.helpers.get", mock_get)
     with pytest.raises(ValueError) as info:
-        data = await helpers.load_from_api_entreprises("481912999")
+        await helpers.load_from_api_entreprises("481912999")
     assert str(info.value) == (
         "Le Siren saisi correspond à une entreprise fermée, "
+        "veuillez vérifier votre saisie"
+    )
+    del API_ENTREPRISES_SAMPLE["entreprise"]["date_radiation"]
+
+
+@pytest.mark.asyncio
+async def test_api_entreprise_with_foreign_company(monkeypatch):
+    API_ENTREPRISES_SAMPLE["etablissement_siege"]["pays_implantation"] = {
+        "code": "BE",
+        "value": "Belgique",
+    }
+
+    async def mock_get(*args, **kwargs):
+        return API_ENTREPRISES_SAMPLE
+
+    monkeypatch.setattr("egapro.helpers.get", mock_get)
+    with pytest.raises(ValueError) as info:
+        await helpers.load_from_api_entreprises("481912999")
+    assert str(info.value) == (
+        "Le Siren saisi correspond à une entreprise étrangère, "
         "veuillez vérifier votre saisie"
     )
