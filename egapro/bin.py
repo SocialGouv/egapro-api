@@ -236,8 +236,9 @@ async def set_declarant(siren, year: int, email):
 
 
 @minicli.cli
-async def add_owner(siren, owner):
-    await db.ownership.put(siren, owner)
+async def add_owners(siren, *owners):
+    for owner in owners:
+        await db.ownership.put(siren, owner)
     print("Done!")
 
 
