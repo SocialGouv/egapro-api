@@ -177,6 +177,7 @@ class declaration(table):
 class ownership(table):
     @classmethod
     async def put(cls, siren, email):
+        email = email.lower()
         async with cls.pool.acquire() as conn:
             created = await conn.fetchval(
                 "INSERT INTO ownership (siren, email) VALUES ($1, $2) "

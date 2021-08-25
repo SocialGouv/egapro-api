@@ -142,6 +142,11 @@ async def test_put_declaration_should_not_update_declared_at():
     assert record.data.path("déclaration.date") == modified_at.isoformat()
 
 
+async def test_put_owner_should_lower_case():
+    await db.ownership.put("123456782", "fOO@Bar.com")
+    assert await db.ownership.emails("123456782") == ["foo@bar.com"]
+
+
 async def test_declaration_owned():
     at = datetime(2021, 2, 1, 2, 3, 4, tzinfo=timezone.utc)
     await db.ownership.put("123456782", "foo@bar.com")
