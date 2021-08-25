@@ -255,6 +255,20 @@ async def ownership(email):
 
 
 @minicli.cli
+async def replace_siren(year: int, old, new):
+    res = await db.declaration.execute(
+        "UPDATE declaration "
+        "SET siren=$3::text, "
+        "data=jsonb_set(data, '{entreprise,siren}', to_jsonb($3)) "
+        "WHERE year=$1 AND siren=$2",
+        year,
+        old,
+        new,
+    )
+    print(res)
+
+
+@minicli.cli
 def read_token(token):
     print("—" * 20)
     print(tokens.read(token))
