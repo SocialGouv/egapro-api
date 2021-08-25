@@ -317,6 +317,7 @@ async def test_api_entreprise_with_date_radiation(monkeypatch):
     async def mock_get(*args, **kwargs):
         return API_ENTREPRISES_SAMPLE
 
+    monkeypatch.setattr("egapro.config.API_ENTREPRISES", "foobar")
     monkeypatch.setattr("egapro.helpers.get", mock_get)
     with pytest.raises(ValueError) as info:
         await helpers.load_from_api_entreprises("481912999")
@@ -337,6 +338,7 @@ async def test_api_entreprise_with_foreign_company(monkeypatch):
     async def mock_get(*args, **kwargs):
         return API_ENTREPRISES_SAMPLE
 
+    monkeypatch.setattr("egapro.config.API_ENTREPRISES", "foobar")
     monkeypatch.setattr("egapro.helpers.get", mock_get)
     with pytest.raises(ValueError) as info:
         await helpers.load_from_api_entreprises("481912999")
