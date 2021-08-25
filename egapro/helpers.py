@@ -248,7 +248,10 @@ async def load_from_api_entreprises(siren):
     code_insee = siege.get("adresse", {}).get("code_insee_localite")
     departement = utils.code_insee_to_departement(code_insee)
     adresse = siege.get("adresse", {})
-    adresse = [adresse.get(k) for k in ["numero_voie", "type_voie", "nom_voie"]]
+    adresse = [
+        adresse.get(k)
+        for k in ["complement_adresse", "numero_voie", "type_voie", "nom_voie"]
+    ]
     adresse = " ".join(v for v in adresse if v)
     code_naf = entreprise.get("naf_entreprise")
     code_pays = siege.get("pays_implantation", {}).get("code")
