@@ -28,7 +28,7 @@ download-db:
 	ssh egapro.dev "set -o allexport; source /srv/egapro/env; set +o allexport; PGPASSWORD=\$$EGAPRO_DBPASS pg_dump  --host \$$EGAPRO_DBHOST --user \$$EGAPRO_DBUSER \$$EGAPRO_DBNAME --file /tmp/dump.sql"
 
 restore-db:
-	pg_restore -d egapro -S postgres --clean --table declaration --table simulation --table archive tmp/dump.psql
+	pg_restore -d egapro -S postgres --clean --table declaration --table simulation --table archive --table ownership tmp/dump.psql
 	psql -d egapro -c "ALTER TABLE simulation ADD PRIMARY KEY (id)"
 	psql -d egapro -c "ALTER TABLE declaration ADD PRIMARY KEY (siren, year)"
 
