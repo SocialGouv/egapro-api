@@ -1,6 +1,7 @@
 import sys
 import urllib.request
 from collections import Counter
+from datetime import date
 from importlib import import_module
 from io import BytesIO
 from pathlib import Path
@@ -307,12 +308,35 @@ async def receipt(siren, year, destination=None):
     print(pdf.output(destination) or f"Saved to {destination}")
 
 
-@minicli.cli
-async def resend_receipts(*sirens, recipient=None, year=constants.CURRENT_YEAR):
-    """Resend receipt for a list of sirens in the current year"""
-    for siren in sirens:
-        record = await db.declaration.get(siren, year)
-        data = models.Data(record.get("data"))
+@minicli.cli("from_", name="from")
+async def resend_receipts(
+    siren=[], from_=None, recipient=None, year=constants.CURRENT_YEAR
+):
+    """Resend receipt for a list of sirens in the current year
+
+    :siren:    List of sirens to resend receipts to
+    :from:      Start date (YYYY-MM-DD) to consider declarations candidates
+    :recipient: Send receipts to this address (eg. for validation/testing)
+    :year:      Which year to consider (default: current)
+    """
+    if siren:
+        sql = (
+            "SELECT data, modified_at, declarant FROM declaration "
+            "WHERE year=$1 AND siren = any($2::text[])",
+            year,
+            tuple(siren),
+        )
+    elif from_:
+        sql = (
+            "SELECT data, modified_at, declarant FROM declaration "
+            "WHERE declared_at>=$1 ORDER BY declared_at ASC",
+            date.fromisoformat(from_),
+        )
+    else:
+        sys.exit("Must give siren list or from date")
+    records = await db.declaration.fetch(*sql)
+    for record in records:
+        data = record.data
         url = config.DOMAIN + data.uri
         recipient_ = recipient or record["declarant"]
         try:
@@ -363,7 +387,7 @@ async def sync_address(limit=100, offset=0):
         "SELECT siren, data, modified_at, declarant FROM declaration "
         "WHERE year=2020 AND data IS NOT NULL ORDER BY modified_at LIMIT $1 OFFSET $2",
         limit or None,
-        offset
+        offset,
     )
     bar = progressist.ProgressBar(prefix="Syncing", total=len(rows))
     # Keep a cache, just in case we need a full rerun quickly.
