@@ -485,3 +485,14 @@ async def test_count_with_query(declaration):
     assert count == 3
     count = await db.search.count(query="bar")
     assert count == 2
+
+
+async def test_amp_and_parens_are_excaped(declaration):
+    await declaration(
+        "123456712",
+        year=2019,
+        company="Zanzi & (Bar)",
+        entreprise={"effectif": {"tranche": "1000:"}},
+    )
+    results = await db.search.run(query="zanzi & (bar)")
+    assert len(results)

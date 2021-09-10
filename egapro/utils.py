@@ -30,6 +30,7 @@ def prepare_query(query):
         return query
     # TODO deal with edge cases ( | , !…)
     query = query.replace("&", " ")  # Escape &.
+    query = query.replace("(", " ").replace(")", " ")  # Escape ().
     query = " ".join(query.split())  # Remove multiple whitespaces.
     query = query.replace(" ", " & ")
     if not query.endswith("*"):
