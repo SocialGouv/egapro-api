@@ -5,3 +5,5 @@ tmp/
 .coverage
 htmlcov/
 site/
+venv/
+.env
