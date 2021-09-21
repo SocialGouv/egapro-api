@@ -13,6 +13,7 @@ SITE_DESCRIPTION = "Egapro"
 EMAIL_SIGNATURE = "Egapro"
 DBNAME = "egapro"
 DBHOST = "localhost"
+DBPORT = 5432
 DBUSER = "postgres"
 DBPASS = "postgres"
 DBSSL = False

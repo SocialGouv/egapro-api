@@ -364,6 +364,7 @@ async def init():
         table.pool = await asyncpg.create_pool(
             database=config.DBNAME,
             host=config.DBHOST,
+            port=config.DBPORT,
             user=config.DBUSER,
             password=config.DBPASS,
             min_size=config.DBMINSIZE,
@@ -386,6 +387,7 @@ async def create():
     conn = await asyncpg.connect(
         database="template1",
         host=config.DBHOST,
+        port=config.DBPORT,
         user=config.DBUSER,
         password=config.DBPASS,
         ssl=config.DBSSL,
