@@ -6,7 +6,7 @@ develop:
 init: SHELL := python3
 init:
 	import asyncio
-	from egapro import init
+	from egapro.views import init
 	asyncio.run(init())
 .PHONY: init
 
