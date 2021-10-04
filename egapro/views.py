@@ -108,7 +108,7 @@ async def declare(request, response, siren, year):
     try:
         year = int(year)
     except ValueError:
-        raise HttpError(f"Ce n'est pas une année valide: `{year}`")
+        raise HttpError(422, f"Ce n'est pas une année valide: `{year}`")
     if not siren_is_valid(siren):
         raise HttpError(422, f"Numéro SIREN invalide: {siren}")
     if year not in constants.YEARS:
