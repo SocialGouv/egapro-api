@@ -335,6 +335,8 @@ async def resend_receipts(
     else:
         sys.exit("Must give siren list or from date")
     records = await db.declaration.fetch(*sql)
+    if not records:
+        sys.exit("Nothing to send!")
     for record in records:
         data = record.data
         url = config.DOMAIN + data.uri
