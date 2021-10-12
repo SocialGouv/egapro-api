@@ -148,6 +148,8 @@ async def declare(request, response, siren, year):
         loggers.logger.info(f"{siren}/{year} BY {declarant} FROM {request.ip}")
         if not current or not current.data.validated:
             owners = await db.ownership.emails(siren)
+            if not owners:  # Staff member
+                owners = request["email"]
             url = request.domain + data.uri
             emails.success.send(owners, url=url, **data)
 
@@ -175,6 +177,8 @@ async def resend_receipt(request, response, siren, year):
     except db.NoData:
         raise HttpError(404, f"No declaration with siren {siren} and year {year}")
     owners = await db.ownership.emails(siren)
+    if not owners:  # Staff member
+        owners = request["email"]
     data = record.data
     url = request.domain + data.uri
     emails.success.send(owners, url=url, **data)
