@@ -48,7 +48,6 @@ def _cross_validate(data):
         required = [
             "entreprise.région",
             "entreprise.département",
-            "entreprise.adresse",
             "entreprise.commune",
             "entreprise.code_postal",
             "entreprise.code_naf",

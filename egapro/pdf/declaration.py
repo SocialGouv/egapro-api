@@ -68,7 +68,8 @@ def main(data):
     )
     pdf.write_table("Informations déclarant", cells)
 
-    adresse = "{adresse} {code_postal} {commune}".format(**data["entreprise"])
+    adresse = [data["entreprise"].get(k) for k in ("adresse", "code_postal", "commune")]
+    adresse = " ".join(v for v in adresse if v)
     cells = [
         ("Structure", data.structure),
         ("Tranche effectifs", constants.EFFECTIFS.get(tranche_effectif)),

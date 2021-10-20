@@ -311,6 +311,16 @@ async def test_basic_declaration_should_remove_data_namespace_if_present(client,
     }
 
 
+async def test_entreprise_adresse_is_not_mandatory(client, body):
+    del body["entreprise"]["adresse"]
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+    resp = await client.get("/declaration/514027945/2019")
+    assert resp.status == 200
+    data = json.loads(resp.body)
+    assert "adresse" not in data['data']["entreprise"]
+
+
 async def test_cannot_edit_declaration_after_one_year(client, declaration, body):
     await declaration(
         "514027945",
