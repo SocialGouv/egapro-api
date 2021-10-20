@@ -1047,3 +1047,40 @@ async def test_full_dump(declaration):
             "déclarant": {"email": "foo@bar.com", "nom": "Martine", "prénom": "Martin"},
         },
     ]
+
+
+async def test_export_indexes(declaration):
+    await declaration(
+        company="Mirabar",
+        siren="87654321",
+        year=2019,
+        grade=77,
+    )
+    await declaration(
+        company="FooBar",
+        siren="87654322",
+        year=2018,
+        grade=52,
+    )
+    await declaration(
+        company="MiniBar",
+        siren="87654323",
+        year=2019,
+        grade=99,
+    )
+    await declaration(
+        company="MiniBar",
+        siren="87654323",
+        year=2018,
+        grade=88,
+    )
+    out = io.StringIO()
+    await exporter.indexes(out)
+    out.seek(0)
+    assert out.read() == (
+        "siren;year;index\r\n"
+        "87654323;2018;88\r\n"
+        "87654323;2019;99\r\n"
+        "87654322;2018;52\r\n"
+        "87654321;2019;77\r\n"
+    )

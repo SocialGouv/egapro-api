@@ -70,3 +70,26 @@ async def full(dest):
     records = await db.declaration.completed()
     for record in records:
         dest.write(utils.json_dumps(record["data"]) + "\n")
+
+
+async def indexes(path: Path):
+    writer = csv.writer(path, delimiter=";")
+    writer.writerow(
+        [
+            "siren",
+            "year",
+            "index",
+        ]
+    )
+    rows = []
+    records = await db.declaration.completed()
+    for record in records:
+        data = record.data
+        rows.append(
+            [
+                data.siren,
+                data.year,
+                data.grade,
+            ]
+        )
+    writer.writerows(rows)

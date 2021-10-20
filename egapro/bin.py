@@ -57,6 +57,14 @@ async def export_public_data(path: Path):
 
 
 @minicli.cli
+async def export_indexes(path: Path):
+    print("Writing the CSV to", path)
+    with path.open("w") as f:
+        await exporter.indexes(f)
+    print("Done")
+
+
+@minicli.cli
 async def full(path: Path):
     """Create a full JSON export."""
     print("Writing to", path)
