@@ -220,6 +220,7 @@ async def me(request, response):
         "email": request["email"],
         "déclarations": await db.declaration.owned(request["email"]),
         "ownership": await db.ownership.sirens(request["email"]),
+        "staff": request["staff"],
     }
 
 

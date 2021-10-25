@@ -219,6 +219,7 @@ async def test_me(client, declaration):
     assert resp.status == 200
     assert json.loads(resp.body) == {
         "email": "foo@bar.org",
+        "staff": False,
         "déclarations": [
             {
                 "modified_at": at.timestamp(),
@@ -236,3 +237,16 @@ async def test_me_without_token(client):
     client.logout()
     resp = await client.get("/me")
     assert resp.status == 401
+
+
+async def test_me_for_staff(client, declaration, monkeypatch):
+    monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
+    client.login("Staff@email.com")
+    resp = await client.get("/me")
+    assert resp.status == 200
+    assert json.loads(resp.body) == {
+        "email": "staff@email.com",
+        "staff": True,
+        "déclarations": [],
+        "ownership": [],
+    }
