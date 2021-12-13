@@ -318,7 +318,7 @@ async def test_entreprise_adresse_is_not_mandatory(client, body):
     resp = await client.get("/declaration/514027945/2019")
     assert resp.status == 200
     data = json.loads(resp.body)
-    assert "adresse" not in data['data']["entreprise"]
+    assert "adresse" not in data["data"]["entreprise"]
 
 
 async def test_cannot_edit_declaration_after_one_year(client, declaration, body):

@@ -93,6 +93,13 @@ class declaration(table):
         )
 
     @classmethod
+    async def get_last(cls, siren):
+        return await cls.fetchrow(
+            "SELECT data FROM declaration WHERE siren=$1 ORDER BY year DESC LIMIT 1",
+            siren,
+        )
+
+    @classmethod
     async def get_declared_at(cls, siren, year):
         try:
             return await cls.fetchval(

@@ -212,6 +212,26 @@ async def test_validate_siren(client, monkeypatch):
     assert json.loads(resp.body) == metadata
 
 
+async def test_get_entreprise_data(client, declaration):
+    await declaration(
+        siren="123456789",
+        year=2020,
+        entreprise={"code_naf": "6202A", "raison_sociale": "Lilly Wood"},
+    )
+    resp = await client.get("/entreprise/123456789")
+    assert json.loads(resp.body) == {
+        "code_naf": "6202A",
+        "département": "26",
+        "effectif": {"tranche": "50:250"},
+        "raison_sociale": "Lilly Wood",
+        "région": "84",
+        "siren": "123456789",
+        "ues": None,
+    }
+    resp = await client.get("/entreprise/987654321")
+    assert resp.status == 404
+
+
 async def test_me(client, declaration):
     at = datetime(2021, 2, 3, 4, 5, 6, tzinfo=timezone.utc)
     await declaration(owner="foo@bar.org", modified_at=at)

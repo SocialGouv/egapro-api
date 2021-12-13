@@ -360,6 +360,13 @@ async def validate_siren(request, response):
     response.json = metadata
 
 
+@app.route("/entreprise/{siren}")
+async def get_entreprise_data(request, response, siren):
+    record = await db.declaration.get_last(siren)
+    data = db.declaration.public_data(record.data)
+    response.json = data["entreprise"]
+
+
 @app.listen("startup")
 async def on_startup():
     await init()
