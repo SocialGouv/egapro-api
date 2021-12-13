@@ -232,6 +232,17 @@ async def test_get_entreprise_data(client, declaration):
     assert resp.status == 404
 
 
+async def test_get_entreprise_data_from_draft(client, declaration):
+    await declaration(
+        siren="123456789",
+        year=2020,
+        entreprise={"code_naf": "6202A", "raison_sociale": "Lilly Wood"},
+        déclaration={"brouillon": True}
+    )
+    resp = await client.get("/entreprise/123456789")
+    assert resp.status == 404
+
+
 async def test_me(client, declaration):
     at = datetime(2021, 2, 3, 4, 5, 6, tzinfo=timezone.utc)
     await declaration(owner="foo@bar.org", modified_at=at)
