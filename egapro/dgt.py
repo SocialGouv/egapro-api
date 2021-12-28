@@ -219,6 +219,7 @@ async def get_headers_columns():
             ),
             ("Resultat_final_sur_100_points", "déclaration.index", value_or_nc),
             ("Mesures_correction", "déclaration.mesures_correctives"),
+            ("Plan_relance", "entreprise.plan_relance"),
         ]
     )
     headers = []

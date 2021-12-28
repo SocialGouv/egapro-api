@@ -213,6 +213,8 @@ async def test_dgt_dump(declaration):
     assert sheet["CA2"].value == 80
     assert sheet["CB1"].value == "Mesures_correction"
     assert sheet["CB2"].value is None
+    assert sheet["CC1"].value == "Plan_relance"
+    assert sheet["CC2"].value is None
 
 
 async def test_dgt_dump_with_coef_mode(declaration):
