@@ -22,8 +22,7 @@ def pytest_configure(config):
             await conn.execute("DROP TABLE IF EXISTS ownership")
         await db.init()
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(configure())
+    asyncio.run(configure())
 
 
 def pytest_runtest_setup(item):
@@ -43,16 +42,7 @@ def pytest_runtest_setup(item):
             await conn.execute("TRUNCATE TABLE ownership;")
         await db.terminate()
 
-    asyncio.get_event_loop().run_until_complete(setup())
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    # Override default pytest-asyncio fixture in order to get the same loop on all the
-    # tests and setup / teardown.
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
+    asyncio.run(setup())
 
 
 @pytest.fixture
