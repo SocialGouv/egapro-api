@@ -1,5 +1,6 @@
 """Unlike utils, helpers may import business logic"""
 
+import json
 import math
 from difflib import SequenceMatcher
 
@@ -222,7 +223,7 @@ async def get(*args, **kwargs):
         return response.json()
 
 
-async def load_from_api_entreprises(siren):
+async def get_from_api_entreprises(siren):
     if not siren or not config.API_ENTREPRISES:
         return {}
     url = f"https://entreprise.api.gouv.fr/v2/entreprises/{siren}"
@@ -232,7 +233,21 @@ async def load_from_api_entreprises(siren):
         "recipient": "egapro",
         "object": "egapro",
     }
-    data = await get(url, params=params)
+    # Keep a cache, just in case we need a full rerun quickly.
+    ROOT = config.ROOT / "cache/entreprises"
+    ROOT.mkdir(exist_ok=True, parents=True)
+    dest = ROOT / f"{siren}.json"
+    if not dest.exists():
+        data = await get(url, params=params)
+        if data:
+            dest.write_text(utils.json_dumps(data))
+    else:
+        data = json.loads(dest.read_text())
+    return data
+
+
+async def load_from_api_entreprises(siren):
+    data = await get_from_api_entreprises(siren)
     if not data:
         return {}
     entreprise = data.get("entreprise", {})
@@ -245,8 +260,8 @@ async def load_from_api_entreprises(siren):
     siege = data.get("etablissement_siege", {})
     code_postal = siege.get("adresse", {}).get("code_postal")
     commune = siege.get("adresse", {}).get("localite")
-    code_insee = siege.get("adresse", {}).get("code_insee_localite")
-    departement = utils.code_insee_to_departement(code_insee)
+    insee_commune = siege.get("adresse", {}).get("code_insee_localite")
+    departement = utils.code_insee_to_departement(insee_commune)
     adresse = siege.get("adresse", {})
     adresse = [adresse.get(k) for k in ["numero_voie", "type_voie", "nom_voie"]]
     adresse = " ".join(v for v in adresse if v)
@@ -266,6 +281,7 @@ async def load_from_api_entreprises(siren):
         "département": departement,
         "adresse": adresse,
         "commune": commune,
+        "insee_commune": insee_commune,
         "code_postal": code_postal,
     }
 

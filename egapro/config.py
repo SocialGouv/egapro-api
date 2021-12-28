@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 SECRET = "sikretfordevonly"
 JWT_ALGORITHM = "HS256"
@@ -27,6 +28,7 @@ FLAVOUR = "local"
 API_ENTREPRISES = ""
 ALLOWED_IPS = []
 DOMAIN = "https://index-egapro.travail.gouv.fr"
+ROOT = Path(__file__).parent.parent
 
 
 def init():

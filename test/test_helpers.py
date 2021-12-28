@@ -297,12 +297,13 @@ async def test_api_entreprise(monkeypatch):
         return API_ENTREPRISES_SAMPLE
 
     monkeypatch.setattr("egapro.config.API_ENTREPRISES", "foobar")
-    monkeypatch.setattr("egapro.helpers.get", mock_get)
+    monkeypatch.setattr("egapro.helpers.get_from_api_entreprises", mock_get)
     data = await helpers.load_from_api_entreprises("481912999")
     assert data == {
         "adresse": "2 RUE FOOBAR",
         "code_naf": "62.02A",
         "code_postal": "75002",
+        "insee_commune": "75102",
         "commune": "PARIS 2",
         "département": "75",
         "raison_sociale": "FOOBAR",
@@ -318,7 +319,7 @@ async def test_api_entreprise_with_date_radiation(monkeypatch):
         return API_ENTREPRISES_SAMPLE
 
     monkeypatch.setattr("egapro.config.API_ENTREPRISES", "foobar")
-    monkeypatch.setattr("egapro.helpers.get", mock_get)
+    monkeypatch.setattr("egapro.helpers.get_from_api_entreprises", mock_get)
     with pytest.raises(ValueError) as info:
         await helpers.load_from_api_entreprises("481912999")
     assert str(info.value) == (
@@ -339,7 +340,7 @@ async def test_api_entreprise_with_foreign_company(monkeypatch):
         return API_ENTREPRISES_SAMPLE
 
     monkeypatch.setattr("egapro.config.API_ENTREPRISES", "foobar")
-    monkeypatch.setattr("egapro.helpers.get", mock_get)
+    monkeypatch.setattr("egapro.helpers.get_from_api_entreprises", mock_get)
     with pytest.raises(ValueError) as info:
         await helpers.load_from_api_entreprises("481912999")
     assert str(info.value) == (

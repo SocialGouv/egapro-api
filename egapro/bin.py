@@ -394,8 +394,9 @@ def shell():
 @minicli.cli
 async def sync_address(limit=100, offset=0):
     rows = await db.declaration.fetch(
-        "SELECT siren, data, modified_at, declarant FROM declaration "
-        "WHERE year=2020 AND data IS NOT NULL ORDER BY modified_at LIMIT $1 OFFSET $2",
+        "SELECT year, siren, data, modified_at, declarant FROM declaration "
+        "WHERE data IS NOT NULL AND data->'entreprise'->'insee_commune' IS NULL "
+        "ORDER BY modified_at DESC LIMIT $1 OFFSET $2",
         limit or None,
         offset,
     )
@@ -405,24 +406,18 @@ async def sync_address(limit=100, offset=0):
     ROOT.mkdir(exist_ok=True)
     for idx, row in enumerate(bar.iter(rows)):
         siren = row["siren"]
+        year = row["year"]
         data = row["data"]
-        dest = ROOT / f"{siren}.json"
-        if not dest.exists():
-            try:
-                new = await helpers.load_from_api_entreprises(siren)
-            except ValueError as err:
-                print(siren, err)
-                continue
-            if new:
-                dest.write_text(json_dumps(new))
-        else:
-            new = json.loads(dest.read_text())
+        try:
+            new = await helpers.load_from_api_entreprises(siren)
+        except ValueError:  # Entreprise étrangère
+            continue
         if not new:
             continue
-        row["data"]["entreprise"].update(new)
+        data["entreprise"].update(new)
         await db.declaration.put(
             siren,
-            2020,
+            year,
             declarant=row["declarant"],
             data=data,
             modified_at=row["modified_at"],

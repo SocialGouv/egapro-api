@@ -49,6 +49,7 @@ def _cross_validate(data):
             "entreprise.région",
             "entreprise.département",
             "entreprise.commune",
+            "entreprise.insee_commune",
             "entreprise.code_postal",
             "entreprise.code_naf",
             "déclarant.prénom",
@@ -361,7 +362,7 @@ class Schema:
                 definition = line
             description = None
             if "#" in definition:
-                definition, description = definition.split("#")
+                definition, description = definition.split("#", maxsplit=1)
                 node.description = description.strip()
             definition = definition.strip()
             if definition.startswith('"') and definition.endswith('"'):

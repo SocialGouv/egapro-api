@@ -32,7 +32,8 @@ id: string
   région: python:egapro.schema.utils.regions
   département: python:egapro.schema.utils.departements
   adresse: string
-  commune: string
+  commune: string  # Libellé de la commune
+  insee_commune: r"(\d\d|2[AB])(\d{3})"  # Code INSEE de la commune # TODO: rename in commune and rename commune in libellé_commune
   code_postal: r"\d{5}"
   code_naf: python:egapro.schema.utils.naf
   plan_relance: boolean  # L'entreprise ou une entreprise de l'UES a-t-elle bénéficié d'une aide dans le cadre du plan de relance

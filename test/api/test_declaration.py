@@ -32,6 +32,7 @@ def body():
             "siren": "514027945",
             "code_naf": "47.25Z",
             "code_postal": "12345",
+            "insee_commune": "80829",
             "région": "76",
             "département": "12",
             "adresse": "12, rue des adresses",
@@ -140,6 +141,7 @@ async def test_basic_declaration_should_save_data(client, body, monkeypatch):
             "entreprise": {
                 "siren": "514027945",
                 "adresse": "12, rue des adresses",
+                "insee_commune": "80829",
                 "commune": "Y",
                 "région": "76",
                 "code_naf": "47.25Z",
@@ -217,6 +219,7 @@ async def test_draft_declaration_should_save_data(client, body):
             "entreprise": {
                 "siren": "514027945",
                 "adresse": "12, rue des adresses",
+                "insee_commune": "80829",
                 "commune": "Y",
                 "région": "76",
                 "code_naf": "47.25Z",
