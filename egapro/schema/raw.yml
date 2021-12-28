@@ -35,6 +35,7 @@ id: string
   commune: string
   code_postal: r"\d{5}"
   code_naf: python:egapro.schema.utils.naf
+  plan_relance: boolean  # L'entreprise ou une entreprise de l'UES a-t-elle bénéficié d'une aide dans le cadre du plan de relance
   effectif:
     total: integer # Nombre de salariés pris en compte pour le calcul des indicateurs sur la période de référence
     tranche: "50:250|251:999|1000:" # Tranche d'effectifs de la structure

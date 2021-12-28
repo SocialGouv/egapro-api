@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from egapro import db, utils
+from egapro import db, schema, utils
 
 pytestmark = pytest.mark.asyncio
 
@@ -1031,93 +1031,36 @@ async def test_publication_modalités_or_url_is_required_for_2020(client, body):
     assert resp.status == 204
     # NOK for 2019
     body["déclaration"]["année_indicateurs"] = 2020
-    resp = await client.put("/declaration/514027945/2019", body=body)
+    resp = await client.put("/declaration/514027945/2020", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {
         "error": "Les modalités de publication ou le site Internet doit être défini"
     }
 
 
-async def test_resend_receipt_endpoint(client, monkeypatch, declaration):
-    sender = mock.Mock()
-    await db.ownership.put("514027945", "foo@bar.org")
-    # Add another owner, that should be in the email recipients
-    await db.ownership.put("514027945", "foo@foo.foo")
-    await declaration(
-        siren="514027945",
-        year=2020,
-        owner="foo@bar.org",
-        entreprise={
-            "adresse": "1 rue de Trois",
-            "code_postal": "77480",
-            "commune": "Quatre",
-        },
-    )
-    monkeypatch.setattr("egapro.emails.send", sender)
-    resp = await client.post("/declaration/514027945/2020/receipt")
+async def test_entreprise_plan_relance_is_required_for_2020(client, body, monkeypatch):
+    monkeypatch.setattr("egapro.constants.YEARS", [2018, 2019, 2020, 2021])
+    schema.init()
+    # OK for 2020
+    resp = await client.put("/declaration/514027945/2020", body=body)
     assert resp.status == 204
-    assert sender.call_count == 1
-    to, subject, txt, html = sender.call_args.args
-    assert to == ["foo@bar.org", "foo@foo.foo"]
-    assert "/declaration/?siren=514027945&year=2020" in txt
-    assert "/declaration/?siren=514027945&year=2020" in html
-    assert sender.call_args.kwargs["attachment"][1] == "declaration_514027945_2021.pdf"
-
-
-async def test_resend_receipt_endpoint_by_staff(client, monkeypatch, declaration):
-    sender = mock.Mock()
-    await db.ownership.put("514027945", "foo@bar.org")
-    # Add another owner, that should be in the email recipients
-    await db.ownership.put("514027945", "foo@foo.foo")
-    await declaration(
-        siren="514027945",
-        year=2020,
-        owner="foo@bar.org",
-        entreprise={
-            "adresse": "1 rue de Trois",
-            "code_postal": "77480",
-            "commune": "Quatre",
-        },
-    )
-    monkeypatch.setattr("egapro.emails.send", sender)
-    monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
-    client.login("Staff@email.com")
-    resp = await client.post("/declaration/514027945/2020/receipt")
+    # NOK for 2021
+    body["déclaration"]["année_indicateurs"] = 2021
+    body["déclaration"]["fin_période_référence"] = "2021-12-31"
+    resp = await client.put("/declaration/514027945/2021", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "data.entreprise.plan_relance doit être défini"
+    }
+    body["entreprise"]["plan_relance"] = "wrong"
+    resp = await client.put("/declaration/514027945/2021", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "data.entreprise.plan_relance must be boolean"
+    }
+    body["entreprise"]["plan_relance"] = True
+    resp = await client.put("/declaration/514027945/2021", body=body)
     assert resp.status == 204
-    assert sender.call_count == 1
-    to, subject, txt, html = sender.call_args.args
-    assert to == ["foo@bar.org", "foo@foo.foo"]
-    assert "/declaration/?siren=514027945&year=2020" in txt
-    assert "/declaration/?siren=514027945&year=2020" in html
-    assert sender.call_args.kwargs["attachment"][1] == "declaration_514027945_2021.pdf"
-
-
-async def test_resend_receipt_endpoint_by_non_owner(client, monkeypatch, declaration):
-    sender = mock.Mock()
-    await db.ownership.put("514027945", "foo@bar.org")
-    # Add another owner, that should be in the email recipients
-    await db.ownership.put("514027945", "foo@foo.foo")
-    await declaration(
-        siren="514027945",
-        year=2020,
-        owner="foo@bar.org",
-        entreprise={
-            "adresse": "1 rue de Trois",
-            "code_postal": "77480",
-            "commune": "Quatre",
-        },
-    )
-    monkeypatch.setattr("egapro.emails.send", sender)
-    client.login("non@owner.com")
-    resp = await client.post("/declaration/514027945/2020/receipt")
-    assert resp.status == 403
-    assert not sender.called
-
-
-async def test_resend_receipt_endpoint_with_unknown_declaration(client, monkeypatch):
-    sender = mock.Mock()
-    await db.ownership.put("514027945", "foo@bar.org")
-    monkeypatch.setattr("egapro.emails.send", sender)
-    resp = await client.post("/declaration/514027945/2019/receipt")
-    assert resp.status == 404
-    assert not sender.called
+    body["entreprise"]["plan_relance"] = False
+    resp = await client.put("/declaration/514027945/2021", body=body)
+    assert resp.status == 204

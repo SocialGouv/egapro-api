@@ -1,5 +1,6 @@
-from datetime import datetime, timezone
 import json
+from datetime import datetime, timezone
+from unittest import mock
 
 import pytest
 
@@ -281,3 +282,89 @@ async def test_me_for_staff(client, declaration, monkeypatch):
         "déclarations": [],
         "ownership": [],
     }
+
+
+
+async def test_resend_receipt_endpoint(client, monkeypatch, declaration):
+    sender = mock.Mock()
+    await db.ownership.put("514027945", "foo@bar.org")
+    # Add another owner, that should be in the email recipients
+    await db.ownership.put("514027945", "foo@foo.foo")
+    await declaration(
+        siren="514027945",
+        year=2020,
+        owner="foo@bar.org",
+        entreprise={
+            "adresse": "1 rue de Trois",
+            "code_postal": "77480",
+            "commune": "Quatre",
+        },
+    )
+    monkeypatch.setattr("egapro.emails.send", sender)
+    resp = await client.post("/declaration/514027945/2020/receipt")
+    assert resp.status == 204
+    assert sender.call_count == 1
+    to, subject, txt, html = sender.call_args.args
+    assert to == ["foo@bar.org", "foo@foo.foo"]
+    assert "/declaration/?siren=514027945&year=2020" in txt
+    assert "/declaration/?siren=514027945&year=2020" in html
+    assert sender.call_args.kwargs["attachment"][1] == "declaration_514027945_2021.pdf"
+
+
+async def test_resend_receipt_endpoint_by_staff(client, monkeypatch, declaration):
+    sender = mock.Mock()
+    await db.ownership.put("514027945", "foo@bar.org")
+    # Add another owner, that should be in the email recipients
+    await db.ownership.put("514027945", "foo@foo.foo")
+    await declaration(
+        siren="514027945",
+        year=2020,
+        owner="foo@bar.org",
+        entreprise={
+            "adresse": "1 rue de Trois",
+            "code_postal": "77480",
+            "commune": "Quatre",
+        },
+    )
+    monkeypatch.setattr("egapro.emails.send", sender)
+    monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
+    client.login("Staff@email.com")
+    resp = await client.post("/declaration/514027945/2020/receipt")
+    assert resp.status == 204
+    assert sender.call_count == 1
+    to, subject, txt, html = sender.call_args.args
+    assert to == ["foo@bar.org", "foo@foo.foo"]
+    assert "/declaration/?siren=514027945&year=2020" in txt
+    assert "/declaration/?siren=514027945&year=2020" in html
+    assert sender.call_args.kwargs["attachment"][1] == "declaration_514027945_2021.pdf"
+
+
+async def test_resend_receipt_endpoint_by_non_owner(client, monkeypatch, declaration):
+    sender = mock.Mock()
+    await db.ownership.put("514027945", "foo@bar.org")
+    # Add another owner, that should be in the email recipients
+    await db.ownership.put("514027945", "foo@foo.foo")
+    await declaration(
+        siren="514027945",
+        year=2020,
+        owner="foo@bar.org",
+        entreprise={
+            "adresse": "1 rue de Trois",
+            "code_postal": "77480",
+            "commune": "Quatre",
+        },
+    )
+    monkeypatch.setattr("egapro.emails.send", sender)
+    client.login("non@owner.com")
+    resp = await client.post("/declaration/514027945/2020/receipt")
+    assert resp.status == 403
+    assert not sender.called
+
+
+async def test_resend_receipt_endpoint_with_unknown_declaration(client, monkeypatch):
+    sender = mock.Mock()
+    await db.ownership.put("514027945", "foo@bar.org")
+    monkeypatch.setattr("egapro.emails.send", sender)
+    resp = await client.post("/declaration/514027945/2019/receipt")
+    assert resp.status == 404
+    assert not sender.called

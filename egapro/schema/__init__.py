@@ -173,6 +173,10 @@ def _cross_validate(data):
         msg = f"{base}.population_favorable ne doit pas être défini si résultat vaut 5"
         assert not data.path(f"{base}.population_favorable"), msg
 
+    if data.year >= 2021:
+        msg = "data.entreprise.plan_relance doit être défini"
+        assert data.path("entreprise.plan_relance") is not None, msg
+
 
 def extrapolate(definition):
     # TODO: arbitrate between ?key: value and key: ?value
