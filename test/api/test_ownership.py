@@ -20,7 +20,7 @@ async def test_get_owners(client):
     assert data == {"owners": ["foo@bar.baz", "boo@bar.baz"]}
 
 
-async def test_add_owner(client):
+async def test_add_owner(client, monkeypatch):
     client.login("FoO@BAR.baZ")
     resp = await client.put("/ownership/123456782/foo@foo.foo")
     assert resp.status == 403
@@ -32,6 +32,15 @@ async def test_add_owner(client):
     resp = await client.put("/ownership/123456782/foo@foo.foo")
     assert resp.status == 204
     assert await db.ownership.emails("123456782") == ["foo@bar.baz", "foo@foo.foo"]
+    monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
+    client.login("staff@email.com")
+    resp = await client.put("/ownership/123456782/ba@na.na")
+    assert resp.status == 204
+    assert await db.ownership.emails("123456782") == [
+        "foo@bar.baz",
+        "foo@foo.foo",
+        "ba@na.na",
+    ]
 
 
 async def test_delete_owner(client):

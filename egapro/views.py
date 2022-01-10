@@ -196,7 +196,7 @@ async def get_owners(request, response, siren):
 @tokens.require
 @ensure_owner
 async def put_owner(request, response, siren, email):
-    if "is_owner" not in request:
+    if "is_owner" not in request and not request["staff"]:
         raise HttpError(403, "Vous n'avez pas les droits nécessaires")
     await db.ownership.put(siren, email)
     response.status = 204
