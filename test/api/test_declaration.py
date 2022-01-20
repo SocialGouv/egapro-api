@@ -1038,15 +1038,20 @@ async def test_publication_modalités_or_url_is_required_for_2020(client, body):
     }
 
 
-async def test_entreprise_plan_relance_is_required_for_2020(client, body, monkeypatch):
+async def test_entreprise_plan_relance_is_required_for_2021(client, body, monkeypatch):
     monkeypatch.setattr("egapro.constants.YEARS", [2018, 2019, 2020, 2021])
     schema.init()
     # OK for 2020
     resp = await client.put("/declaration/514027945/2020", body=body)
     assert resp.status == 204
-    # NOK for 2021
+    # OK for 2021 in draft mode
     body["déclaration"]["année_indicateurs"] = 2021
     body["déclaration"]["fin_période_référence"] = "2021-12-31"
+    body["déclaration"]["brouillon"] = True
+    resp = await client.put("/declaration/514027945/2021", body=body)
+    assert resp.status == 204
+    # NOK for 2021
+    del body["déclaration"]["brouillon"]
     resp = await client.put("/declaration/514027945/2021", body=body)
     assert resp.status == 422
     assert json.loads(resp.body) == {

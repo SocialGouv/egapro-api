@@ -110,6 +110,10 @@ def _cross_validate(data):
                 msg = f"L'indicateur {path} doit être défini"
                 assert data.path(path), msg
 
+        if data.year >= 2021:
+            msg = "data.entreprise.plan_relance doit être défini"
+            assert data.path("entreprise.plan_relance") is not None, msg
+
     for key in SCHEMA.indicateurs_keys:
         path = f"indicateurs.{key}"
         if data.path(f"{path}.non_calculable"):
@@ -172,10 +176,6 @@ def _cross_validate(data):
     if data.path(f"{base}.résultat") == 5:
         msg = f"{base}.population_favorable ne doit pas être défini si résultat vaut 5"
         assert not data.path(f"{base}.population_favorable"), msg
-
-    if data.year >= 2021:
-        msg = "data.entreprise.plan_relance doit être défini"
-        assert data.path("entreprise.plan_relance") is not None, msg
 
 
 def extrapolate(definition):
