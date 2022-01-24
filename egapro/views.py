@@ -321,7 +321,7 @@ async def stats(request, response):
     section_naf = request.query.get("section_naf", None)
     departement = request.query.get("departement", None)
     region = request.query.get("region", None)
-    year = request.query.int("year", constants.CURRENT_YEAR)
+    year = request.query.int("year", constants.PUBLIC_YEARS[-1])
     stats = await db.search.stats(
         year,
         section_naf=section_naf,
