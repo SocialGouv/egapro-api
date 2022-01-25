@@ -60,8 +60,6 @@ options(app)
 
 @app.listen("error")
 async def json_error_response(request, response, error):
-    if error.status == 404:
-        error.message = {"error": f"Path not found `{request.path}`"}
     if error.status == 500:  # This error as not yet been caught
         if isinstance(error.__context__, DataError):
             response.status = 400
@@ -357,6 +355,8 @@ async def validate_siren(request, response):
     if not siren_is_valid(siren):
         raise HttpError(422, f"Numéro SIREN invalide: {siren}")
     metadata = await helpers.load_from_api_entreprises(siren)
+    if not metadata:
+        raise HttpError(404, f"Numéro SIREN inconnu: {siren}")
     response.json = metadata
 
 
