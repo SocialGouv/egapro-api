@@ -79,6 +79,14 @@ async def json_error_response(request, response, error):
     response.json = error.message
 
 
+@app.listen("headers")
+async def on_headers(request, response):
+    if not config.READONLY:
+        return
+    if request.method not in ["GET", "OPTIONS"]:
+        raise HttpError(405, "Ooops, le site est en maintenance")
+
+
 def ensure_owner(view):
     @wraps(view)
     async def wrapper(request, response, siren, *args, **kwargs):

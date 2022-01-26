@@ -27,6 +27,7 @@ FLAVOUR = "local"
 API_ENTREPRISES = ""
 ALLOWED_IPS = []
 DOMAIN = "https://index-egapro.travail.gouv.fr"
+READONLY = False
 
 
 def init():
