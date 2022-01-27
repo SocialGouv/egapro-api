@@ -350,6 +350,7 @@ async def get_config(request, response):
         "REGIONS_TO_DEPARTEMENTS": constants.REGIONS_TO_DEPARTEMENTS,
         "NAF": dict(NAF.pairs()),
         "SECTIONS_NAF": NAF.section,
+        "READONLY": config.READONLY,
     }
     response.json = {k: v for k, v in data.items() if not keys or k in keys}
 

@@ -177,6 +177,7 @@ async def test_config_endpoint(client):
         "REGIONS_TO_DEPARTEMENTS",
         "NAF",
         "SECTIONS_NAF",
+        "READONLY",
     ]
     assert json.loads(resp.body)["YEARS"] == [2018, 2019, 2020]
     resp = await client.get("/config?key=YEARS&key=REGIONS")
@@ -238,7 +239,7 @@ async def test_get_entreprise_data_from_draft(client, declaration):
         siren="123456789",
         year=2020,
         entreprise={"code_naf": "6202A", "raison_sociale": "Lilly Wood"},
-        déclaration={"brouillon": True}
+        déclaration={"brouillon": True},
     )
     resp = await client.get("/entreprise/123456789")
     assert resp.status == 404
@@ -282,7 +283,6 @@ async def test_me_for_staff(client, declaration, monkeypatch):
         "déclarations": [],
         "ownership": [],
     }
-
 
 
 async def test_resend_receipt_endpoint(client, monkeypatch, declaration):
