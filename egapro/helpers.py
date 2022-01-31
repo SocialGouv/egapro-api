@@ -226,6 +226,8 @@ async def get(*args, **kwargs):
 async def load_from_recherche_entreprises(siren):
     if not siren:
         return {}
+    if config.API_ENTREPRISES:
+        return await load_from_api_entreprises(siren)
     logger.debug("Calling Recherche Entreprises for siren %s", siren)
     url = f"https://search-recherche-entreprises.fabrique.social.gouv.fr/api/v1/entreprise/{siren}"
     data = await get(url)
@@ -316,10 +318,7 @@ async def patch_from_recherche_entreprises(data):
     entreprise = data.setdefault("entreprise", {})
     siren = entreprise.get("siren")
     if not entreprise.get("raison_sociale"):
-        if config.API_ENTREPRISES:
-            extra = await load_from_api_entreprises(siren)
-        else:
-            extra = await load_from_recherche_entreprises(siren)
+        extra = await load_from_recherche_entreprises(siren)
         for key, value in extra.items():
             entreprise.setdefault(key, value)
 
