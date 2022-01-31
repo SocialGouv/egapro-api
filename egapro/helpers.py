@@ -6,6 +6,7 @@ from difflib import SequenceMatcher
 import httpx
 
 from egapro import constants, schema, utils
+from egapro.loggers import logger
 from egapro.schema.utils import clean_readonly
 
 
@@ -225,6 +226,7 @@ async def get(*args, **kwargs):
 async def load_from_recherche_entreprises(siren):
     if not siren:
         return {}
+    logger.debug("Calling Recherche Entreprises for siren %s", siren)
     url = f"https://search-recherche-entreprises.fabrique.social.gouv.fr/api/v1/entreprise/{siren}"
     data = await get(url)
     if not data:
