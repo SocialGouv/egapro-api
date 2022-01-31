@@ -169,9 +169,7 @@ async def get_declaration(request, response, siren, year):
     except db.NoData:
         raise HttpError(404, f"No declaration with siren {siren} and year {year}")
     resource = record.as_resource()
-    if record.data.path("déclarant.nom") and not record.data.path(
-        "entreprise.raison_sociale"
-    ):
+    if record.data.path("déclarant.nom"):
         await helpers.patch_from_recherche_entreprises(resource["data"])
     response.json = resource
 
