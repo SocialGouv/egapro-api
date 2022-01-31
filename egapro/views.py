@@ -169,8 +169,10 @@ async def get_declaration(request, response, siren, year):
     except db.NoData:
         raise HttpError(404, f"No declaration with siren {siren} and year {year}")
     resource = record.as_resource()
-    if record.data.path("déclarant.nom"):
-        await helpers.patch_from_api_entreprises(resource["data"])
+    if record.data.path("déclarant.nom") and not record.data.path(
+        "entreprise.raison_sociale"
+    ):
+        await helpers.patch_from_recherche_entreprises(resource["data"])
     response.json = resource
 
 
@@ -363,7 +365,7 @@ async def validate_siren(request, response):
     siren = request.query.get("siren")
     if not siren_is_valid(siren):
         raise HttpError(422, f"Numéro SIREN invalide: {siren}")
-    metadata = await helpers.load_from_api_entreprises(siren)
+    metadata = await helpers.load_from_recherche_entreprises(siren)
     if not metadata:
         raise HttpError(404, f"Numéro SIREN inconnu: {siren}")
     response.json = metadata

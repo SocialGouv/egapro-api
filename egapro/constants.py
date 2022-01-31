@@ -172,6 +172,10 @@ REGIONS_TO_DEPARTEMENTS = {
     ],
 }
 
+DEPARTEMENT_TO_REGION = {
+    dep: reg for reg, deps in REGIONS_TO_DEPARTEMENTS.items() for dep in deps
+}
+
 STRUCTURED_REGIONS = {
     code: {
         "name": name,

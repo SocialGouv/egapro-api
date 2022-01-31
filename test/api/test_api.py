@@ -202,7 +202,7 @@ async def test_validate_siren(client, monkeypatch):
     async def patch(siren):
         return metadata
 
-    monkeypatch.setattr("egapro.helpers.load_from_api_entreprises", patch)
+    monkeypatch.setattr("egapro.helpers.load_from_recherche_entreprises", patch)
     resp = await client.get("/validate-siren?siren=1234567")
     assert resp.status == 422
     assert json.loads(resp.body) == {"error": "Numéro SIREN invalide: 1234567"}
@@ -218,7 +218,7 @@ async def test_validate_unknown_siren(client, monkeypatch):
     async def patch(siren):
         return {}
 
-    monkeypatch.setattr("egapro.helpers.load_from_api_entreprises", patch)
+    monkeypatch.setattr("egapro.helpers.load_from_recherche_entreprises", patch)
     resp = await client.get("/validate-siren?siren=123456782")
     assert resp.status == 404
     assert json.loads(resp.body) == {"error": "Numéro SIREN inconnu: 123456782"}

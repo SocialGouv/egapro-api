@@ -409,7 +409,7 @@ async def sync_address(limit=100, offset=0):
         dest = ROOT / f"{siren}.json"
         if not dest.exists():
             try:
-                new = await helpers.load_from_api_entreprises(siren)
+                new = await helpers.load_from_recherche_entreprises(siren)
             except ValueError as err:
                 print(siren, err)
                 continue

@@ -5,7 +5,7 @@ from difflib import SequenceMatcher
 
 import httpx
 
-from egapro import config, schema, utils
+from egapro import constants, schema, utils
 from egapro.schema.utils import clean_readonly
 
 
@@ -222,47 +222,38 @@ async def get(*args, **kwargs):
         return response.json()
 
 
-async def load_from_api_entreprises(siren):
-    if not siren or not config.API_ENTREPRISES:
+async def load_from_recherche_entreprises(siren):
+    if not siren:
         return {}
-    url = f"https://entreprise.api.gouv.fr/v2/entreprises/{siren}"
-    params = {
-        "token": config.API_ENTREPRISES,
-        "context": "egapro",
-        "recipient": "egapro",
-        "object": "egapro",
-    }
-    data = await get(url, params=params)
+    url = f"https://search-recherche-entreprises.fabrique.social.gouv.fr/api/v1/entreprise/{siren}"
+    data = await get(url)
     if not data:
         return {}
-    entreprise = data.get("entreprise", {})
-    radiation = entreprise.get("date_radiation")
+    raison_sociale = data.get("label")
+    radiation = data.get("etatAdministratifUniteLegale") != "A"
     if radiation:
         raise ValueError(
             "Le Siren saisi correspond à une entreprise fermée, "
             "veuillez vérifier votre saisie"
         )
-    siege = data.get("etablissement_siege", {})
-    code_postal = siege.get("adresse", {}).get("code_postal")
-    commune = siege.get("adresse", {}).get("localite")
-    code_insee = siege.get("adresse", {}).get("code_insee_localite")
+    etablissement = data.get("firstMatchingEtablissement", {})
+    code_insee = etablissement.get("codeCommuneEtablissement")
     departement = utils.code_insee_to_departement(code_insee)
-    adresse = siege.get("adresse", {})
-    adresse = [adresse.get(k) for k in ["numero_voie", "type_voie", "nom_voie"]]
-    adresse = " ".join(v for v in adresse if v)
-    code_naf = entreprise.get("naf_entreprise")
-    code_pays = siege.get("pays_implantation", {}).get("code")
-    if code_pays != "FR":
+    region = constants.DEPARTEMENT_TO_REGION[departement]
+    code_postal = etablissement.get("codePostalEtablissement")
+    commune = etablissement.get("libelleCommuneEtablissement")
+    adresse = etablissement.get("address").split(code_postal)[0].strip()
+    code_naf = etablissement.get("activitePrincipaleEtablissement")
+    code_pays = etablissement.get("codePaysEtrangerEtablissement")
+    if code_pays:
         raise ValueError(
             "Le Siren saisi correspond à une entreprise étrangère, "
             "veuillez vérifier votre saisie"
         )
-    if code_naf:  # 4774Z => 47.74Z
-        code_naf = f"{code_naf[:2]}.{code_naf[2:]}"
     return {
-        "raison_sociale": entreprise.get("raison_sociale"),
+        "raison_sociale": raison_sociale,
         "code_naf": code_naf,
-        "région": siege.get("region_implantation", {}).get("code"),
+        "région": region,
         "département": departement,
         "adresse": adresse,
         "commune": commune,
@@ -270,11 +261,11 @@ async def load_from_api_entreprises(siren):
     }
 
 
-async def patch_from_api_entreprises(data):
+async def patch_from_recherche_entreprises(data):
     entreprise = data.setdefault("entreprise", {})
     siren = entreprise.get("siren")
     if not entreprise.get("raison_sociale"):
-        extra = await load_from_api_entreprises(siren)
+        extra = await load_from_recherche_entreprises(siren)
         for key, value in extra.items():
             entreprise.setdefault(key, value)
 

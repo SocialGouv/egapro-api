@@ -987,7 +987,7 @@ async def test_get_empty_entreprise_should_sync_with_api_entreprises(
             "région": "11",
         }
 
-    monkeypatch.setattr("egapro.helpers.load_from_api_entreprises", mocked)
+    monkeypatch.setattr("egapro.helpers.load_from_recherche_entreprises", mocked)
 
     await db.declaration.put(
         "123456782", "2020", "foo@bar.org", {"déclarant": {"nom": "Mr Babar"}}
@@ -1006,7 +1006,7 @@ async def test_get_filled_entreprise_should_not_sync_with_api_entreprises(
     async def mocked(siren):
         raise ValueError("Should not be called")
 
-    monkeypatch.setattr("egapro.helpers.load_from_api_entreprises", mocked)
+    monkeypatch.setattr("egapro.helpers.load_from_recherche_entreprises", mocked)
 
     await db.declaration.put(
         "123456782", "2020", "foo@bar.org", {"entreprise": {"raison_sociale": "foobar"}}
