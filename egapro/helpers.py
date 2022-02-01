@@ -243,7 +243,7 @@ async def load_from_recherche_entreprises(siren):
     etablissement = data.get("firstMatchingEtablissement", {})
     code_insee = etablissement.get("codeCommuneEtablissement")
     departement = utils.code_insee_to_departement(code_insee)
-    region = constants.DEPARTEMENT_TO_REGION[departement]
+    region = constants.DEPARTEMENT_TO_REGION.get(departement)
     code_postal = etablissement.get("codePostalEtablissement")
     commune = etablissement.get("libelleCommuneEtablissement")
     adresse = etablissement.get("address").split(code_postal)[0].strip()
