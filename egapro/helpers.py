@@ -229,7 +229,7 @@ async def load_from_recherche_entreprises(siren):
     if config.API_ENTREPRISES:
         return await load_from_api_entreprises(siren)
     logger.debug("Calling Recherche Entreprises for siren %s", siren)
-    url = f"https://search-recherche-entreprises.fabrique.social.gouv.fr/api/v1/entreprise/{siren}"
+    url = f"https://api.recherche-entreprises.fabrique.social.gouv.fr/api/v1/entreprise/{siren}"
     data = await get(url)
     if not data:
         return {}
