@@ -40,7 +40,7 @@ async def dump_dgt(path: Path, max_rows: int = None):
 
 @minicli.cli
 async def search(q, verbose=False):
-    rows = await db.declaration.search(q)
+    rows = await db.search.run(q)
     for row in rows:
         data = models.Data(row)
         print(f"{data.siren} | {data.year} | {data.company}")

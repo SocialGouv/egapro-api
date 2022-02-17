@@ -65,6 +65,12 @@ async def test_search(client):
             "effectif": {"tranche": "1000:"},
         },
         "notes": {"2019": None},
+        "notes_augmentations": {"2019": None},
+        "notes_augmentations_et_promotions": {"2019": None},
+        "notes_conges_maternite": {"2019": None},
+        "notes_hautes_rémunérations": {"2019": None},
+        "notes_promotions": {"2019": None},
+        "notes_remunerations": {"2019": None},
         "label": "Nom UES (Total)",
     }
     results = await db.search.run("pyrenées")
@@ -198,6 +204,12 @@ async def test_search_from_ues_name(client):
             },
         },
         "notes": {"2019": None},
+        "notes_augmentations": {"2019": None},
+        "notes_augmentations_et_promotions": {"2019": None},
+        "notes_conges_maternite": {"2019": None},
+        "notes_hautes_rémunérations": {"2019": None},
+        "notes_promotions": {"2019": None},
+        "notes_remunerations": {"2019": None},
         "label": "Nom UES",
     }
 
@@ -243,6 +255,12 @@ async def test_search_from_ues_member_name(client):
             "effectif": {"tranche": "1000:"},
         },
         "notes": {"2019": None},
+        "notes_augmentations": {"2019": None},
+        "notes_augmentations_et_promotions": {"2019": None},
+        "notes_conges_maternite": {"2019": None},
+        "notes_hautes_rémunérations": {"2019": None},
+        "notes_promotions": {"2019": None},
+        "notes_remunerations": {"2019": None},
         "label": "Nom UES (foobabar)",
     }
 
@@ -289,6 +307,12 @@ async def test_search_with_filters(client):
             "effectif": {"tranche": "1000:"},
         },
         "notes": {"2019": None},
+        "notes_augmentations": {"2019": None},
+        "notes_augmentations_et_promotions": {"2019": None},
+        "notes_conges_maternite": {"2019": None},
+        "notes_hautes_rémunérations": {"2019": None},
+        "notes_promotions": {"2019": None},
+        "notes_remunerations": {"2019": None},
         "label": "Open Bar",
     }
 
@@ -337,6 +361,12 @@ async def test_search_from_section_naf(client):
             "effectif": {"tranche": "1000:"},
         },
         "notes": {"2019": None},
+        "notes_augmentations": {"2019": None},
+        "notes_augmentations_et_promotions": {"2019": None},
+        "notes_conges_maternite": {"2019": None},
+        "notes_hautes_rémunérations": {"2019": None},
+        "notes_promotions": {"2019": None},
+        "notes_remunerations": {"2019": None},
         "label": "Open Bar",
     }
 
@@ -383,6 +413,12 @@ async def test_filters_without_query(client):
             "siren": "987654321",
         },
         "notes": {"2019": None},
+        "notes_augmentations": {"2019": None},
+        "notes_augmentations_et_promotions": {"2019": None},
+        "notes_conges_maternite": {"2019": None},
+        "notes_hautes_rémunérations": {"2019": None},
+        "notes_promotions": {"2019": None},
+        "notes_remunerations": {"2019": None},
         "label": "Open Bar",
     }
 
@@ -431,6 +467,12 @@ async def test_search_with_offset(client):
             "effectif": {"tranche": "1000:"},
         },
         "notes": {"2019": None},
+        "notes_augmentations": {"2019": None},
+        "notes_augmentations_et_promotions": {"2019": None},
+        "notes_conges_maternite": {"2019": None},
+        "notes_hautes_rémunérations": {"2019": None},
+        "notes_promotions": {"2019": None},
+        "notes_remunerations": {"2019": None},
         "label": "Open Bar",
     }
     results = await db.search.run(region="11", limit=1, offset=1)
@@ -446,6 +488,12 @@ async def test_search_with_offset(client):
             "effectif": {"tranche": "1000:"},
         },
         "notes": {"2019": None},
+        "notes_augmentations": {"2019": None},
+        "notes_augmentations_et_promotions": {"2019": None},
+        "notes_conges_maternite": {"2019": None},
+        "notes_hautes_rémunérations": {"2019": None},
+        "notes_promotions": {"2019": None},
+        "notes_remunerations": {"2019": None},
         "label": "Oran Bar",
     }
 

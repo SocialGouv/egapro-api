@@ -286,18 +286,21 @@ class search(table):
                 logger.error(f"Cannot index {siren}/{year}: {err}")
 
     @classmethod
+    def as_json(cls, row, query):
+        row = dict(row)
+        data = row.pop("data")[0]
+        return {
+            **declaration.public_data(data),
+            **dict(row),
+            "label": cls.compute_label(query, data),
+        }
+
+    @classmethod
     async def run(cls, query=None, limit=10, offset=0, **filters):
         args = [limit, offset]
         args, where = cls.build_query(args, query, **filters)
         rows = await cls.fetch(sql.search.format(where=where), *args)
-        return [
-            {
-                **declaration.public_data(row["data"][0]),
-                "notes": row["notes"],
-                "label": cls.compute_label(query, row["data"][0]),
-            }
-            for row in rows
-        ]
+        return [cls.as_json(row, query) for row in rows]
 
     @classmethod
     @lru_cache(maxsize=128)
