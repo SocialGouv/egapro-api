@@ -343,6 +343,7 @@ async def get_config(request, response):
     data = {
         "YEARS": constants.YEARS,
         "CURRENT_YEAR": constants.CURRENT_YEAR,
+        "CURRENT_PUBLIC_YEAR": constants.CURRENT_PUBLIC_YEAR,
         "EFFECTIFS": constants.EFFECTIFS,
         "DEPARTEMENTS": constants.DEPARTEMENTS,
         "REGIONS": constants.REGIONS,
