@@ -342,6 +342,7 @@ async def get_config(request, response):
     keys = request.query.list("key", [])
     data = {
         "YEARS": constants.YEARS,
+        "CURRENT_YEAR": constants.CURRENT_YEAR,
         "EFFECTIFS": constants.EFFECTIFS,
         "DEPARTEMENTS": constants.DEPARTEMENTS,
         "REGIONS": constants.REGIONS,
