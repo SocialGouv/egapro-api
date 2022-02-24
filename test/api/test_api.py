@@ -177,8 +177,7 @@ async def test_config_endpoint(client):
     assert resp.status == 200
     assert list(json.loads(resp.body).keys()) == [
         "YEARS",
-        "CURRENT_YEAR",
-        "CURRENT_PUBLIC_YEAR",
+        "PUBLIC_YEARS",
         "EFFECTIFS",
         "DEPARTEMENTS",
         "REGIONS",
