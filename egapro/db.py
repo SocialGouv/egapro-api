@@ -138,11 +138,12 @@ class declaration(table):
             query = sql.insert_draft_declaration
             args = (siren, int(year), modified_at, declarant, data.raw)
         else:
-            await search.index(data)
             query = sql.insert_declaration
             args = (siren, year, modified_at, declared_at, declarant, data.raw, ft)
         async with cls.pool.acquire() as conn:
             await conn.execute(query, *args)
+            if not data.is_draft():
+                await search.index(data)
 
     @classmethod
     async def owned(cls, owner):
