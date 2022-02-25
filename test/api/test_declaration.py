@@ -1086,3 +1086,19 @@ async def test_entreprise_plan_relance_is_required_for_2021(client, body, monkey
     body["entreprise"]["plan_relance"] = False
     resp = await client.put("/declaration/514027945/2021", body=body)
     assert resp.status == 204
+
+
+async def test_non_staff_cannot_delete(client, declaration):
+    client.login("foo@bar.org")
+    await declaration("514027945", 2019, "foo@bar.org")
+    resp = await client.delete("/declaration/514027945/2019")
+    assert resp.status == 403
+    assert json.loads(resp.body) == {"error": "Vous n'avez pas l'autorisation"}
+
+
+async def test_staff_can_delete(client, declaration, monkeypatch):
+    monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
+    client.login("Staff@email.com")
+    await declaration("514027945", 2019, "foo@bar.org")
+    resp = await client.delete("/declaration/514027945/2019")
+    assert resp.status == 204

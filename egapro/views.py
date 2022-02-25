@@ -174,6 +174,16 @@ async def get_declaration(request, response, siren, year):
     response.json = resource
 
 
+@app.route("/declaration/{siren}/{year}", methods=["DELETE"])
+@tokens.require
+@ensure_owner
+async def delete_declaration(request, response, siren, year):
+    if not request["staff"]:
+        raise HttpError(403, "Vous n'avez pas l'autorisation")
+    await db.declaration.delete(siren, year)
+    response.status = 204
+
+
 @app.route("/declaration/{siren}/{year}/receipt", methods=["POST"])
 @tokens.require
 @ensure_owner

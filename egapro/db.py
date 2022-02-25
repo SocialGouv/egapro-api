@@ -93,6 +93,12 @@ class declaration(table):
         )
 
     @classmethod
+    async def delete(cls, siren, year):
+        return await cls.execute(
+            "DELETE FROM declaration WHERE siren=$1 AND year=$2", siren, int(year)
+        )
+
+    @classmethod
     async def get_last(cls, siren):
         return await cls.fetchrow(
             "SELECT data FROM declaration "

@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS simulation
 CREATE TABLE IF NOT EXISTS search
 (siren TEXT, year INT, declared_at TIMESTAMP WITH TIME ZONE, ft TSVECTOR, region VARCHAR(2), departement VARCHAR(3), section_naf CHAR, note INT,
 PRIMARY KEY (siren, year));
+ALTER TABLE search DROP CONSTRAINT IF EXISTS declaration_exists;
+ALTER TABLE search ADD CONSTRAINT declaration_exists FOREIGN KEY (siren,year) REFERENCES declaration(siren,year) ON DELETE CASCADE;
 CREATE TABLE IF NOT EXISTS archive
 (siren TEXT, year INT, at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), by TEXT, ip INET, data JSONB);
 CREATE TABLE IF NOT EXISTS ownership (siren TEXT, email TEXT, PRIMARY KEY (siren, email));

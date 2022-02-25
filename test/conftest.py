@@ -15,8 +15,8 @@ def pytest_configure(config):
         egapro_config.init()
         await db.init()
         async with db.declaration.pool.acquire() as conn:
-            await conn.execute("DROP TABLE IF EXISTS declaration")
-            await conn.execute("DROP TABLE IF EXISTS declaration")
+            await conn.execute("DROP TABLE IF EXISTS declaration CASCADE")
+            await conn.execute("DROP TABLE IF EXISTS simulation")
             await conn.execute("DROP TABLE IF EXISTS search")
             await conn.execute("DROP TABLE IF EXISTS archive")
             await conn.execute("DROP TABLE IF EXISTS ownership")
@@ -35,7 +35,7 @@ def pytest_runtest_setup(item):
 
         # Ok, it's the test database, we can now delete the data.
         async with db.declaration.pool.acquire() as conn:
-            await conn.execute("TRUNCATE TABLE declaration;")
+            await conn.execute("TRUNCATE TABLE declaration CASCADE;")
             await conn.execute("TRUNCATE TABLE simulation;")
             await conn.execute("TRUNCATE TABLE search;")
             await conn.execute("TRUNCATE TABLE archive;")
