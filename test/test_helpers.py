@@ -301,7 +301,9 @@ async def test_recherche_entreprise_with_date_radiation(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_recherche_entreprise_with_foreign_company(monkeypatch):
-    RECHERCHE_ENTREPRISE_SAMPLE['firstMatchingEtablissement']["codePaysEtrangerEtablissement"] = "99131"
+    RECHERCHE_ENTREPRISE_SAMPLE["firstMatchingEtablissement"][
+        "codePaysEtrangerEtablissement"
+    ] = "99131"
 
     async def mock_get(*args, **kwargs):
         return RECHERCHE_ENTREPRISE_SAMPLE
@@ -313,3 +315,26 @@ async def test_recherche_entreprise_with_foreign_company(monkeypatch):
         "Le Siren saisi correspond à une entreprise étrangère, "
         "veuillez vérifier votre saisie"
     )
+
+    del RECHERCHE_ENTREPRISE_SAMPLE["firstMatchingEtablissement"][
+        "codePaysEtrangerEtablissement"
+    ]
+
+
+@pytest.mark.asyncio
+async def test_recherche_entreprise_is_cached(monkeypatch):
+    RECHERCHE_ENTREPRISE_SAMPLE["label"] = "123 je vais dans les bois"
+
+    async def mock_get(*args, **kwargs):
+        return RECHERCHE_ENTREPRISE_SAMPLE
+
+    monkeypatch.setattr("egapro.helpers.get", mock_get)
+    res = await helpers.load_from_recherche_entreprises("481912999")
+    assert res["raison_sociale"] == "123 je vais dans les bois"
+
+    async def mock_get(*args, **kwargs):
+        assert False, "Should not be called because of the cache"
+
+    monkeypatch.setattr("egapro.helpers.get", mock_get)
+    res = await helpers.load_from_recherche_entreprises("481912999")
+    assert res["raison_sociale"] == "123 je vais dans les bois"

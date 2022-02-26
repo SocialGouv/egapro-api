@@ -1,6 +1,7 @@
 """Unlike utils, helpers may import business logic"""
 
 import math
+from asyncstdlib.functools import lru_cache
 from difflib import SequenceMatcher
 
 import httpx
@@ -223,6 +224,7 @@ async def get(*args, **kwargs):
         return response.json()
 
 
+@lru_cache(maxsize=1024)
 async def load_from_recherche_entreprises(siren):
     if not siren:
         return {}
