@@ -304,7 +304,7 @@ async def send_token(request, response):
         if "localhost" in link or "127.0.0.1" in link:
             print(link)
         body = emails.ACCESS_GRANTED.format(link=link)
-        emails.send(email, "Se connecter à son espace Egapro", body)
+        emails.send(email, "Validation de l'email", body)
         response.status = 204
 
 

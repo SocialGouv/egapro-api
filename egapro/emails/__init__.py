@@ -15,7 +15,7 @@ from ..loggers import logger
 
 ACCESS_GRANTED = """Bonjour,
 
-Voici le lien vous permettant de vous connecter à votre espace Egapro:
+Voici le lien vous permettant de valider votre email:
 
 {link}
 
