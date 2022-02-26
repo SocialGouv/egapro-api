@@ -2,6 +2,7 @@
 
 import math
 from asyncstdlib.functools import lru_cache
+from datetime import date
 from difflib import SequenceMatcher
 
 import httpx
@@ -283,7 +284,8 @@ async def load_from_api_entreprises(siren):
         return {}
     entreprise = data.get("entreprise", {})
     radiation = entreprise.get("date_radiation")
-    if radiation:
+    limit = date(constants.CURRENT_YEAR, 1, 1)
+    if radiation and date.fromisoformat(radiation) < limit:
         raise ValueError(
             "Le Siren saisi correspond à une entreprise fermée, "
             "veuillez vérifier votre saisie"

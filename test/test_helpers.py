@@ -1,6 +1,6 @@
 import pytest
 
-from egapro import helpers, models
+from egapro import constants, helpers, models
 
 RECHERCHE_ENTREPRISE_SAMPLE = {
     "activitePrincipale": "Conseil informatique",
@@ -59,6 +59,92 @@ RECHERCHE_ENTREPRISE_SAMPLE = {
     ],
     "simpleLabel": "FOOBAR",
     "siren": "481912999",
+}
+
+API_ENTREPRISES_SAMPLE = {
+    "entreprise": {
+        "siren": "481912999",
+        "capital_social": 100000,
+        "numero_tva_intracommunautaire": "FR94481912999",
+        "forme_juridique": "SAS, société par actions simplifiée",
+        "forme_juridique_code": "5710",
+        "nom_commercial": "FOOBAR",
+        "procedure_collective": False,
+        "enseigne": None,
+        "libelle_naf_entreprise": "Conseil en systèmes et logiciels informatiques",
+        "naf_entreprise": "6202A",
+        "raison_sociale": "FOOBAR",
+        "siret_siege_social": "48191290000099",
+        "code_effectif_entreprise": "03",
+        "date_creation": 1103065200,
+        "nom": None,
+        "prenom": None,
+        "date_radiation": None,
+        "categorie_entreprise": "PME",
+        "tranche_effectif_salarie_entreprise": {
+            "de": 6,
+            "a": 9,
+            "code": "03",
+            "date_reference": "2018",
+            "intitule": "6 à 9 salariés",
+        },
+        "mandataires_sociaux": [
+            {
+                "nom": "FOO",
+                "prenom": "BAR",
+                "fonction": "PRESIDENT",
+                "date_naissance": "1979-08-06",
+                "date_naissance_timestamp": 302738400,
+                "dirigeant": True,
+                "raison_sociale": "",
+                "identifiant": "",
+                "type": "PP",
+            },
+        ],
+        "etat_administratif": {"value": "A", "date_cessation": None},
+    },
+    "etablissement_siege": {
+        "siege_social": True,
+        "siret": "48191299000099",
+        "naf": "6202A",
+        "libelle_naf": "Conseil en systèmes et logiciels informatiques",
+        "date_mise_a_jour": 1598343993,
+        "tranche_effectif_salarie_etablissement": {
+            "de": 6,
+            "a": 9,
+            "code": "03",
+            "date_reference": "2018",
+            "intitule": "6 à 9 salariés",
+        },
+        "date_creation_etablissement": 1485903600,
+        "region_implantation": {"code": "11", "value": "Île-de-France"},
+        "commune_implantation": {
+            "code": "75102",
+            "value": "Paris 2e Arrondissement",
+        },
+        "pays_implantation": {"code": "FR", "value": "FRANCE"},
+        "diffusable_commercialement": True,
+        "enseigne": None,
+        "adresse": {
+            "l1": "FOOBAR",
+            "l2": None,
+            "l3": None,
+            "l4": "2 RUE FOOBAR",
+            "l5": None,
+            "l6": "75002 PARIS 2",
+            "l7": "FRANCE",
+            "numero_voie": "2",
+            "type_voie": "RUE",
+            "nom_voie": "FOOBAR",
+            "complement_adresse": None,
+            "code_postal": "75002",
+            "localite": "PARIS 2",
+            "code_insee_localite": "75102",
+            "cedex": None,
+        },
+        "etat_administratif": {"value": "A", "date_fermeture": None},
+    },
+    "gateway_error": False,
 }
 
 
@@ -338,3 +424,36 @@ async def test_recherche_entreprise_is_cached(monkeypatch):
     monkeypatch.setattr("egapro.helpers.get", mock_get)
     res = await helpers.load_from_recherche_entreprises("481912999")
     assert res["raison_sociale"] == "123 je vais dans les bois"
+
+
+@pytest.mark.asyncio
+async def test_recherche_entreprise_with_date_radiation_current_year(monkeypatch):
+    # Older than active year
+    API_ENTREPRISES_SAMPLE["entreprise"]["date_radiation"] = "2019-03-12"
+
+    async def mock_get(*args, **kwargs):
+        return API_ENTREPRISES_SAMPLE
+
+    monkeypatch.setattr("egapro.config.API_ENTREPRISES", "foobar")  # Use API Entreprise
+    monkeypatch.setattr("egapro.helpers.get", mock_get)
+    with pytest.raises(ValueError) as info:
+        await helpers.load_from_recherche_entreprises("481912999")
+    assert str(info.value) == (
+        "Le Siren saisi correspond à une entreprise fermée, "
+        "veuillez vérifier votre saisie"
+    )
+
+    # Closed during active year, should not raise
+    API_ENTREPRISES_SAMPLE["entreprise"][
+        "date_radiation"
+    ] = f"{constants.CURRENT_YEAR}-03-12"
+    res = await helpers.load_from_recherche_entreprises("481912999")
+    assert res == {
+        "adresse": "2 RUE FOOBAR",
+        "code_naf": "62.02A",
+        "code_postal": "75002",
+        "commune": "PARIS 2",
+        "département": "75",
+        "raison_sociale": "FOOBAR",
+        "région": "11",
+    }
