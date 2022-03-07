@@ -303,6 +303,7 @@ class search(table):
         }
 
     @classmethod
+    @lru_cache(maxsize=1024)
     async def run(cls, query=None, limit=10, offset=0, **filters):
         args = [limit, offset]
         args, where = cls.build_query(args, query, **filters)
