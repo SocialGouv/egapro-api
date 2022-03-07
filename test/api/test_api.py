@@ -113,10 +113,10 @@ async def test_search_endpoint(client):
 async def test_stats_endpoint(client):
     await db.declaration.put(
         "12345671",
-        2020,
+        2021,
         "foo@bar.org",
         {
-            "déclaration": {"index": 95, "année_indicateurs": 2020},
+            "déclaration": {"index": 95, "année_indicateurs": 2021},
             "id": "12345678-1234-5678-9012-123456789013",
             "entreprise": {
                 "raison_sociale": "Bio c Bon",
@@ -128,10 +128,10 @@ async def test_stats_endpoint(client):
     # Small
     await db.declaration.put(
         "12345672",
-        2020,
+        2021,
         "foo@bar.org",
         {
-            "déclaration": {"index": 93, "année_indicateurs": 2020},
+            "déclaration": {"index": 93, "année_indicateurs": 2021},
             "id": "12345678-1234-5678-9012-123456789012",
             "entreprise": {
                 "raison_sociale": "Biocoop",
@@ -142,10 +142,10 @@ async def test_stats_endpoint(client):
     )
     await db.declaration.put(
         "123456782",
-        2020,
+        2021,
         "foo@bar.org",
         {
-            "déclaration": {"index": 93, "année_indicateurs": 2020},
+            "déclaration": {"index": 93, "année_indicateurs": 2021},
             "id": "12345678-1234-5678-9012-123456789012",
             "entreprise": {
                 "raison_sociale": "RoboCoop",
