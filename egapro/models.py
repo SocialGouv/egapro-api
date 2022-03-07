@@ -43,10 +43,7 @@ class Data(dict):
         return self.path("déclaration.brouillon")
 
     def is_public(self):
-        return (
-            self.path("entreprise.effectif.tranche") in constants.PUBLIC_EFFECTIFS
-            and self.year in constants.PUBLIC_YEARS
-        )
+        return self.year in constants.PUBLIC_YEARS
 
     @property
     def year(self):

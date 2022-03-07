@@ -63,19 +63,6 @@ async def test_search_endpoint(client):
             },
         },
     )
-    await db.declaration.put(
-        "12345672",
-        2020,
-        "foo@bar.org",
-        {
-            "déclaration": {"index": 93, "année_indicateurs": 2020},
-            "id": "12345678-1234-5678-9012-123456789012",
-            "entreprise": {
-                "raison_sociale": "Biocoop",
-                "effectif": {"tranche": "50:250"},
-            },
-        },
-    )
     resp = await client.get("/search?q=bio")
     assert resp.status == 200
     assert json.loads(resp.body) == {
@@ -122,21 +109,6 @@ async def test_stats_endpoint(client):
                 "raison_sociale": "Bio c Bon",
                 "effectif": {"tranche": "1000:"},
                 "département": "12",
-            },
-        },
-    )
-    # Small
-    await db.declaration.put(
-        "12345672",
-        2021,
-        "foo@bar.org",
-        {
-            "déclaration": {"index": 93, "année_indicateurs": 2021},
-            "id": "12345678-1234-5678-9012-123456789012",
-            "entreprise": {
-                "raison_sociale": "Biocoop",
-                "effectif": {"tranche": "50:250"},
-                "département": "11",
             },
         },
     )

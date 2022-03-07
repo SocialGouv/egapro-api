@@ -10,7 +10,6 @@ EFFECTIFS = {
 }
 
 PUBLIC_YEARS = YEARS
-PUBLIC_EFFECTIFS = ["251:999", "1000:"]
 
 REGIONS = {
     "01": "Guadeloupe",

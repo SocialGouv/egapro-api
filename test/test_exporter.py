@@ -824,13 +824,6 @@ async def test_export_public_data(declaration):
         year=2018,
         entreprise={"effectif": {"tranche": "1000:", "total": 1000}},
     )
-    # Small entreprise, should not be exported.
-    await declaration(
-        company="MiniBar",
-        siren="87654323",
-        entreprise={"effectif": {"tranche": "50:250"}},
-        year=2019,
-    )
     # Starting from 2020, 251:999 companies index are public.
     await declaration(
         company="KaramBar",
