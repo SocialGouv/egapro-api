@@ -954,16 +954,6 @@ async def test_put_declaration_with_departement_and_region_mismatch(client, body
     }
 
 
-async def test_put_declaration_with_code_postal_and_region_mismatch(client, body):
-    body["entreprise"]["code_postal"] = "54321"
-    body["entreprise"]["département"] = "12"
-    resp = await client.put("/declaration/514027945/2019", body=body)
-    assert resp.status == 422
-    assert json.loads(resp.body) == {
-        "error": "Le département et le code postal ne correspondent pas"
-    }
-
-
 async def test_put_declaration_without_source(client, body):
     del body["source"]
     resp = await client.put("/declaration/514027945/2019", body=body)

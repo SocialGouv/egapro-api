@@ -93,12 +93,6 @@ def official_round(i):
     return round(float(i) + 0.5 - 0.049)
 
 
-def check_dep_and_cp(dep, cp):
-    if dep in ["2A", "2B"]:
-        return cp.startswith("20")
-    return cp.startswith(dep)
-
-
 def code_insee_to_departement(code):
     if not code:
         return None

@@ -65,14 +65,6 @@ def test_remove_one_year(input, output):
 
 
 @pytest.mark.parametrize(
-    "dep,cp,expected",
-    [("77", "77480", True), ("974", "97480", True), ("2A", "20123", True)],
-)
-def test_check_dep_and_cp(dep, cp, expected):
-    assert utils.check_dep_and_cp(dep, cp) == expected
-
-
-@pytest.mark.parametrize(
     "code,expected",
     [("77480", "77"), ("97480", "974"), ("2A123", "2A"), (None, None)],
 )
