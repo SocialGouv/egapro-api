@@ -63,50 +63,55 @@ def _cross_validate(data):
         assert dep in constants.REGIONS_TO_DEPARTEMENTS[region], msg
         msg = "Le département et le code postal ne correspondent pas"
         index = data.path("déclaration.index")
-        mesures_correctives = data.path("déclaration.mesures_correctives")
-        if data.year >= 2020 or index is not None:
-            msg = "La date de publication doit être définie"
-            assert data.path("déclaration.publication.date"), msg
-            msg = "Les modalités de publication ou le site Internet doit être défini"
-            assert data.path("déclaration.publication.modalités") or data.path(
-                "déclaration.publication.url"
-            ), msg
-        if index is None:
-            msg = "Les mesures correctives ne doivent pas être définies si l'index n'est pas calculable"
-            assert not mesures_correctives, msg
-        elif index >= 75:
-            msg = "Les mesures correctives ne doivent pas être définies pour un index de 75 ou plus"
-            assert not mesures_correctives, msg
+        periode_suffisante = data.path("déclaration.période_suffisante")
+        if periode_suffisante is False:
+            msg = "La période de référence ne permet pas de définir des indicateurs"
+            assert "indicateurs" not in data, msg
         else:
-            msg = "Les mesures correctives doivent être définies pour un index inférieur à 75"
-            assert mesures_correctives, msg
-        periode_reference = data.path("déclaration.fin_période_référence")
-        assert (
-            periode_reference
-        ), "Le champ déclaration.fin_période_référence doit être défini"
-        try:
-            annee_periode_reference = date.fromisoformat(periode_reference).year
-        except ValueError:
-            annee_periode_reference = None
-        assert (
-            annee_periode_reference == data.year
-        ), "L'année de la date de fin de période ne peut pas être différente de l'année au titre de laquelle les indicateurs sont calculés."
+            mesures_correctives = data.path("déclaration.mesures_correctives")
+            if data.year >= 2020 or index is not None:
+                msg = "La date de publication doit être définie"
+                assert data.path("déclaration.publication.date"), msg
+                msg = "Les modalités de publication ou le site Internet doit être défini"
+                assert data.path("déclaration.publication.modalités") or data.path(
+                    "déclaration.publication.url"
+                ), msg
+            if index is None:
+                msg = "Les mesures correctives ne doivent pas être définies si l'index n'est pas calculable"
+                assert not mesures_correctives, msg
+            elif index >= 75:
+                msg = "Les mesures correctives ne doivent pas être définies pour un index de 75 ou plus"
+                assert not mesures_correctives, msg
+            else:
+                msg = "Les mesures correctives doivent être définies pour un index inférieur à 75"
+                assert mesures_correctives, msg
+            periode_reference = data.path("déclaration.fin_période_référence")
+            assert (
+                periode_reference
+            ), "Le champ déclaration.fin_période_référence doit être défini"
+            try:
+                annee_periode_reference = date.fromisoformat(periode_reference).year
+            except ValueError:
+                annee_periode_reference = None
+            assert (
+                annee_periode_reference == data.year
+            ), "L'année de la date de fin de période ne peut pas être différente de l'année au titre de laquelle les indicateurs sont calculés."
 
-        tranche = data.path("entreprise.effectif.tranche")
-        indicateurs_gt_250 = ("indicateurs.promotions", "indicateurs.augmentations")
-        indicateurs_lt_250 = "indicateurs.augmentations_et_promotions"
-        if tranche == "50:250":
-            for path in indicateurs_gt_250:
-                msg = f"L'indicateur {path} ne doit pas être défini pour la tranche 50 à 250"
-                assert not data.path(path), msg
-            msg = f"L'indicateur {indicateurs_lt_250} doit être défini pour la tranche 50 à 250"
-            assert data.path(indicateurs_lt_250), msg
-        else:
-            msg = f"L'indicateur {indicateurs_lt_250} ne peut être défini que pour la tranche 50 à 250"
-            assert not data.path(indicateurs_lt_250), msg
-            for path in indicateurs_gt_250:
-                msg = f"L'indicateur {path} doit être défini"
-                assert data.path(path), msg
+            tranche = data.path("entreprise.effectif.tranche")
+            indicateurs_gt_250 = ("indicateurs.promotions", "indicateurs.augmentations")
+            indicateurs_lt_250 = "indicateurs.augmentations_et_promotions"
+            if tranche == "50:250":
+                for path in indicateurs_gt_250:
+                    msg = f"L'indicateur {path} ne doit pas être défini pour la tranche 50 à 250"
+                    assert not data.path(path), msg
+                msg = f"L'indicateur {indicateurs_lt_250} doit être défini pour la tranche 50 à 250"
+                assert data.path(indicateurs_lt_250), msg
+            else:
+                msg = f"L'indicateur {indicateurs_lt_250} ne peut être défini que pour la tranche 50 à 250"
+                assert not data.path(indicateurs_lt_250), msg
+                for path in indicateurs_gt_250:
+                    msg = f"L'indicateur {path} doit être défini"
+                    assert data.path(path), msg
 
         if data.year >= 2021:
             msg = "data.entreprise.plan_relance doit être défini"

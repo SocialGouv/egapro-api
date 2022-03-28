@@ -16,6 +16,7 @@ id: string
     modalités: string
   +année_indicateurs: python:egapro.schema.utils.years
   fin_période_référence: date # Date de fin de la période de référence considérée pour le calcul des indicateurs
+  période_suffisante: boolean  # Vaut false si l'entreprise à moins de 12 mois d'existence sur la période de calcul considérée
   =points: integer # Nombre total de points obtenus
   =points_calculables: integer # Nombre total de points pouvant être obtenus
   =index: integer # Résultat final sur 100 points

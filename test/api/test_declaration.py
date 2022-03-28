@@ -1092,3 +1092,19 @@ async def test_staff_can_delete(client, declaration, monkeypatch):
     await declaration("514027945", 2019, "foo@bar.org")
     resp = await client.delete("/declaration/514027945/2019")
     assert resp.status == 204
+
+
+async def test_without_periode_suffisante(client, body):
+    body["déclaration"]["période_suffisante"] = False
+    del body["indicateurs"]
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 204
+
+
+async def test_without_periode_suffisante_but_indicateurs(client, body):
+    body["déclaration"]["période_suffisante"] = False
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    assert resp.status == 422
+    assert json.loads(resp.body) == {
+        "error": "La période de référence ne permet pas de définir des indicateurs"
+    }

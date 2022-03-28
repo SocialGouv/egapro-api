@@ -86,6 +86,7 @@ async def get_headers_columns():
             ),
             ("Date_debut_periode", "déclaration.début_période_référence"),
             ("Date_fin_periode", "déclaration.fin_période_référence"),
+            ("Période_suffisante", "déclaration.période_suffisante", falsy),
             ("Structure", "entreprise.structure"),
             ("Tranche_effectif", "entreprise.effectif.tranche", EFFECTIF.get),
             ("Nb_salaries", "entreprise.effectif.total"),
