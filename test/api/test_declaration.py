@@ -1097,6 +1097,8 @@ async def test_staff_can_delete(client, declaration, monkeypatch):
 async def test_without_periode_suffisante(client, body):
     body["déclaration"]["période_suffisante"] = False
     del body["indicateurs"]
+    del body["déclaration"]["fin_période_référence"]
+    del body["entreprise"]["effectif"]["total"]
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 204
 
