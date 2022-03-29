@@ -90,6 +90,7 @@ def main(data):
         "Périmètre retenu pour le calcul et la publication des indicateurs", cells
     )
 
+    effectif = data.path("entreprise.effectif.total")
     cells = (
         ("Année au titre de laquelle les indicateurs sont calculés", data.year),
         (
@@ -98,7 +99,7 @@ def main(data):
         ),
         (
             "Nombre de salariés pris en compte pour le calcul des indicateurs",
-            int(data.path("entreprise.effectif.total")),
+            int(effectif) if effectif else "NC",
         ),
     )
     pdf.write_table("Informations calcul et période de référence", cells)
