@@ -113,9 +113,9 @@ def _cross_validate(data):
                     msg = f"L'indicateur {path} doit être défini"
                     assert data.path(path), msg
 
-        if data.year >= 2021:
-            msg = "data.entreprise.plan_relance doit être défini"
-            assert data.path("entreprise.plan_relance") is not None, msg
+            if data.year >= 2021:
+                msg = "data.entreprise.plan_relance doit être défini"
+                assert data.path("entreprise.plan_relance") is not None, msg
 
     for key in SCHEMA.indicateurs_keys:
         path = f"indicateurs.{key}"
