@@ -23,11 +23,7 @@ EFFECTIF = {"50:250": "50 à 250", "251:999": "251 à 999", "1000:": "1000 et pl
 
 
 def truthy(val):
-    return bool(val)
-
-
-def falsy(val):
-    return not truthy(val)
+    return False if val is False else True
 
 
 def isodatetime(val):
@@ -86,7 +82,7 @@ async def get_headers_columns():
             ),
             ("Date_debut_periode", "déclaration.début_période_référence"),
             ("Date_fin_periode", "déclaration.fin_période_référence"),
-            ("Période_suffisante", "déclaration.période_suffisante", falsy),
+            ("Période_suffisante", "déclaration.période_suffisante", truthy),
             ("Structure", "entreprise.structure"),
             ("Tranche_effectif", "entreprise.effectif.tranche", EFFECTIF.get),
             ("Nb_salaries", "entreprise.effectif.total"),
@@ -365,10 +361,12 @@ def prepare_entreprise(data):
 
 
 def prepare_declaration(data):
-    data["début_période_référence"] = remove_one_year(
-        date.fromisoformat(data["fin_période_référence"])
-    )
-    data["fin_période_référence"] = date.fromisoformat(data["fin_période_référence"])
+    fin_periode_reference = data["fin_période_référence"]
+    if fin_periode_reference:
+        data["début_période_référence"] = remove_one_year(
+            date.fromisoformat(fin_periode_reference)
+        )
+        data["fin_période_référence"] = date.fromisoformat(fin_periode_reference)
 
 
 def prepare_remunerations(data):

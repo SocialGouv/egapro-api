@@ -717,6 +717,21 @@ async def test_dgt_dump_with_non_ascii_chars(declaration):
     assert sheet["U2"].value == "FOOBAR"
 
 
+async def test_dgt_dump_with_false_periode_suffisante(declaration):
+    await declaration(
+        siren="123456782",
+        year=2020,
+        uid="123456781234-123456789012",
+        source="solen-2019",
+        déclaration={"période_suffisante": False, "fin_période_référence": None}
+    )
+
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook.active
+    assert sheet["Q1"].value == "Période_suffisante"
+    assert sheet["Q2"].value is False
+
+
 async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
     await declaration(
         company="Mirabar",
