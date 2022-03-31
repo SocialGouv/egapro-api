@@ -723,11 +723,15 @@ async def test_dgt_dump_with_false_periode_suffisante(declaration):
         year=2020,
         uid="123456781234-123456789012",
         source="solen-2019",
-        déclaration={"période_suffisante": False, "fin_période_référence": None}
+        déclaration={"période_suffisante": False}
     )
 
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
+    assert sheet["O1"].value == "Date_debut_periode"
+    assert sheet["O2"].value is None
+    assert sheet["P1"].value == "Date_fin_periode"
+    assert sheet["P2"].value is None
     assert sheet["Q1"].value == "Période_suffisante"
     assert sheet["Q2"].value is False
 

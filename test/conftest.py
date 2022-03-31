@@ -79,7 +79,8 @@ def declaration():
         data["entreprise"].setdefault("effectif", {"tranche": "50:250", "total": 149})
         data["déclaration"].setdefault("année_indicateurs", year)
         data["déclaration"].setdefault("index", grade)
-        data["déclaration"].setdefault("fin_période_référence", "2019-12-31")
+        if not data["déclaration"].get("période_suffisante") is False:
+            data["déclaration"].setdefault("fin_période_référence", "2019-12-31")
         data["déclarant"].setdefault("email", owner)
         data["déclarant"].setdefault("prénom", "Martin")
         data["déclarant"].setdefault("nom", "Martine")

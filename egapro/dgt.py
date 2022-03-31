@@ -361,7 +361,7 @@ def prepare_entreprise(data):
 
 
 def prepare_declaration(data):
-    fin_periode_reference = data["fin_période_référence"]
+    fin_periode_reference = data.get("fin_période_référence")
     if fin_periode_reference:
         data["début_période_référence"] = remove_one_year(
             date.fromisoformat(fin_periode_reference)
