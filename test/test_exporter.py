@@ -164,12 +164,12 @@ async def test_dgt_dump(declaration):
     # Dates
     assert sheet["N1"].value == "Annee_indicateurs"
     assert sheet["N2"].value == 2020
-    assert sheet["O1"].value == "Date_debut_periode"
-    assert sheet["O2"].value == date(2019, 1, 1)
-    assert sheet["P1"].value == "Date_fin_periode"
-    assert sheet["P2"].value == date(2019, 12, 31)
-    assert sheet["Q1"].value == "Période_suffisante"
-    assert sheet["Q2"].value is True
+    assert sheet["O1"].value == "Periode_12mois"
+    assert sheet["O2"].value is True
+    assert sheet["P1"].value == "Date_debut_periode"
+    assert sheet["P2"].value == date(2019, 1, 1)
+    assert sheet["Q1"].value == "Date_fin_periode"
+    assert sheet["Q2"].value == date(2019, 12, 31)
     assert sheet["R1"].value == "Structure"
     assert sheet["R2"].value == "Entreprise"
 
@@ -728,12 +728,12 @@ async def test_dgt_dump_with_false_periode_suffisante(declaration):
 
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
-    assert sheet["O1"].value == "Date_debut_periode"
-    assert sheet["O2"].value is None
-    assert sheet["P1"].value == "Date_fin_periode"
+    assert sheet["O1"].value == "Periode_12mois"
+    assert sheet["O2"].value is False
+    assert sheet["P1"].value == "Date_debut_periode"
     assert sheet["P2"].value is None
-    assert sheet["Q1"].value == "Période_suffisante"
-    assert sheet["Q2"].value is False
+    assert sheet["Q1"].value == "Date_fin_periode"
+    assert sheet["Q2"].value is None
 
 
 async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
