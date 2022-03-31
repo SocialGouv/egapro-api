@@ -339,15 +339,16 @@ def prepare_record(data):
     effectif = data["entreprise"]["effectif"]["tranche"]
     prepare_entreprise(data["entreprise"])
     prepare_declaration(data["déclaration"])
-    prepare_remunerations(data["indicateurs"]["rémunérations"])
-    prepare_conges_maternite(data["indicateurs"]["congés_maternité"])
-    if effectif == "50:250":
-        prepare_augmentations_et_promotions(
-            data["indicateurs"]["augmentations_et_promotions"]
-        )
-    else:
-        prepare_augmentations(data["indicateurs"]["augmentations"])
-        prepare_promotions(data["indicateurs"]["promotions"])
+    if "indicateurs" in data:
+        prepare_remunerations(data["indicateurs"]["rémunérations"])
+        prepare_conges_maternite(data["indicateurs"]["congés_maternité"])
+        if effectif == "50:250":
+            prepare_augmentations_et_promotions(
+                data["indicateurs"]["augmentations_et_promotions"]
+            )
+        else:
+            prepare_augmentations(data["indicateurs"]["augmentations"])
+            prepare_promotions(data["indicateurs"]["promotions"])
 
     return flatten(data, flatten_lists=True)
 

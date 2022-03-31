@@ -70,7 +70,6 @@ def declaration():
         data.setdefault("entreprise", {})
         data.setdefault("déclaration", {})
         data.setdefault("déclarant", {})
-        data.setdefault("indicateurs", {})
         data.setdefault("id", uid)
         data["entreprise"].setdefault("raison_sociale", company)
         data["entreprise"].setdefault("département", departement)
@@ -79,18 +78,19 @@ def declaration():
         data["entreprise"].setdefault("effectif", {"tranche": "50:250", "total": 149})
         data["déclaration"].setdefault("année_indicateurs", year)
         data["déclaration"].setdefault("index", grade)
-        if not data["déclaration"].get("période_suffisante") is False:
-            data["déclaration"].setdefault("fin_période_référence", "2019-12-31")
         data["déclarant"].setdefault("email", owner)
         data["déclarant"].setdefault("prénom", "Martin")
         data["déclarant"].setdefault("nom", "Martine")
-        data["indicateurs"].setdefault("rémunérations", {"mode": "csp"})
-        data["indicateurs"].setdefault("congés_maternité", {})
-        if data["entreprise"]["effectif"]["tranche"] == "50:250":
-            data["indicateurs"].setdefault("augmentations_et_promotions", {})
-        else:
-            data["indicateurs"].setdefault("augmentations", {})
-            data["indicateurs"].setdefault("promotions", {})
+        if not data["déclaration"].get("période_suffisante") is False:
+            data["déclaration"].setdefault("fin_période_référence", "2019-12-31")
+            data.setdefault("indicateurs", {})
+            data["indicateurs"].setdefault("rémunérations", {"mode": "csp"})
+            data["indicateurs"].setdefault("congés_maternité", {})
+            if data["entreprise"]["effectif"]["tranche"] == "50:250":
+                data["indicateurs"].setdefault("augmentations_et_promotions", {})
+            else:
+                data["indicateurs"].setdefault("augmentations", {})
+                data["indicateurs"].setdefault("promotions", {})
         if compute_notes:
             helpers.compute_notes(models.Data(data))
         await db.declaration.put(siren, year, owner, data, modified_at=modified_at)
