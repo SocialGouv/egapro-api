@@ -427,6 +427,50 @@ async def test_recherche_entreprise_with_foreign_company(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_recherche_entreprise_with_com_company(monkeypatch):
+    async def mock_get(*args, **kwargs):
+        return {
+            "activitePrincipale": "Activités des agences de travail temporaire",
+            "categorieJuridiqueUniteLegale": "5202",
+            "dateCreationUniteLegale": "2019-01-02",
+            "caractereEmployeurUniteLegale": "O",
+            "conventions": [{"idcc": 1413}, {"idcc": 2378}],
+            "etablissements": 1,
+            "etatAdministratifUniteLegale": "A",
+            "highlightLabel": "FOOBAR SAINT BARTHELEMY",
+            "label": "FOOBAR SAINT BARTHELEMY",
+            "matching": 1,
+            "firstMatchingEtablissement": {
+                "address": "RUE POUET FOO 97133 SAINT BARTHELEMY",
+                "codeCommuneEtablissement": "97701",
+                "codePostalEtablissement": "97133",
+                "libelleCommuneEtablissement": "SAINT BARTHELEMY",
+                "idccs": ["1413", "2378"],
+                "categorieEntreprise": "ETI",
+                "siret": "85069932300018",
+                "etatAdministratifEtablissement": "A",
+                "etablissementSiege": True,
+                "activitePrincipaleEtablissement": "78.20Z",
+            },
+            "simpleLabel": "FOOBAR ST BARTH",
+            "siren": "481912999",
+        }
+
+    monkeypatch.setattr("egapro.helpers.get", mock_get)
+    data = await helpers.load_from_recherche_entreprises("481912999")
+    assert data == {
+        "adresse": "RUE POUET FOO",
+        "code_naf": "78.20Z",
+        "code_pays": None,
+        "code_postal": "97133",
+        "commune": "SAINT BARTHELEMY",
+        "département": None,
+        "raison_sociale": "FOOBAR SAINT BARTHELEMY",
+        "région": None,
+    }
+
+
+@pytest.mark.asyncio
 async def test_recherche_entreprise_is_cached(monkeypatch):
     RECHERCHE_ENTREPRISE_SAMPLE["label"] = "123 je vais dans les bois"
 
@@ -477,3 +521,11 @@ async def test_recherche_entreprise_with_date_radiation_current_year(monkeypatch
         "région": "11",
         "code_pays": None,
     }
+
+
+@pytest.mark.parametrize(
+    "code,expected",
+    [("77480", "77"), ("97480", "974"), ("2A123", "2A"), (None, None)],
+)
+def test_code_insee_to_departement(code, expected):
+    assert helpers.code_insee_to_departement(code) == expected

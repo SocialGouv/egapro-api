@@ -755,6 +755,10 @@ async def test_dgt_dump_with_foreign_company(declaration):
 
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
+    assert sheet["I1"].value == "Region"
+    assert sheet["I2"].value is None
+    assert sheet["J1"].value == "Departement"
+    assert sheet["J2"].value is None
     assert sheet["K1"].value == "Adresse"
     assert sheet["K2"].value is None
     assert sheet["L1"].value == "CP"
@@ -763,6 +767,40 @@ async def test_dgt_dump_with_foreign_company(declaration):
     assert sheet["M2"].value is None
     assert sheet["N1"].value == "Pays"
     assert sheet["N2"].value == "BELGIQUE"
+
+
+async def test_dgt_dump_with_com_company(declaration):
+    await declaration(
+        siren="123456782",
+        year=2020,
+        uid="123456781234-123456789012",
+        source="solen-2019",
+        entreprise={
+            "adresse": "RUE POUET FOO",
+            "code_naf": "78.20Z",
+            "code_pays": None,
+            "code_postal": "97133",
+            "commune": "SAINT BARTHELEMY",
+            "département": None,
+            "raison_sociale": "FOOBAR SAINT BARTHELEMY",
+            "région": None,
+        },
+    )
+
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook.active
+    assert sheet["I1"].value == "Region"
+    assert sheet["I2"].value is None
+    assert sheet["J1"].value == "Departement"
+    assert sheet["J2"].value is None
+    assert sheet["K1"].value == "Adresse"
+    assert sheet["K2"].value == "RUE POUET FOO"
+    assert sheet["L1"].value == "CP"
+    assert sheet["L2"].value == "97133"
+    assert sheet["M1"].value == "Commune"
+    assert sheet["M2"].value == "SAINT BARTHELEMY"
+    assert sheet["N1"].value == "Pays"
+    assert sheet["N2"].value is None
 
 
 async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):

@@ -62,11 +62,3 @@ def test_flatten_should_flatten_lists():
 )
 def test_remove_one_year(input, output):
     assert utils.remove_one_year(date(*input)) == date(*output)
-
-
-@pytest.mark.parametrize(
-    "code,expected",
-    [("77480", "77"), ("97480", "974"), ("2A123", "2A"), (None, None)],
-)
-def test_code_insee_to_departement(code, expected):
-    assert utils.code_insee_to_departement(code) == expected

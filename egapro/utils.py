@@ -91,11 +91,3 @@ def official_round(i):
     So for example, 0.01 should be rounded to 0, while 0.1 should be rounded to 1.
     """
     return round(float(i) + 0.5 - 0.049)
-
-
-def code_insee_to_departement(code):
-    if not code:
-        return None
-    if code.startswith("97"):
-        return code[:3]
-    return code[:2]
