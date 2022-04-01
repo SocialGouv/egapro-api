@@ -252,11 +252,6 @@ async def load_from_recherche_entreprises(siren):
     adresse = etablissement.get("address").split(code_postal)[0].strip()
     code_naf = etablissement.get("activitePrincipaleEtablissement")
     code_pays = etablissement.get("codePaysEtrangerEtablissement")
-    if code_pays:
-        raise ValueError(
-            "Le Siren saisi correspond à une entreprise étrangère, "
-            "veuillez vérifier votre saisie"
-        )
     return {
         "raison_sociale": raison_sociale,
         "code_naf": code_naf,
@@ -265,6 +260,7 @@ async def load_from_recherche_entreprises(siren):
         "adresse": adresse,
         "commune": commune,
         "code_postal": code_postal,
+        "code_pays": constants.PAYS_COG_TO_ISO.get(code_pays),
     }
 
 
@@ -300,11 +296,6 @@ async def load_from_api_entreprises(siren):
     adresse = " ".join(v for v in adresse if v)
     code_naf = entreprise.get("naf_entreprise")
     code_pays = siege.get("pays_implantation", {}).get("code")
-    if code_pays != "FR":
-        raise ValueError(
-            "Le Siren saisi correspond à une entreprise étrangère, "
-            "veuillez vérifier votre saisie"
-        )
     if code_naf:  # 4774Z => 47.74Z
         code_naf = f"{code_naf[:2]}.{code_naf[2:]}"
     return {
@@ -315,6 +306,7 @@ async def load_from_api_entreprises(siren):
         "adresse": adresse,
         "commune": commune,
         "code_postal": code_postal,
+        "code_pays": constants.PAYS_COG_TO_ISO.get(code_pays),
     }
 
 

@@ -14,6 +14,10 @@ def naf():
     return {"type": "string", "enum": NAF.keys()}
 
 
+def code_pays():
+    return {"type": "string", "enum": constants.PAYS_ISO_TO_LIB.keys()}
+
+
 def years():
     return {
         "type": "integer",

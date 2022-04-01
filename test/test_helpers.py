@@ -365,6 +365,7 @@ async def test_recherche_entreprise(monkeypatch):
         "département": "75",
         "raison_sociale": "FOOBAR",
         "région": "11",
+        "code_pays": None,
     }
 
 
@@ -395,12 +396,17 @@ async def test_recherche_entreprise_with_foreign_company(monkeypatch):
         return RECHERCHE_ENTREPRISE_SAMPLE
 
     monkeypatch.setattr("egapro.helpers.get", mock_get)
-    with pytest.raises(ValueError) as info:
-        await helpers.load_from_recherche_entreprises("481912999")
-    assert str(info.value) == (
-        "Le Siren saisi correspond à une entreprise étrangère, "
-        "veuillez vérifier votre saisie"
-    )
+    data = await helpers.load_from_recherche_entreprises("481912999")
+    assert data == {
+        "adresse": "2 RUE FOOBAR",
+        "code_naf": "62.02A",
+        "code_pays": "BE",
+        "code_postal": "75002",
+        "commune": "PARIS 2",
+        "département": "75",
+        "raison_sociale": "FOOBAR",
+        "région": "11",
+    }
 
     del RECHERCHE_ENTREPRISE_SAMPLE["firstMatchingEtablissement"][
         "codePaysEtrangerEtablissement"
@@ -456,4 +462,5 @@ async def test_recherche_entreprise_with_date_radiation_current_year(monkeypatch
         "département": "75",
         "raison_sociale": "FOOBAR",
         "région": "11",
+        "code_pays": None,
     }

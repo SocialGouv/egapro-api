@@ -146,12 +146,12 @@ async def test_dgt_dump(declaration):
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
     # Calculable
-    assert sheet["AC1"].value == "Indic1_calculable"
-    assert sheet["AC2"].value is True
+    assert sheet["AD1"].value == "Indic1_calculable"
+    assert sheet["AD2"].value is True
 
     # Code NAF
-    assert sheet["W1"].value == "Code_NAF"
-    assert sheet["W2"].value == (
+    assert sheet["X1"].value == "Code_NAF"
+    assert sheet["X2"].value == (
         "47.25Z - Commerce de détail de boissons en magasin spécialisé"
     )
 
@@ -160,18 +160,20 @@ async def test_dgt_dump(declaration):
     assert sheet["I2"].value == "Île-de-France"
     assert sheet["J1"].value == "Departement"
     assert sheet["J2"].value == "Seine-et-Marne"
+    assert sheet["N1"].value == "Pays"
+    assert sheet["N2"].value is None
 
     # Dates
-    assert sheet["N1"].value == "Annee_indicateurs"
-    assert sheet["N2"].value == 2020
-    assert sheet["O1"].value == "Periode_12mois"
-    assert sheet["O2"].value is True
-    assert sheet["P1"].value == "Date_debut_periode"
-    assert sheet["P2"].value == date(2019, 1, 1)
-    assert sheet["Q1"].value == "Date_fin_periode"
-    assert sheet["Q2"].value == date(2019, 12, 31)
-    assert sheet["R1"].value == "Structure"
-    assert sheet["R2"].value == "Entreprise"
+    assert sheet["O1"].value == "Annee_indicateurs"
+    assert sheet["O2"].value == 2020
+    assert sheet["P1"].value == "Periode_12mois"
+    assert sheet["P2"].value is True
+    assert sheet["Q1"].value == "Date_debut_periode"
+    assert sheet["Q2"].value == date(2019, 1, 1)
+    assert sheet["R1"].value == "Date_fin_periode"
+    assert sheet["R2"].value == date(2019, 12, 31)
+    assert sheet["S1"].value == "Structure"
+    assert sheet["S2"].value == "Entreprise"
 
     # URL
     assert sheet["B1"].value == "URL_declaration"
@@ -181,42 +183,42 @@ async def test_dgt_dump(declaration):
     )
 
     # Indicateurs rémunérations
-    assert sheet["AH1"].value == "Indic1_Ouv"
-    assert sheet["AI1"].value == "Indic1_Emp"
-    assert sheet["AJ1"].value == "Indic1_TAM"
-    assert sheet["AK1"].value == "Indic1_IC"
-    assert sheet["AH2"].value == "2.8;-0.03;1.5;3.7"
-    assert sheet["AI2"].value == "-10.8;0.1;-11.3;11.1"
-    assert sheet["AJ2"].value == "5;2.3;2.8;0.2"
-    assert sheet["AK2"].value == "1.1;5.2;7.1;12.2"
+    assert sheet["AI1"].value == "Indic1_Ouv"
+    assert sheet["AJ1"].value == "Indic1_Emp"
+    assert sheet["AK1"].value == "Indic1_TAM"
+    assert sheet["AL1"].value == "Indic1_IC"
+    assert sheet["AI2"].value == "2.8;-0.03;1.5;3.7"
+    assert sheet["AJ2"].value == "-10.8;0.1;-11.3;11.1"
+    assert sheet["AK2"].value == "5;2.3;2.8;0.2"
+    assert sheet["AL2"].value == "1.1;5.2;7.1;12.2"
 
     # Global notes
-    assert sheet["BR1"].value == "Indicateur_1"
-    assert sheet["BR2"].value == 40
-    assert sheet["BS1"].value == "Indicateur_2"
-    assert sheet["BS2"].value == 20
-    assert sheet["BT1"].value == "Indicateur_3"
-    assert sheet["BT2"].value == 15
-    assert sheet["BU1"].value == "Indicateur_2et3"
-    assert sheet["BU2"].value is None
-    assert sheet["BV1"].value == "Indicateur_2et3_PourCent"
+    assert sheet["BS1"].value == "Indicateur_1"
+    assert sheet["BS2"].value == 40
+    assert sheet["BT1"].value == "Indicateur_2"
+    assert sheet["BT2"].value == 20
+    assert sheet["BU1"].value == "Indicateur_3"
+    assert sheet["BU2"].value == 15
+    assert sheet["BV1"].value == "Indicateur_2et3"
     assert sheet["BV2"].value is None
-    assert sheet["BW1"].value == "Indicateur_2et3_ParSal"
+    assert sheet["BW1"].value == "Indicateur_2et3_PourCent"
     assert sheet["BW2"].value is None
-    assert sheet["BX1"].value == "Indicateur_4"
-    assert sheet["BX2"].value == 0
-    assert sheet["BY1"].value == "Indicateur_5"
-    assert sheet["BY2"].value == 5
-    assert sheet["BZ1"].value == "Nombre_total_points obtenus"
-    assert sheet["BZ2"].value == 80
-    assert sheet["CA1"].value == "Nombre_total_points_pouvant_etre_obtenus"
-    assert sheet["CA2"].value == 100
-    assert sheet["CB1"].value == "Resultat_final_sur_100_points"
-    assert sheet["CB2"].value == 80
-    assert sheet["CC1"].value == "Mesures_correction"
-    assert sheet["CC2"].value is None
-    assert sheet["CD1"].value == "Plan_relance"
+    assert sheet["BX1"].value == "Indicateur_2et3_ParSal"
+    assert sheet["BX2"].value is None
+    assert sheet["BY1"].value == "Indicateur_4"
+    assert sheet["BY2"].value == 0
+    assert sheet["BZ1"].value == "Indicateur_5"
+    assert sheet["BZ2"].value == 5
+    assert sheet["CA1"].value == "Nombre_total_points obtenus"
+    assert sheet["CA2"].value == 80
+    assert sheet["CB1"].value == "Nombre_total_points_pouvant_etre_obtenus"
+    assert sheet["CB2"].value == 100
+    assert sheet["CC1"].value == "Resultat_final_sur_100_points"
+    assert sheet["CC2"].value == 80
+    assert sheet["CD1"].value == "Mesures_correction"
     assert sheet["CD2"].value is None
+    assert sheet["CE1"].value == "Plan_relance"
+    assert sheet["CE2"].value is None
 
 
 async def test_dgt_dump_with_coef_mode(declaration):
@@ -335,46 +337,46 @@ async def test_dgt_dump_with_coef_mode(declaration):
     sheet = workbook.active
 
     # Calculable
-    assert sheet["AC1"].value == "Indic1_calculable"
-    assert sheet["AC2"].value is True
-    assert sheet["AE1"].value == "Indic1_modalite_calcul"
-    assert sheet["AE2"].value == "niveau_branche"
+    assert sheet["AD1"].value == "Indic1_calculable"
+    assert sheet["AD2"].value is True
+    assert sheet["AF1"].value == "Indic1_modalite_calcul"
+    assert sheet["AF2"].value == "niveau_branche"
 
     # Indicateurs rémunérations for CSP should be empty
-    assert sheet["AH1"].value == "Indic1_Ouv"
-    assert sheet["AH2"].value is None
-    assert sheet["AI1"].value == "Indic1_Emp"
+    assert sheet["AI1"].value == "Indic1_Ouv"
     assert sheet["AI2"].value is None
-    assert sheet["AJ1"].value == "Indic1_TAM"
+    assert sheet["AJ1"].value == "Indic1_Emp"
     assert sheet["AJ2"].value is None
-    assert sheet["AK1"].value == "Indic1_IC"
+    assert sheet["AK1"].value == "Indic1_TAM"
     assert sheet["AK2"].value is None
-    assert sheet["AL1"].value == "Indic1_Niv0"
-    assert sheet["AL2"].value == "0;0;0;0"
-    assert sheet["AM1"].value == "Indic1_Niv1"
+    assert sheet["AL1"].value == "Indic1_IC"
+    assert sheet["AL2"].value is None
+    assert sheet["AM1"].value == "Indic1_Niv0"
     assert sheet["AM2"].value == "0;0;0;0"
-    assert sheet["AN1"].value == "Indic1_Niv2"
-    assert sheet["AN2"].value == "0;1.4;0;56.5"
-    assert sheet["AO1"].value == "Indic1_Niv3"
-    assert sheet["AO2"].value == "0;0;0;-43.9"
-    assert sheet["AP1"].value == "Indic1_Niv4"
-    assert sheet["AP2"].value == "-20.1;0;22.9;-17"
-    assert sheet["AQ1"].value == "Indic1_Niv5"
-    assert sheet["AQ2"].value == "7.6;nc;36.2;6.8"
-    assert sheet["AR1"].value == "Indic1_Niv6"
-    assert sheet["AR2"].value == "-13;21.4;0;-3.8"
-    assert sheet["AS1"].value == "Indic1_Niv7"
-    assert sheet["AS2"].value == "0;39.6;17.9;4.5"
-    assert sheet["AT1"].value == "Indic1_Niv8"
-    assert sheet["AT2"].value == "4.2;8.6;59.5;5"
-    assert sheet["AU1"].value == "Indic1_Niv9"
-    assert sheet["AU2"].value == "0;20;6.8;23.2"
-    assert sheet["AV1"].value == "Indic1_Niv10"
-    assert sheet["AV2"].value == "-4.8;6.6;16.4;12"
-    assert sheet["AW1"].value == "Indic1_Niv11"
-    assert sheet["AW2"].value == "0;36.6;2.6;16.3"
-    assert sheet["AX1"].value == "Indic1_Niv12"
-    assert sheet["AX2"].value == "0;0;7.5;20.9"
+    assert sheet["AN1"].value == "Indic1_Niv1"
+    assert sheet["AN2"].value == "0;0;0;0"
+    assert sheet["AO1"].value == "Indic1_Niv2"
+    assert sheet["AO2"].value == "0;1.4;0;56.5"
+    assert sheet["AP1"].value == "Indic1_Niv3"
+    assert sheet["AP2"].value == "0;0;0;-43.9"
+    assert sheet["AQ1"].value == "Indic1_Niv4"
+    assert sheet["AQ2"].value == "-20.1;0;22.9;-17"
+    assert sheet["AR1"].value == "Indic1_Niv5"
+    assert sheet["AR2"].value == "7.6;nc;36.2;6.8"
+    assert sheet["AS1"].value == "Indic1_Niv6"
+    assert sheet["AS2"].value == "-13;21.4;0;-3.8"
+    assert sheet["AT1"].value == "Indic1_Niv7"
+    assert sheet["AT2"].value == "0;39.6;17.9;4.5"
+    assert sheet["AU1"].value == "Indic1_Niv8"
+    assert sheet["AU2"].value == "4.2;8.6;59.5;5"
+    assert sheet["AV1"].value == "Indic1_Niv9"
+    assert sheet["AV2"].value == "0;20;6.8;23.2"
+    assert sheet["AW1"].value == "Indic1_Niv10"
+    assert sheet["AW2"].value == "-4.8;6.6;16.4;12"
+    assert sheet["AX1"].value == "Indic1_Niv11"
+    assert sheet["AX2"].value == "0;36.6;2.6;16.3"
+    assert sheet["AY1"].value == "Indic1_Niv12"
+    assert sheet["AY2"].value == "0;0;7.5;20.9"
 
 
 async def test_dgt_dump_with_effectif_50_250(declaration):
@@ -433,94 +435,94 @@ async def test_dgt_dump_with_effectif_50_250(declaration):
     sheet = workbook.active
 
     # Calculable
-    assert sheet["AC1"].value == "Indic1_calculable"
-    assert sheet["AC2"].value is True
-    assert sheet["AE1"].value == "Indic1_modalite_calcul"
-    assert sheet["AE2"].value == "niveau_autre"
+    assert sheet["AD1"].value == "Indic1_calculable"
+    assert sheet["AD2"].value is True
+    assert sheet["AF1"].value == "Indic1_modalite_calcul"
+    assert sheet["AF2"].value == "niveau_autre"
 
     # Indicateurs rémunérations for CSP should be empty
-    assert sheet["AH1"].value == "Indic1_Ouv"
-    assert sheet["AH2"].value is None
-    assert sheet["AI1"].value == "Indic1_Emp"
+    assert sheet["AI1"].value == "Indic1_Ouv"
     assert sheet["AI2"].value is None
-    assert sheet["AJ1"].value == "Indic1_TAM"
+    assert sheet["AJ1"].value == "Indic1_Emp"
     assert sheet["AJ2"].value is None
-    assert sheet["AK1"].value == "Indic1_IC"
+    assert sheet["AK1"].value == "Indic1_TAM"
     assert sheet["AK2"].value is None
-    assert sheet["AL1"].value == "Indic1_Niv0"
-    assert sheet["AL2"].value == "nc;nc;nc;-3.8"
-    assert sheet["AM1"].value == "Indic1_Niv1"
-    assert sheet["AM2"].value == "nc;nc;nc;17.65"
-    assert sheet["AN1"].value == "Indic1_Niv2"
-    assert sheet["AN2"].value == "nc;nc;nc;nc"
-    assert sheet["AO1"].value == "Indic1_Niv3"
+    assert sheet["AL1"].value == "Indic1_IC"
+    assert sheet["AL2"].value is None
+    assert sheet["AM1"].value == "Indic1_Niv0"
+    assert sheet["AM2"].value == "nc;nc;nc;-3.8"
+    assert sheet["AN1"].value == "Indic1_Niv1"
+    assert sheet["AN2"].value == "nc;nc;nc;17.65"
+    assert sheet["AO1"].value == "Indic1_Niv2"
     assert sheet["AO2"].value == "nc;nc;nc;nc"
-    assert sheet["AP1"].value == "Indic1_Niv4"
+    assert sheet["AP1"].value == "Indic1_Niv3"
     assert sheet["AP2"].value == "nc;nc;nc;nc"
-    assert sheet["AQ1"].value == "Indic1_resultat"
-    assert sheet["AQ2"].value == 3.0781
-    assert sheet["AR1"].value == "Indic1_population_favorable"
-    assert sheet["AR2"].value == "hommes"
-    assert sheet["AS1"].value == "Indic2_calculable"
-    assert sheet["AS2"].value is None
-    assert sheet["AT1"].value == "Indic2_motif_non_calculable"
+    assert sheet["AQ1"].value == "Indic1_Niv4"
+    assert sheet["AQ2"].value == "nc;nc;nc;nc"
+    assert sheet["AR1"].value == "Indic1_resultat"
+    assert sheet["AR2"].value == 3.0781
+    assert sheet["AS1"].value == "Indic1_population_favorable"
+    assert sheet["AS2"].value == "hommes"
+    assert sheet["AT1"].value == "Indic2_calculable"
     assert sheet["AT2"].value is None
-    assert sheet["AY1"].value == "Indic2_resultat"
-    assert sheet["AY2"].value is None
-    assert sheet["AZ1"].value == "Indic2_population_favorable"
+    assert sheet["AU1"].value == "Indic2_motif_non_calculable"
+    assert sheet["AU2"].value is None
+    assert sheet["AZ1"].value == "Indic2_resultat"
     assert sheet["AZ2"].value is None
-    assert sheet["BA1"].value == "Indic3_calculable"
+    assert sheet["BA1"].value == "Indic2_population_favorable"
     assert sheet["BA2"].value is None
-    assert sheet["BB1"].value == "Indic3_motif_non_calculable"
+    assert sheet["BB1"].value == "Indic3_calculable"
     assert sheet["BB2"].value is None
-    assert sheet["BG1"].value == "Indic3_resultat"
-    assert sheet["BG2"].value is None
-    assert sheet["BH1"].value == "Indic3_population_favorable"
+    assert sheet["BC1"].value == "Indic3_motif_non_calculable"
+    assert sheet["BC2"].value is None
+    assert sheet["BH1"].value == "Indic3_resultat"
     assert sheet["BH2"].value is None
-    assert sheet["BI1"].value == "Indic2et3_calculable"
-    assert sheet["BI2"].value is True
-    assert sheet["BJ1"].value == "Indic2et3_motif_non_calculable"
-    assert sheet["BJ2"].value is None
-    assert sheet["BK1"].value == "Indic2et3_resultat_pourcent"
-    assert sheet["BK2"].value == 3.7625
-    assert sheet["BL1"].value == "Indic2et3_resultat_nb_sal"
-    assert sheet["BL2"].value == 1.4
-    assert sheet["BM1"].value == "Indic2et3_population_favorable"
-    assert sheet["BM2"].value == "hommes"
-    assert sheet["BN1"].value == "Indic4_calculable"
-    assert sheet["BN2"].value is False
-    assert sheet["BO1"].value == "Indic4_motif_non_calculable"
-    assert sheet["BO2"].value == "absrcm"
-    assert sheet["BP1"].value == "Indic4_resultat"
-    assert sheet["BP2"].value is None
-    assert sheet["BQ1"].value == "Indic5_resultat"
-    assert sheet["BQ2"].value == 5
-    assert sheet["BR1"].value == "Indic5_sexe_sur_represente"
-    assert sheet["BR2"].value is None
-    assert sheet["BS1"].value == "Indicateur_1"
-    assert sheet["BS2"].value == 36
-    assert sheet["BT1"].value == "Indicateur_2"
-    assert sheet["BT2"].value is None
-    assert sheet["BU1"].value == "Indicateur_3"
+    assert sheet["BI1"].value == "Indic3_population_favorable"
+    assert sheet["BI2"].value is None
+    assert sheet["BJ1"].value == "Indic2et3_calculable"
+    assert sheet["BJ2"].value is True
+    assert sheet["BK1"].value == "Indic2et3_motif_non_calculable"
+    assert sheet["BK2"].value is None
+    assert sheet["BL1"].value == "Indic2et3_resultat_pourcent"
+    assert sheet["BL2"].value == 3.7625
+    assert sheet["BM1"].value == "Indic2et3_resultat_nb_sal"
+    assert sheet["BM2"].value == 1.4
+    assert sheet["BN1"].value == "Indic2et3_population_favorable"
+    assert sheet["BN2"].value == "hommes"
+    assert sheet["BO1"].value == "Indic4_calculable"
+    assert sheet["BO2"].value is False
+    assert sheet["BP1"].value == "Indic4_motif_non_calculable"
+    assert sheet["BP2"].value == "absrcm"
+    assert sheet["BQ1"].value == "Indic4_resultat"
+    assert sheet["BQ2"].value is None
+    assert sheet["BR1"].value == "Indic5_resultat"
+    assert sheet["BR2"].value == 5
+    assert sheet["BS1"].value == "Indic5_sexe_sur_represente"
+    assert sheet["BS2"].value is None
+    assert sheet["BT1"].value == "Indicateur_1"
+    assert sheet["BT2"].value == 36
+    assert sheet["BU1"].value == "Indicateur_2"
     assert sheet["BU2"].value is None
-    assert sheet["BV1"].value == "Indicateur_2et3"
-    assert sheet["BV2"].value == 35
-    assert sheet["BW1"].value == "Indicateur_2et3_PourCent"
-    assert sheet["BW2"].value == 25
-    assert sheet["BX1"].value == "Indicateur_2et3_ParSal"
-    assert sheet["BX2"].value == 35
-    assert sheet["BY1"].value == "Indicateur_4"
-    assert sheet["BY2"].value == "nc"
-    assert sheet["BZ1"].value == "Indicateur_5"
-    assert sheet["BZ2"].value == 10
-    assert sheet["CA1"].value == "Nombre_total_points obtenus"
-    assert sheet["CA2"].value == 81
-    assert sheet["CB1"].value == "Nombre_total_points_pouvant_etre_obtenus"
-    assert sheet["CB2"].value == 85
-    assert sheet["CC1"].value == "Resultat_final_sur_100_points"
-    assert sheet["CC2"].value == 95
-    assert sheet["CD1"].value == "Mesures_correction"
-    assert sheet["CD2"].value is None
+    assert sheet["BV1"].value == "Indicateur_3"
+    assert sheet["BV2"].value is None
+    assert sheet["BW1"].value == "Indicateur_2et3"
+    assert sheet["BW2"].value == 35
+    assert sheet["BX1"].value == "Indicateur_2et3_PourCent"
+    assert sheet["BX2"].value == 25
+    assert sheet["BY1"].value == "Indicateur_2et3_ParSal"
+    assert sheet["BY2"].value == 35
+    assert sheet["BZ1"].value == "Indicateur_4"
+    assert sheet["BZ2"].value == "nc"
+    assert sheet["CA1"].value == "Indicateur_5"
+    assert sheet["CA2"].value == 10
+    assert sheet["CB1"].value == "Nombre_total_points obtenus"
+    assert sheet["CB2"].value == 81
+    assert sheet["CC1"].value == "Nombre_total_points_pouvant_etre_obtenus"
+    assert sheet["CC2"].value == 85
+    assert sheet["CD1"].value == "Resultat_final_sur_100_points"
+    assert sheet["CD2"].value == 95
+    assert sheet["CE1"].value == "Mesures_correction"
+    assert sheet["CE2"].value is None
 
 
 async def test_dgt_dump_with_0_index(declaration):
@@ -608,68 +610,68 @@ async def test_dgt_dump_with_0_index(declaration):
     sheet = workbook.active
 
     # Calculable
-    assert sheet["AC1"].value == "Indic1_calculable"
-    assert sheet["AC2"].value is True
-    assert sheet["AE1"].value == "Indic1_modalite_calcul"
-    assert sheet["AE2"].value == "csp"
+    assert sheet["AD1"].value == "Indic1_calculable"
+    assert sheet["AD2"].value is True
+    assert sheet["AF1"].value == "Indic1_modalite_calcul"
+    assert sheet["AF2"].value == "csp"
 
     # Indicateurs rémunérations for CSP should be empty
-    assert sheet["AH1"].value == "Indic1_Ouv"
-    assert sheet["AH2"].value == "31.5;38;48.6;5.5"
-    assert sheet["AI1"].value == "Indic1_Emp"
-    assert sheet["AI2"].value == "-39.2;47.1;55.9;29.3"
-    assert sheet["AJ1"].value == "Indic1_TAM"
-    assert sheet["AJ2"].value == "0;9.6;-124.8;40.5"
-    assert sheet["AK1"].value == "Indic1_IC"
-    assert sheet["AK2"].value == "0;0;39.4;74"
-    assert sheet["AP1"].value == "Indic1_resultat"
-    assert sheet["AP2"].value == 21
-    assert sheet["AQ1"].value == "Indic1_population_favorable"
-    assert sheet["AQ2"].value == "hommes"
-    assert sheet["BH1"].value == "Indic2et3_calculable"
-    assert sheet["BH2"].value is True
-    assert sheet["BI1"].value == "Indic2et3_motif_non_calculable"
-    assert sheet["BI2"].value is None
-    assert sheet["BJ1"].value == "Indic2et3_resultat_pourcent"
-    assert sheet["BJ2"].value == 22
-    assert sheet["BK1"].value == "Indic2et3_resultat_nb_sal"
-    assert sheet["BK2"].value == 15.8
-    assert sheet["BL1"].value == "Indic2et3_population_favorable"
-    assert sheet["BL2"].value == "hommes"
-    assert sheet["BM1"].value == "Indic4_calculable"
-    assert sheet["BM2"].value is False
-    assert sheet["BN1"].value == "Indic4_motif_non_calculable"
-    assert sheet["BN2"].value == "absrcm"
-    assert sheet["BO1"].value == "Indic4_resultat"
-    assert sheet["BO2"].value is None
-    assert sheet["BP1"].value == "Indic5_resultat"
-    assert sheet["BP2"].value == 1
-    assert sheet["BQ1"].value == "Indic5_sexe_sur_represente"
-    assert sheet["BQ2"].value == "hommes"
-    assert sheet["BR1"].value == "Indicateur_1"
-    assert sheet["BR2"].value == 0
-    assert sheet["BS1"].value == "Indicateur_2"
-    assert sheet["BS2"].value is None
-    assert sheet["BT1"].value == "Indicateur_3"
+    assert sheet["AI1"].value == "Indic1_Ouv"
+    assert sheet["AI2"].value == "31.5;38;48.6;5.5"
+    assert sheet["AJ1"].value == "Indic1_Emp"
+    assert sheet["AJ2"].value == "-39.2;47.1;55.9;29.3"
+    assert sheet["AK1"].value == "Indic1_TAM"
+    assert sheet["AK2"].value == "0;9.6;-124.8;40.5"
+    assert sheet["AL1"].value == "Indic1_IC"
+    assert sheet["AL2"].value == "0;0;39.4;74"
+    assert sheet["AQ1"].value == "Indic1_resultat"
+    assert sheet["AQ2"].value == 21
+    assert sheet["AR1"].value == "Indic1_population_favorable"
+    assert sheet["AR2"].value == "hommes"
+    assert sheet["BI1"].value == "Indic2et3_calculable"
+    assert sheet["BI2"].value is True
+    assert sheet["BJ1"].value == "Indic2et3_motif_non_calculable"
+    assert sheet["BJ2"].value is None
+    assert sheet["BK1"].value == "Indic2et3_resultat_pourcent"
+    assert sheet["BK2"].value == 22
+    assert sheet["BL1"].value == "Indic2et3_resultat_nb_sal"
+    assert sheet["BL2"].value == 15.8
+    assert sheet["BM1"].value == "Indic2et3_population_favorable"
+    assert sheet["BM2"].value == "hommes"
+    assert sheet["BN1"].value == "Indic4_calculable"
+    assert sheet["BN2"].value is False
+    assert sheet["BO1"].value == "Indic4_motif_non_calculable"
+    assert sheet["BO2"].value == "absrcm"
+    assert sheet["BP1"].value == "Indic4_resultat"
+    assert sheet["BP2"].value is None
+    assert sheet["BQ1"].value == "Indic5_resultat"
+    assert sheet["BQ2"].value == 1
+    assert sheet["BR1"].value == "Indic5_sexe_sur_represente"
+    assert sheet["BR2"].value == "hommes"
+    assert sheet["BS1"].value == "Indicateur_1"
+    assert sheet["BS2"].value == 0
+    assert sheet["BT1"].value == "Indicateur_2"
     assert sheet["BT2"].value is None
-    assert sheet["BU1"].value == "Indicateur_2et3"
-    assert sheet["BU2"].value == 0
-    assert sheet["BV1"].value == "Indicateur_2et3_PourCent"
+    assert sheet["BU1"].value == "Indicateur_3"
+    assert sheet["BU2"].value is None
+    assert sheet["BV1"].value == "Indicateur_2et3"
     assert sheet["BV2"].value == 0
-    assert sheet["BW1"].value == "Indicateur_2et3_ParSal"
+    assert sheet["BW1"].value == "Indicateur_2et3_PourCent"
     assert sheet["BW2"].value == 0
-    assert sheet["BX1"].value == "Indicateur_4"
-    assert sheet["BX2"].value == "nc"
-    assert sheet["BY1"].value == "Indicateur_5"
-    assert sheet["BY2"].value == 0
-    assert sheet["BZ1"].value == "Nombre_total_points obtenus"
+    assert sheet["BX1"].value == "Indicateur_2et3_ParSal"
+    assert sheet["BX2"].value == 0
+    assert sheet["BY1"].value == "Indicateur_4"
+    assert sheet["BY2"].value == "nc"
+    assert sheet["BZ1"].value == "Indicateur_5"
     assert sheet["BZ2"].value == 0
-    assert sheet["CA1"].value == "Nombre_total_points_pouvant_etre_obtenus"
-    assert sheet["CA2"].value == 85
-    assert sheet["CB1"].value == "Resultat_final_sur_100_points"
-    assert sheet["CB2"].value == 0
-    assert sheet["CC1"].value == "Mesures_correction"
-    assert sheet["CC2"].value == "me"
+    assert sheet["CA1"].value == "Nombre_total_points obtenus"
+    assert sheet["CA2"].value == 0
+    assert sheet["CB1"].value == "Nombre_total_points_pouvant_etre_obtenus"
+    assert sheet["CB2"].value == 85
+    assert sheet["CC1"].value == "Resultat_final_sur_100_points"
+    assert sheet["CC2"].value == 0
+    assert sheet["CD1"].value == "Mesures_correction"
+    assert sheet["CD2"].value == "me"
 
 
 async def test_dgt_dump_should_compute_declaration_url_for_solen_data(declaration):
@@ -713,8 +715,8 @@ async def test_dgt_dump_with_non_ascii_chars(declaration):
     assert sheet["K2"].value == "ZI DU FOO BAR BP 658"
     assert sheet["M1"].value == "Commune"
     assert sheet["M2"].value == "QUIMPER"
-    assert sheet["U1"].value == "Nom_Entreprise"
-    assert sheet["U2"].value == "FOOBAR"
+    assert sheet["V1"].value == "Nom_Entreprise"
+    assert sheet["V2"].value == "FOOBAR"
 
 
 async def test_dgt_dump_with_false_periode_suffisante(declaration):
@@ -728,12 +730,27 @@ async def test_dgt_dump_with_false_periode_suffisante(declaration):
 
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
-    assert sheet["O1"].value == "Periode_12mois"
-    assert sheet["O2"].value is False
-    assert sheet["P1"].value == "Date_debut_periode"
-    assert sheet["P2"].value is None
-    assert sheet["Q1"].value == "Date_fin_periode"
+    assert sheet["P1"].value == "Periode_12mois"
+    assert sheet["P2"].value is False
+    assert sheet["Q1"].value == "Date_debut_periode"
     assert sheet["Q2"].value is None
+    assert sheet["R1"].value == "Date_fin_periode"
+    assert sheet["R2"].value is None
+
+
+async def test_dgt_dump_with_foreign_company(declaration):
+    await declaration(
+        siren="123456782",
+        year=2020,
+        uid="123456781234-123456789012",
+        source="solen-2019",
+        entreprise={"code_pays": "BE"}
+    )
+
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook.active
+    assert sheet["N1"].value == "Pays"
+    assert sheet["N2"].value == "BELGIQUE"
 
 
 async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
@@ -767,10 +784,10 @@ async def test_dgt_dump_should_list_UES_in_dedicated_sheet(declaration):
     )
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook["BDD REPONDANTS"]
-    assert sheet["R1"].value == "Structure"
-    assert sheet["R3"].value == "Unité Economique et Sociale (UES)"
-    assert sheet["Y1"].value == "Nb_ets_UES"
-    assert sheet["Y3"].value == 3
+    assert sheet["S1"].value == "Structure"
+    assert sheet["S3"].value == "Unité Economique et Sociale (UES)"
+    assert sheet["Z1"].value == "Nb_ets_UES"
+    assert sheet["Z3"].value == 3
     sheet = workbook["BDD UES détail entreprises"]
     assert list(sheet.values) == [
         (

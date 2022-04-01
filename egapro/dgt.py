@@ -76,6 +76,7 @@ async def get_headers_columns():
             ("Adresse", "entreprise.adresse"),
             ("CP", "entreprise.code_postal"),
             ("Commune", "entreprise.commune"),
+            ("Pays", "entreprise.code_pays", constants.PAYS_ISO_TO_LIB.get),
             (
                 "Annee_indicateurs",
                 "déclaration.année_indicateurs",
