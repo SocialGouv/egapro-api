@@ -249,7 +249,9 @@ async def load_from_recherche_entreprises(siren):
     region = constants.DEPARTEMENT_TO_REGION.get(departement)
     code_postal = etablissement.get("codePostalEtablissement")
     commune = etablissement.get("libelleCommuneEtablissement")
-    adresse = etablissement.get("address").split(code_postal)[0].strip()
+    adresse = etablissement.get("address")
+    if adresse and code_postal in adresse:
+        adresse = adresse.split(code_postal)[0].strip()
     code_naf = etablissement.get("activitePrincipaleEtablissement")
     code_pays = etablissement.get("codePaysEtrangerEtablissement")
     return {

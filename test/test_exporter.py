@@ -725,7 +725,7 @@ async def test_dgt_dump_with_false_periode_suffisante(declaration):
         year=2020,
         uid="123456781234-123456789012",
         source="solen-2019",
-        déclaration={"période_suffisante": False}
+        déclaration={"période_suffisante": False},
     )
 
     workbook = await dgt.as_xlsx(debug=True)
@@ -744,11 +744,23 @@ async def test_dgt_dump_with_foreign_company(declaration):
         year=2020,
         uid="123456781234-123456789012",
         source="solen-2019",
-        entreprise={"code_pays": "BE"}
+        entreprise={
+            "code_pays": "BE",
+            "adresse": None,
+            "département": None,
+            "région": None,
+            "code_postal": None,
+        },
     )
 
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
+    assert sheet["K1"].value == "Adresse"
+    assert sheet["K2"].value is None
+    assert sheet["L1"].value == "CP"
+    assert sheet["L2"].value is None
+    assert sheet["M1"].value == "Commune"
+    assert sheet["M2"].value is None
     assert sheet["N1"].value == "Pays"
     assert sheet["N2"].value == "BELGIQUE"
 

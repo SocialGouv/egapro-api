@@ -388,29 +388,42 @@ async def test_recherche_entreprise_with_date_radiation(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_recherche_entreprise_with_foreign_company(monkeypatch):
-    RECHERCHE_ENTREPRISE_SAMPLE["firstMatchingEtablissement"][
-        "codePaysEtrangerEtablissement"
-    ] = "99131"
-
     async def mock_get(*args, **kwargs):
-        return RECHERCHE_ENTREPRISE_SAMPLE
+        return {
+            "activitePrincipale": "Activités des sièges sociaux",
+            "categorieJuridiqueUniteLegale": "3120",
+            "dateCreationUniteLegale": "2018-12-11",
+            "caractereEmployeurUniteLegale": "O",
+            "etablissements": 2,
+            "etatAdministratifUniteLegale": "A",
+            "highlightLabel": "FOOBAR",
+            "label": "FOOBAR",
+            "matching": 2,
+            "firstMatchingEtablissement": {
+                "codePaysEtrangerEtablissement": "99134",
+                "idccs": [],
+                "categorieEntreprise": "PME",
+                "siret": "84457798100013",
+                "etatAdministratifEtablissement": "A",
+                "etablissementSiege": True,
+                "activitePrincipaleEtablissement": "70.10Z",
+            },
+            "simpleLabel": "FOOBAR",
+            "siren": "481912999",
+        }
 
     monkeypatch.setattr("egapro.helpers.get", mock_get)
     data = await helpers.load_from_recherche_entreprises("481912999")
     assert data == {
-        "adresse": "2 RUE FOOBAR",
-        "code_naf": "62.02A",
-        "code_pays": "BE",
-        "code_postal": "75002",
-        "commune": "PARIS 2",
-        "département": "75",
+        "adresse": None,
+        "code_naf": "70.10Z",
+        "code_pays": "ES",
+        "code_postal": None,
+        "commune": None,
+        "département": None,
         "raison_sociale": "FOOBAR",
-        "région": "11",
+        "région": None,
     }
-
-    del RECHERCHE_ENTREPRISE_SAMPLE["firstMatchingEtablissement"][
-        "codePaysEtrangerEtablissement"
-    ]
 
 
 @pytest.mark.asyncio
