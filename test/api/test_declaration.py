@@ -502,11 +502,11 @@ async def test_confirmed_declaration_should_send_email_for_legacy_call(
 async def test_confirmed_declaration_should_raise_if_missing_entreprise_data(
     client, monkeypatch, body
 ):
-    del body["entreprise"]["région"]
+    del body["entreprise"]["code_naf"]
     resp = await client.put("/declaration/514027945/2019", body=body)
     assert resp.status == 422
     body = json.loads(resp.body)
-    assert body == {"error": "Le champ entreprise.région doit être défini"}
+    assert body == {"error": "Le champ entreprise.code_naf doit être défini"}
 
 
 async def test_confirmed_declaration_should_raise_if_missing_fin_periode_reference(
@@ -944,16 +944,6 @@ async def test_put_declaration_with_invalid_region(client, body):
     assert resp.status == 422
 
 
-async def test_put_declaration_with_departement_and_region_mismatch(client, body):
-    body["entreprise"]["région"] = "11"
-    body["entreprise"]["département"] = "11"
-    resp = await client.put("/declaration/514027945/2019", body=body)
-    assert resp.status == 422
-    assert json.loads(resp.body) == {
-        "error": "Le département et la région ne correspondent pas"
-    }
-
-
 async def test_put_declaration_without_source(client, body):
     del body["source"]
     resp = await client.put("/declaration/514027945/2019", body=body)
@@ -1110,3 +1100,14 @@ async def test_without_periode_suffisante_but_indicateurs(client, body):
     assert json.loads(resp.body) == {
         "error": "La période de référence ne permet pas de définir des indicateurs"
     }
+
+
+async def test_declaration_with_foreign_company(client, body):
+    body["entreprise"] = {
+            "code_pays": "BE",
+            "code_naf": "47.25Z",
+            "siren": "514027945",
+        }
+    resp = await client.put("/declaration/514027945/2019", body=body)
+    print(resp.body)
+    assert resp.status == 204

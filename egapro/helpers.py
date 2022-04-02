@@ -318,7 +318,8 @@ async def patch_from_recherche_entreprises(data):
     if not entreprise.get("raison_sociale"):
         extra = await load_from_recherche_entreprises(siren)
         for key, value in extra.items():
-            entreprise.setdefault(key, value)
+            if value is not None:
+                entreprise.setdefault(key, value)
 
 
 def compare_str(wanted, candidate):

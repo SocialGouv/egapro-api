@@ -46,10 +46,6 @@ def _cross_validate(data):
     if data.validated:
         # Those keys are only required if the data is validated
         required = [
-            "entreprise.région",
-            "entreprise.département",
-            "entreprise.commune",
-            "entreprise.code_postal",
             "entreprise.code_naf",
             "déclarant.prénom",
             "déclarant.nom",
@@ -57,11 +53,6 @@ def _cross_validate(data):
         ]
         for path in required:
             assert data.path(path), f"Le champ {path} doit être défini"
-        dep = data.path("entreprise.département")
-        region = data.path("entreprise.région")
-        msg = "Le département et la région ne correspondent pas"
-        assert dep in constants.REGIONS_TO_DEPARTEMENTS[region], msg
-        msg = "Le département et le code postal ne correspondent pas"
         index = data.path("déclaration.index")
         periode_suffisante = data.path("déclaration.période_suffisante")
         if periode_suffisante is False:
