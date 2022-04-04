@@ -356,7 +356,7 @@ async def test_recherche_entreprise(monkeypatch):
         return RECHERCHE_ENTREPRISE_SAMPLE
 
     monkeypatch.setattr("egapro.helpers.get", mock_get)
-    data = await helpers.load_from_recherche_entreprises("481912999")
+    data = await helpers.get_entreprise_details("481912999")
     assert data == {
         "adresse": "2 RUE FOOBAR",
         "code_naf": "62.02A",
@@ -365,7 +365,6 @@ async def test_recherche_entreprise(monkeypatch):
         "département": "75",
         "raison_sociale": "FOOBAR",
         "région": "11",
-        "code_pays": None,
     }
 
 
@@ -378,7 +377,7 @@ async def test_recherche_entreprise_with_date_radiation(monkeypatch):
 
     monkeypatch.setattr("egapro.helpers.get", mock_get)
     with pytest.raises(ValueError) as info:
-        await helpers.load_from_recherche_entreprises("481912999")
+        await helpers.get_entreprise_details("481912999")
     assert str(info.value) == (
         "Le Siren saisi correspond à une entreprise fermée, "
         "veuillez vérifier votre saisie"
@@ -413,16 +412,11 @@ async def test_recherche_entreprise_with_foreign_company(monkeypatch):
         }
 
     monkeypatch.setattr("egapro.helpers.get", mock_get)
-    data = await helpers.load_from_recherche_entreprises("481912999")
+    data = await helpers.get_entreprise_details("481912999")
     assert data == {
-        "adresse": None,
         "code_naf": "70.10Z",
         "code_pays": "ES",
-        "code_postal": None,
-        "commune": None,
-        "département": None,
         "raison_sociale": "FOOBAR",
-        "région": None,
     }
 
 
@@ -457,16 +451,13 @@ async def test_recherche_entreprise_with_com_company(monkeypatch):
         }
 
     monkeypatch.setattr("egapro.helpers.get", mock_get)
-    data = await helpers.load_from_recherche_entreprises("481912999")
+    data = await helpers.get_entreprise_details("481912999")
     assert data == {
         "adresse": "RUE POUET FOO",
         "code_naf": "78.20Z",
-        "code_pays": None,
         "code_postal": "97133",
         "commune": "SAINT BARTHELEMY",
-        "département": None,
         "raison_sociale": "FOOBAR SAINT BARTHELEMY",
-        "région": None,
     }
 
 
@@ -478,14 +469,14 @@ async def test_recherche_entreprise_is_cached(monkeypatch):
         return RECHERCHE_ENTREPRISE_SAMPLE
 
     monkeypatch.setattr("egapro.helpers.get", mock_get)
-    res = await helpers.load_from_recherche_entreprises("481912999")
+    res = await helpers.get_entreprise_details("481912999")
     assert res["raison_sociale"] == "123 je vais dans les bois"
 
     async def mock_get(*args, **kwargs):
         assert False, "Should not be called because of the cache"
 
     monkeypatch.setattr("egapro.helpers.get", mock_get)
-    res = await helpers.load_from_recherche_entreprises("481912999")
+    res = await helpers.get_entreprise_details("481912999")
     assert res["raison_sociale"] == "123 je vais dans les bois"
 
 
@@ -500,7 +491,7 @@ async def test_recherche_entreprise_with_date_radiation_current_year(monkeypatch
     monkeypatch.setattr("egapro.config.API_ENTREPRISES", "foobar")  # Use API Entreprise
     monkeypatch.setattr("egapro.helpers.get", mock_get)
     with pytest.raises(ValueError) as info:
-        await helpers.load_from_recherche_entreprises("481912999")
+        await helpers.get_entreprise_details("481912999")
     assert str(info.value) == (
         "Le Siren saisi correspond à une entreprise fermée, "
         "veuillez vérifier votre saisie"
@@ -510,7 +501,7 @@ async def test_recherche_entreprise_with_date_radiation_current_year(monkeypatch
     API_ENTREPRISES_SAMPLE["entreprise"][
         "date_radiation"
     ] = f"{constants.CURRENT_YEAR}-03-12"
-    res = await helpers.load_from_recherche_entreprises("481912999")
+    res = await helpers.get_entreprise_details("481912999")
     assert res == {
         "adresse": "2 RUE FOOBAR",
         "code_naf": "62.02A",
@@ -519,7 +510,6 @@ async def test_recherche_entreprise_with_date_radiation_current_year(monkeypatch
         "département": "75",
         "raison_sociale": "FOOBAR",
         "région": "11",
-        "code_pays": None,
     }
 
 

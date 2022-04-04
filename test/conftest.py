@@ -42,7 +42,7 @@ def pytest_runtest_setup(item):
             await conn.execute("TRUNCATE TABLE ownership;")
         await db.terminate()
 
-        helpers.load_from_recherche_entreprises.cache_clear()
+        helpers.get_entreprise_details.cache_clear()
 
     asyncio.run(setup())
 
