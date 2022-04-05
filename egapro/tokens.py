@@ -21,7 +21,7 @@ def read(token):
         decoded = jwt.decode(token, config.SECRET, algorithms=[config.JWT_ALGORITHM])
     except (jwt.DecodeError, jwt.ExpiredSignatureError):
         raise ValueError
-    return decoded["sub"]
+    return decoded["sub"].lower()
 
 
 def require(view):
@@ -41,7 +41,6 @@ def require(view):
                 request.referrer,
             )
             raise HttpError(401, "Invalid token")
-        email = email.lower()
         request["email"] = email
         request["staff"] = email in config.STAFF
         return view(request, response, *args, **kwargs)
