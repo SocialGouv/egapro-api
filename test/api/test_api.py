@@ -49,29 +49,6 @@ async def test_request_token_with_allowed_ips(client, monkeypatch):
     assert calls == 0
 
 
-async def test_request_token_from_staff(client, monkeypatch):
-    calls = 0
-
-    def mock_send(to, subject, body):
-        assert to == "staff@email.com"
-        assert "https://mycustomurl.org/declaration/token/" in body
-        nonlocal calls
-        calls += 1
-
-    monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
-    client.login("Staff@email.com")
-    monkeypatch.setattr("egapro.emails.send", mock_send)
-    resp = await client.post(
-        "/token",
-        body={
-            "email": "foo@bar.org",
-            "url": "https://mycustomurl.org/declaration/token/",
-        },
-    )
-    assert resp.status == 204
-    assert calls == 1
-
-
 async def test_search_endpoint(client):
     await db.declaration.put(
         "12345671",

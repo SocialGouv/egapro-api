@@ -304,15 +304,6 @@ async def send_token(request, response):
         if "localhost" in link or "127.0.0.1" in link:
             print(link)
         body = emails.ACCESS_GRANTED.format(link=link)
-        token = request.headers.get("API-KEY") or request.cookies.get("api-key")
-        try:
-            sender = tokens.read(token)
-        except ValueError:
-            pass
-        else:
-            if sender in config.STAFF:
-                loggers.logger.info(f"Request from staff: {email}. Redirecting.")
-                email = sender
         emails.send(email, "Validation de l'email", body)
         response.status = 204
 
