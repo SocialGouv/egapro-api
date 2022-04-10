@@ -308,6 +308,18 @@ async def send_token(request, response):
         response.status = 204
 
 
+@app.route("/token", methods=["GET"])
+@tokens.require
+async def get_token(request, response):
+    if not request["staff"]:
+        raise HttpError(403, "Vous n'avez pas l'autorisation")
+    email = request.query.get("email")
+    if not email:
+        raise HttpError(400, "Missing email query string")
+    token = tokens.create(email)
+    response.json = {"token": token}
+
+
 @app.route("/search")
 async def search(request, response):
     q = request.query.get("q", "").strip()

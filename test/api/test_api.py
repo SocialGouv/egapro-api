@@ -357,3 +357,22 @@ async def test_resend_receipt_endpoint_with_unknown_declaration(client, monkeypa
     resp = await client.post("/declaration/514027945/2019/receipt")
     assert resp.status == 404
     assert not sender.called
+
+
+async def test_get_token_from_staff(client, monkeypatch):
+    monkeypatch.setattr("egapro.config.STAFF", ["staff@email.com"])
+    client.login("Staff@email.com")
+    resp = await client.get(
+        "/token?email=foo@bar.org",
+    )
+    assert resp.status == 200
+    body = json.loads(resp.body)
+    assert "token" in body
+
+
+async def test_get_token_from_non_staff(client, monkeypatch):
+    resp = await client.get(
+        "/token?email=foo@bar.org",
+    )
+    assert resp.status == 403
+    assert json.loads(resp.body) == {"error": "Vous n'avez pas l'autorisation"}
