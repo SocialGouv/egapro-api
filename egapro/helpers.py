@@ -313,22 +313,27 @@ async def load_from_api_entreprises(siren):
 
 @lru_cache(maxsize=1024)
 async def get_entreprise_details(siren):
-    if not siren:
-        return {}
     if config.API_ENTREPRISES:
         data = await load_from_api_entreprises(siren)
     else:
         data = await load_from_recherche_entreprises(siren)
-    return {k: v for k, v in data.items() if v is not None}
+    data = {k: v for k, v in data.items() if v is not None}
+    if not data:
+        raise ValueError(f"Numéro SIREN inconnu: {siren}")
+    return data
 
 
 async def patch_from_recherche_entreprises(data):
     entreprise = data.setdefault("entreprise", {})
     siren = entreprise.get("siren")
     if not entreprise.get("raison_sociale"):
-        extra = await get_entreprise_details(siren)
-        for key, value in extra.items():
-            entreprise.setdefault(key, value)
+        try:
+            extra = await get_entreprise_details(siren)
+        except ValueError:
+            pass
+        else:
+            for key, value in extra.items():
+                entreprise.setdefault(key, value)
 
 
 def compare_str(wanted, candidate):
