@@ -13,7 +13,7 @@
       <li>Indicateur écart de taux de promotion : {{ indicateurs.promotions.note|default("non calculable") }}</li>
       {% endif %}
       <li>Indicateur retour de congés maternité : {{ indicateurs.congés_maternité.note|default("non calculable") }}</li>
-      <li>Indicateur hautes rémunérations: {{ indicateurs.hautes_rémunérations.note }}</li>
+      <li>Indicateur hautes rémunérations: {{ indicateurs.hautes_rémunérations.note|default("non calculable") }}</li>
     </ul>
     <p>Si vous souhaitez visualiser ou modifier votre déclaration, veuillez cliquer sur le lien suivant : <a href="{{ url }}">{{ url }}</a></p>
     <p>Pour tout renseignement utile, vous pouvez contacter votre référent égalité professionnelle femmes-hommes au sein de votre Direccte en répondant à ce message.</p>

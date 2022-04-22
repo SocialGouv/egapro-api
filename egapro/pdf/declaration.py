@@ -99,7 +99,7 @@ def main(data):
         ),
         (
             "Nombre de salariés pris en compte pour le calcul des indicateurs",
-            int(effectif) if effectif else "NC",
+            int(effectif) if effectif else "-",
         ),
     )
     pdf.write_table("Informations calcul et période de référence", cells)
@@ -109,7 +109,9 @@ def main(data):
         cells = [("Motif de non calculabilité", non_calculable)]
     else:
         mode = data.path("indicateurs.rémunérations.mode")
-        nb_niveaux = len(data.path("indicateurs.rémunérations.catégories") or [])
+        nb_niveaux = None
+        if mode != "csp":
+            nb_niveaux = len(data.path("indicateurs.rémunérations.catégories") or [])
         cells = (
             ("Modalité de calcul", mode),
             (
@@ -118,7 +120,7 @@ def main(data):
             ),
             (
                 "Nombre de niveaux ou coefficients",
-                nb_niveaux if mode != "csp" else None,
+                nb_niveaux or None,
             ),
             (
                 "Résultat final en %",
