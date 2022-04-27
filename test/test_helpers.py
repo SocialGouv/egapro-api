@@ -7,6 +7,7 @@ RECHERCHE_ENTREPRISE_SAMPLE = {
     "categorieJuridiqueUniteLegale": "5710",
     "dateCreationUniteLegale": "2004-12-15",
     "caractereEmployeurUniteLegale": "O",
+    "activitePrincipaleUniteLegale": "62.02A",
     "conventions": [
         {
             "idcc": 1486,
@@ -34,13 +35,13 @@ RECHERCHE_ENTREPRISE_SAMPLE = {
         "siret": "48191299900037",
         "etatAdministratifEtablissement": "A",
         "etablissementSiege": True,
-        "activitePrincipaleEtablissement": "62.02A",
+        "activitePrincipaleEtablissement": "46.69B",
     },
     "allMatchingEtablissements": [
         {
             "address": "275 RUE FOOBAR 75002 PARIS",
             "siret": "48191299900037",
-            "activitePrincipaleEtablissement": "62.02A",
+            "activitePrincipaleEtablissement": "46.69B",
             "etablissementSiege": True,
             "codeCommuneEtablissement": "75102",
             "codePostalEtablissement": "75002",
@@ -50,7 +51,7 @@ RECHERCHE_ENTREPRISE_SAMPLE = {
             "address": "194 BOULEVARD DE FOOFOO 75003 PARIS",
             "siret": "48191299900052",
             "idccs": ["1486"],
-            "activitePrincipaleEtablissement": "62.02A",
+            "activitePrincipaleEtablissement": "46.69B",
             "etablissementSiege": False,
             "codeCommuneEtablissement": "75103",
             "codePostalEtablissement": "75002",
@@ -393,6 +394,7 @@ async def test_recherche_entreprise_with_foreign_company(monkeypatch):
             "categorieJuridiqueUniteLegale": "3120",
             "dateCreationUniteLegale": "2018-12-11",
             "caractereEmployeurUniteLegale": "O",
+            "activitePrincipaleUniteLegale": "70.10Z",
             "etablissements": 2,
             "etatAdministratifUniteLegale": "A",
             "highlightLabel": "FOOBAR",
@@ -428,6 +430,7 @@ async def test_recherche_entreprise_with_com_company(monkeypatch):
             "categorieJuridiqueUniteLegale": "5202",
             "dateCreationUniteLegale": "2019-01-02",
             "caractereEmployeurUniteLegale": "O",
+            "activitePrincipaleUniteLegale": "78.20Z",
             "conventions": [{"idcc": 1413}, {"idcc": 2378}],
             "etablissements": 1,
             "etatAdministratifUniteLegale": "A",

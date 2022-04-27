@@ -251,7 +251,7 @@ async def load_from_recherche_entreprises(siren):
     adresse = etablissement.get("address")
     if adresse and code_postal in adresse:
         adresse = adresse.split(code_postal)[0].strip()
-    code_naf = etablissement.get("activitePrincipaleEtablissement")
+    code_naf = data.get("activitePrincipaleUniteLegale")
     code_pays = etablissement.get("codePaysEtrangerEtablissement")
     return {
         "raison_sociale": raison_sociale,
