@@ -249,7 +249,7 @@ async def load_from_recherche_entreprises(siren):
     code_postal = etablissement.get("codePostalEtablissement")
     commune = etablissement.get("libelleCommuneEtablissement")
     adresse = etablissement.get("address")
-    if adresse and code_postal in adresse:
+    if adresse and code_postal and code_postal in adresse:
         adresse = adresse.split(code_postal)[0].strip()
     code_naf = data.get("activitePrincipaleUniteLegale")
     code_pays = etablissement.get("codePaysEtrangerEtablissement")
