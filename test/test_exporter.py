@@ -923,10 +923,10 @@ async def test_export_public_data(declaration):
     await exporter.public_data(out)
     out.seek(0)
     assert out.read() == (
-        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
-        "Mirabar;87654321;2019;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
-        "FooBar;87654322;2018;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
-        "KaramBar;87654324;2020;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département;Pays\r\n"
+        "Mirabar;87654321;2019;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme;FRANCE\r\n"
+        "FooBar;87654322;2018;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme;FRANCE\r\n"
+        "KaramBar;87654324;2020;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme;FRANCE\r\n"
     )
 
 
@@ -950,8 +950,29 @@ async def test_export_ues_public_data(declaration):
     await exporter.public_data(out)
     out.seek(0)
     assert out.read() == (
-        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
-        "Mirabar;87654321;2019;26;Unité Economique et Sociale (UES);MiraFoo;MiraBaz (315710251),MiraPouet (315710251);Auvergne-Rhône-Alpes;Drôme\r\n"
+        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département;Pays\r\n"
+        "Mirabar;87654321;2019;26;Unité Economique et Sociale (UES);MiraFoo;MiraBaz (315710251),MiraPouet (315710251);Auvergne-Rhône-Alpes;Drôme;FRANCE\r\n"
+    )
+
+
+async def test_export_public_data_with_foreign_company(declaration):
+    await declaration(
+        siren="123456782",
+        year=2020,
+        entreprise={
+            "code_pays": "BE",
+            "adresse": None,
+            "département": None,
+            "région": None,
+            "code_postal": None,
+        },
+    )
+    out = io.StringIO()
+    await exporter.public_data(out)
+    out.seek(0)
+    assert out.read() == (
+        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département;Pays\r\n"
+        "Total Recall;123456782;2020;26;Entreprise;;;;;BELGIQUE\r\n"
     )
 
 

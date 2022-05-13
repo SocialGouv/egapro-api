@@ -39,6 +39,7 @@ async def public_data(path: Path):
             "Entreprises UES (SIREN)",
             "Région",
             "Département",
+            "Pays",
         ]
     )
     rows = []
@@ -59,8 +60,11 @@ async def public_data(path: Path):
                 data.structure,
                 data.ues,
                 ues,
-                constants.REGIONS[data.region],
-                constants.DEPARTEMENTS[data.departement],
+                constants.REGIONS.get(data.region),
+                constants.DEPARTEMENTS.get(data.departement),
+                constants.PAYS_ISO_TO_LIB.get(
+                    data.path("entreprise.code_pays"), "FRANCE"
+                ),
             ]
         )
     writer.writerows(rows)
