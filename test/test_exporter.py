@@ -221,6 +221,33 @@ async def test_dgt_dump(declaration):
     assert sheet["CE2"].value is None
 
 
+async def test_dgt_dump_without_periode_suffisante(declaration):
+    await declaration(
+        siren="12345678",
+        year=2020,
+        compute_notes=True,
+        uid="12345678-1234-5678-9012-123456789012",
+        entreprise={"code_naf": "47.25Z", "région": "11", "département": "77"},
+        déclaration={"période_suffisante": False}
+    )
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook.active
+
+    # Global notes
+    assert sheet["BO1"].value == "Indicateur_1"
+    assert sheet["BO2"].value == "nc"
+    assert sheet["BP1"].value == "Indicateur_2"
+    assert sheet["BP2"].value == "nc"
+    assert sheet["BQ1"].value == "Indicateur_3"
+    assert sheet["BQ2"].value == "nc"
+    assert sheet["BR1"].value == "Indicateur_2et3"
+    assert sheet["BR2"].value == "nc"
+    assert sheet["BU1"].value == "Indicateur_4"
+    assert sheet["BU2"].value == "nc"
+    assert sheet["BV1"].value == "Indicateur_5"
+    assert sheet["BV2"].value == "nc"
+
+
 async def test_dgt_dump_with_coef_mode(declaration):
     await declaration(
         siren="12345678",

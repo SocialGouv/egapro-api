@@ -8,7 +8,6 @@ import fastjsonschema
 import ujson as json
 from stdnum.fr.siren import is_valid as siren_is_valid
 
-from egapro import constants
 from egapro.utils import import_by_path
 from egapro.models import Data
 
