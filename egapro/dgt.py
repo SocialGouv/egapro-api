@@ -10,6 +10,7 @@ from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from progressist import ProgressBar
 
 from egapro import config, constants, db, models
+from egapro.schema import SCHEMA
 from egapro.utils import flatten, remove_one_year
 
 
@@ -340,7 +341,14 @@ def prepare_record(data):
     effectif = data["entreprise"]["effectif"]["tranche"]
     prepare_entreprise(data["entreprise"])
     prepare_declaration(data["déclaration"])
-    if "indicateurs" in data:
+    periode_suffisante = data["déclaration"].get("période_suffisante") is not False
+    if not periode_suffisante:
+        data.setdefault("indicateurs", {})
+        for key in SCHEMA.indicateurs_keys:
+            if key not in data["indicateurs"]:
+                data["indicateurs"][key] = {}
+            data["indicateurs"][key]["note"] = "nc"
+    elif "indicateurs" in data:
         prepare_remunerations(data["indicateurs"]["rémunérations"])
         prepare_conges_maternite(data["indicateurs"]["congés_maternité"])
         if effectif == "50:250":

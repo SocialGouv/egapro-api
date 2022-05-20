@@ -221,6 +221,33 @@ async def test_dgt_dump(declaration):
     assert sheet["CE2"].value is None
 
 
+async def test_dgt_dump_without_periode_suffisante(declaration):
+    await declaration(
+        siren="12345678",
+        year=2020,
+        compute_notes=True,
+        uid="12345678-1234-5678-9012-123456789012",
+        entreprise={"code_naf": "47.25Z", "région": "11", "département": "77"},
+        déclaration={"période_suffisante": False}
+    )
+    workbook = await dgt.as_xlsx(debug=True)
+    sheet = workbook.active
+
+    # Global notes
+    assert sheet["BO1"].value == "Indicateur_1"
+    assert sheet["BO2"].value == "nc"
+    assert sheet["BP1"].value == "Indicateur_2"
+    assert sheet["BP2"].value == "nc"
+    assert sheet["BQ1"].value == "Indicateur_3"
+    assert sheet["BQ2"].value == "nc"
+    assert sheet["BR1"].value == "Indicateur_2et3"
+    assert sheet["BR2"].value == "nc"
+    assert sheet["BU1"].value == "Indicateur_4"
+    assert sheet["BU2"].value == "nc"
+    assert sheet["BV1"].value == "Indicateur_5"
+    assert sheet["BV2"].value == "nc"
+
+
 async def test_dgt_dump_with_coef_mode(declaration):
     await declaration(
         siren="12345678",
@@ -923,10 +950,10 @@ async def test_export_public_data(declaration):
     await exporter.public_data(out)
     out.seek(0)
     assert out.read() == (
-        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
-        "Mirabar;87654321;2019;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
-        "FooBar;87654322;2018;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
-        "KaramBar;87654324;2020;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme\r\n"
+        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département;Pays\r\n"
+        "Mirabar;87654321;2019;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme;FRANCE\r\n"
+        "FooBar;87654322;2018;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme;FRANCE\r\n"
+        "KaramBar;87654324;2020;26;Entreprise;;;Auvergne-Rhône-Alpes;Drôme;FRANCE\r\n"
     )
 
 
@@ -950,8 +977,29 @@ async def test_export_ues_public_data(declaration):
     await exporter.public_data(out)
     out.seek(0)
     assert out.read() == (
-        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département\r\n"
-        "Mirabar;87654321;2019;26;Unité Economique et Sociale (UES);MiraFoo;MiraBaz (315710251),MiraPouet (315710251);Auvergne-Rhône-Alpes;Drôme\r\n"
+        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département;Pays\r\n"
+        "Mirabar;87654321;2019;26;Unité Economique et Sociale (UES);MiraFoo;MiraBaz (315710251),MiraPouet (315710251);Auvergne-Rhône-Alpes;Drôme;FRANCE\r\n"
+    )
+
+
+async def test_export_public_data_with_foreign_company(declaration):
+    await declaration(
+        siren="123456782",
+        year=2020,
+        entreprise={
+            "code_pays": "BE",
+            "adresse": None,
+            "département": None,
+            "région": None,
+            "code_postal": None,
+        },
+    )
+    out = io.StringIO()
+    await exporter.public_data(out)
+    out.seek(0)
+    assert out.read() == (
+        "Raison Sociale;SIREN;Année;Note;Structure;Nom UES;Entreprises UES (SIREN);Région;Département;Pays\r\n"
+        "Total Recall;123456782;2020;26;Entreprise;;;;;BELGIQUE\r\n"
     )
 
 
