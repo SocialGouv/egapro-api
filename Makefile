@@ -3,6 +3,9 @@
 develop:
 	pip install -e .[dev,test]
 
+serve:
+	gunicorn egapro.views:app -b 0.0.0.0:2626 --access-logfile=- --log-file=- --timeout 600 --worker-class roll.worker.Worker
+
 init: SHELL := python3
 init:
 	import asyncio

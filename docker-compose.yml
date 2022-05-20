@@ -1,10 +1,8 @@
----
 version: "3.5"
 
 services:
-  egapro-api:
-    build:
-      context: .
+  web:
+    build: .
     environment:
       EGAPRO_DBHOST: db
     ports:
