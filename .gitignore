@@ -8,3 +8,4 @@ site/
 venv/
 .env
 .history/
+settings.json

@@ -9,6 +9,7 @@ services:
       - 2626:2626
     depends_on:
       - db
+      - test_db
 
   db:
     restart: always
@@ -22,5 +23,16 @@ services:
     volumes:
       - egapro-pgdata:/var/lib/postgresql/data
 
+  test_db:
+    restart: always
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: test_egapro
+    ports:
+      - 5436:5432
+    volumes:
+      - ./egapro/sql/init_test.sql:/docker-entrypoint-initdb.d/init_test.sql
 volumes:
   egapro-pgdata:
