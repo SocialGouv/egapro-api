@@ -14,6 +14,10 @@ id: string
     date: date # Date de publication du niveau de résultat de l'entreprise ou de l'UES
     url: string
     modalités: string
+  objectifs_de_progression:
+    modalités: string
+  mesures_de_correction:
+    modalités: string
   +année_indicateurs: python:egapro.schema.utils.years
   fin_période_référence: date # Date de fin de la période de référence considérée pour le calcul des indicateurs
   période_suffisante: boolean  # Vaut false si l'entreprise à moins de 12 mois d'existence sur la période de calcul considérée

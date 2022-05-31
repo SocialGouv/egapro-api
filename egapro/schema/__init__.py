@@ -59,10 +59,15 @@ def _cross_validate(data):
             assert "indicateurs" not in data, msg
         else:
             mesures_correctives = data.path("déclaration.mesures_correctives")
+            mesures_de_correction = data.path("déclaration.mesures_de_correction")
+            objectifs_de_progression = data.path("objectifs_de_progression")
+
             if data.year >= 2020 or index is not None:
                 msg = "La date de publication doit être définie"
                 assert data.path("déclaration.publication.date"), msg
-                msg = "Les modalités de publication ou le site Internet doit être défini"
+                msg = (
+                    "Les modalités de publication ou le site Internet doit être défini"
+                )
                 assert data.path("déclaration.publication.modalités") or data.path(
                     "déclaration.publication.url"
                 ), msg
@@ -74,7 +79,10 @@ def _cross_validate(data):
                 assert not mesures_correctives, msg
             else:
                 msg = "Les mesures correctives doivent être définies pour un index inférieur à 75"
+                msg_objectifs = "Les objectifs de progression doivent être définis pour un index inférieur à 75"
                 assert mesures_correctives, msg
+                assert mesures_de_correction, msg
+                assert objectifs_de_progression, msg_objectifs
             periode_reference = data.path("déclaration.fin_période_référence")
             assert (
                 periode_reference
