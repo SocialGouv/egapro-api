@@ -10,7 +10,6 @@ jobs:
       postgres:
         image: postgres:11-alpine
         env:
-          EGAPRO_TEST_DBHOST: localhost
           POSTGRES_DB: test_egapro
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
