@@ -12,6 +12,8 @@ from egapro import db, helpers, models, tokens
 def pytest_configure(config):
     async def configure():
         os.environ["EGAPRO_DBNAME"] = "test_egapro"
+        os.environ["EGAPRO_DBHOST"] = "test_db"
+
         egapro_config.init()
         await db.init()
         async with db.declaration.pool.acquire() as conn:
