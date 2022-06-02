@@ -235,7 +235,7 @@ async def load_from_recherche_entreprises(siren):
     data = await get(url)
     if not data:
         return {}
-    raison_sociale = data.get("simplelabel")
+    raison_sociale = data.get("simpleLabel")
     limit = date(constants.CURRENT_YEAR, 3, 1)
     radiation = data.get("dateCession")
     if radiation and date.fromisoformat(radiation) < limit:

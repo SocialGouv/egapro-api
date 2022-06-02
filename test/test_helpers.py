@@ -22,6 +22,7 @@ RECHERCHE_ENTREPRISE_SAMPLE = {
     ],
     "etablissements": 5,
     "etatAdministratifUniteLegale": "A",
+    "dateCession": "2021-01-01",
     "highlightLabel": "FOOBAR",
     "label": "FOOBAR",
     "matching": 2,
@@ -371,7 +372,7 @@ async def test_recherche_entreprise(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_recherche_entreprise_with_date_radiation(monkeypatch):
-    limit = date(constants.CURRENT_YEAR, 3, 1)
+    limit = "2021-03-01"
     RECHERCHE_ENTREPRISE_SAMPLE["dateCession"] < limit
 
     async def mock_get(*args, **kwargs):
