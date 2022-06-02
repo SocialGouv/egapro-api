@@ -371,7 +371,8 @@ async def test_recherche_entreprise(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_recherche_entreprise_with_date_radiation(monkeypatch):
-    RECHERCHE_ENTREPRISE_SAMPLE["etatAdministratifUniteLegale"] = "C"
+    limit = date(constants.CURRENT_YEAR, 3, 1)
+    RECHERCHE_ENTREPRISE_SAMPLE["dateCession"] < limit
 
     async def mock_get(*args, **kwargs):
         return RECHERCHE_ENTREPRISE_SAMPLE
@@ -383,7 +384,7 @@ async def test_recherche_entreprise_with_date_radiation(monkeypatch):
         "Le Siren saisi correspond à une entreprise fermée, "
         "veuillez vérifier votre saisie"
     )
-    RECHERCHE_ENTREPRISE_SAMPLE["etatAdministratifUniteLegale"] = "A"
+    RECHERCHE_ENTREPRISE_SAMPLE["dateCession"] > limit
 
 
 @pytest.mark.asyncio
