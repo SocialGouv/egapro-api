@@ -5,6 +5,7 @@ services:
     build: .
     environment:
       EGAPRO_DBHOST: db
+      EGAPRO_TEST_DBHOST: test_db
     ports:
       - 2626:2626
     depends_on:
