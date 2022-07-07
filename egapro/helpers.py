@@ -235,7 +235,7 @@ async def load_from_recherche_entreprises(siren):
     data = await get(url)
     if not data:
         return {}
-    raison_sociale = data.get("label")
+    raison_sociale = data.get("simpleLabel")
     radiation = data.get("etatAdministratifUniteLegale") != "A"
     if radiation:
         raise ValueError(
