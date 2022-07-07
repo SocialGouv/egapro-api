@@ -198,9 +198,22 @@ async def get_headers_columns():
                 "indicateurs.hautes_rémunérations.population_favorable",
             ),
             ("Indicateur_1", "indicateurs.rémunérations.note"),
+            (
+                "Indicateur_1_objectif",
+                "indicateurs.rémunérations.objectif_de_progression",
+            ),
             ("Indicateur_2", "indicateurs.augmentations.note"),
+            (
+                "Indicateur_2_objectif",
+                "indicateurs.augmentations.objectif_de_progression",
+            ),
             ("Indicateur_3", "indicateurs.promotions.note"),
+            ("Indicateur_3_objectif", "indicateurs.promotions.objectif_de_progression"),
             ("Indicateur_2et3", "indicateurs.augmentations_et_promotions.note"),
+            (
+                "Indicateur_2et3_objectif",
+                "indicateurs.augmentations_et_promotions.objectif_de_progression",
+            ),
             (
                 "Indicateur_2et3_PourCent",
                 "indicateurs.augmentations_et_promotions.note_en_pourcentage",
@@ -210,7 +223,15 @@ async def get_headers_columns():
                 "indicateurs.augmentations_et_promotions.note_nombre_salariés",
             ),
             ("Indicateur_4", "indicateurs.congés_maternité.note"),
+            (
+                "Indicateur_4_objectif",
+                "indicateurs.congés_maternité.objectif_de_progression",
+            ),
             ("Indicateur_5", "indicateurs.hautes_rémunérations.note"),
+            (
+                "Indicateur_5_objectif",
+                "indicateurs.hautes_rémunérations.objectif_de_progression",
+            ),
             ("Nombre_total_points obtenus", "déclaration.points"),
             (
                 "Nombre_total_points_pouvant_etre_obtenus",
@@ -218,6 +239,18 @@ async def get_headers_columns():
             ),
             ("Resultat_final_sur_100_points", "déclaration.index", value_or_nc),
             ("Mesures_correction", "déclaration.mesures_correctives"),
+            (
+                "Modalites_objectifs_mesure",
+                "déclaration.publication.modalités_objectifs_mesures",
+            ),
+            (
+                "Date_publication_mesures",
+                "déclaration.publication.date_publication_mesures",
+            ),
+            (
+                "Date_publication_objectifs",
+                "déclaration.publication.date_publication_objectifs",
+            ),
             ("Plan_relance", "entreprise.plan_relance"),
         ]
     )

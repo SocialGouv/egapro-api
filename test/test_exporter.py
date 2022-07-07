@@ -78,18 +78,22 @@ async def test_dgt_dump(declaration):
         compute_notes=True,
         uid="12345678-1234-5678-9012-123456789012",
         entreprise={"code_naf": "47.25Z", "région": "11", "département": "77"},
+        date_publication_mesures=datetime(2020, 10, 24, 10, 11, 13),
+        date_publication_objectifs=datetime(2020, 8, 12, 10, 11, 13),
         indicateurs={
             "augmentations": {
                 "note": 20,
                 "résultat": 1.08,
                 "catégories": [0.1, 10.5, 10.3, 11.0],
                 "population_favorable": "femmes",
+                "objectif_de_progression": 15,
             },
             "promotions": {
                 "note": 15,
                 "résultat": 0.5,
                 "catégories": [None, 0.1, -0.3, -0.4],
                 "population_favorable": "femmes",
+                "objectif_de_progression": 30,
             },
             "rémunérations": {
                 "catégories": [
@@ -132,12 +136,18 @@ async def test_dgt_dump(declaration):
                 ],
                 "mode": "csp",
                 "note": 40,
+                "objectif_de_progression": 60,
                 "population_favorable": "femmes",
                 "résultat": 0.0,
             },
-            "congés_maternité": {"note": 0, "résultat": 57.0},
+            "congés_maternité": {
+                "note": 0,
+                "objectif_de_progression": 18,
+                "résultat": 57.0,
+            },
             "hautes_rémunérations": {
                 "note": 5,
+                "objectif_de_progression": 75,
                 "résultat": 3,
                 "population_favorable": "hommes",
             },
@@ -195,30 +205,48 @@ async def test_dgt_dump(declaration):
     # Global notes
     assert sheet["BS1"].value == "Indicateur_1"
     assert sheet["BS2"].value == 40
-    assert sheet["BT1"].value == "Indicateur_2"
-    assert sheet["BT2"].value == 20
-    assert sheet["BU1"].value == "Indicateur_3"
-    assert sheet["BU2"].value == 15
-    assert sheet["BV1"].value == "Indicateur_2et3"
-    assert sheet["BV2"].value is None
-    assert sheet["BW1"].value == "Indicateur_2et3_PourCent"
-    assert sheet["BW2"].value is None
-    assert sheet["BX1"].value == "Indicateur_2et3_ParSal"
-    assert sheet["BX2"].value is None
-    assert sheet["BY1"].value == "Indicateur_4"
-    assert sheet["BY2"].value == 0
-    assert sheet["BZ1"].value == "Indicateur_5"
-    assert sheet["BZ2"].value == 5
-    assert sheet["CA1"].value == "Nombre_total_points obtenus"
-    assert sheet["CA2"].value == 80
-    assert sheet["CB1"].value == "Nombre_total_points_pouvant_etre_obtenus"
-    assert sheet["CB2"].value == 100
-    assert sheet["CC1"].value == "Resultat_final_sur_100_points"
-    assert sheet["CC2"].value == 80
-    assert sheet["CD1"].value == "Mesures_correction"
-    assert sheet["CD2"].value is None
-    assert sheet["CE1"].value == "Plan_relance"
-    assert sheet["CE2"].value is None
+    assert sheet["BT1"].value == "Indicateur_1_objectif"
+    assert sheet["BT2"].value == 60
+    assert sheet["BU1"].value == "Indicateur_2"
+    assert sheet["BU2"].value == 20
+    assert sheet["BV1"].value == "Indicateur_2_objectif"
+    assert sheet["BV2"].value == 15
+    assert sheet["BW1"].value == "Indicateur_3"
+    assert sheet["BW2"].value == 15
+    assert sheet["BX1"].value == "Indicateur_3_objectif"
+    assert sheet["BX2"].value == 30
+    assert sheet["BY1"].value == "Indicateur_2et3"
+    assert sheet["BY2"].value is None
+    assert sheet["BZ1"].value == "Indicateur_2et3_objectif"
+    assert sheet["BZ2"].value is None
+    assert sheet["CA1"].value == "Indicateur_2et3_PourCent"
+    assert sheet["CA2"].value is None
+    assert sheet["CB1"].value == "Indicateur_2et3_ParSal"
+    assert sheet["CB2"].value is None
+    assert sheet["CC1"].value == "Indicateur_4"
+    assert sheet["CC2"].value == 0
+    assert sheet["CD1"].value == "Indicateur_4_objectif"
+    assert sheet["CD2"].value == 18
+    assert sheet["CE1"].value == "Indicateur_5"
+    assert sheet["CE2"].value == 5
+    assert sheet["CF1"].value == "Indicateur_5_objectif"
+    assert sheet["CF2"].value == 75
+    assert sheet["CG1"].value == "Nombre_total_points obtenus"
+    assert sheet["CG2"].value == 80
+    assert sheet["CH1"].value == "Nombre_total_points_pouvant_etre_obtenus"
+    assert sheet["CH2"].value == 100
+    assert sheet["CI1"].value == "Resultat_final_sur_100_points"
+    assert sheet["CI2"].value == 80
+    assert sheet["CJ1"].value == "Mesures_correction"
+    assert sheet["CJ2"].value is None
+    assert sheet["CK1"].value == "Modalites_objectifs_mesure"
+    assert sheet["CK2"].value is None
+    assert sheet["CL1"].value == "Date_publication_mesures"
+    assert sheet["CL2"].value is None
+    assert sheet["CM1"].value == "Date_publication_objectifs"
+    assert sheet["CM2"].value is None
+    assert sheet["CN1"].value == "Plan_relance"
+    assert sheet["CN2"].value is None
 
 
 async def test_dgt_dump_without_periode_suffisante(declaration):
@@ -228,7 +256,7 @@ async def test_dgt_dump_without_periode_suffisante(declaration):
         compute_notes=True,
         uid="12345678-1234-5678-9012-123456789012",
         entreprise={"code_naf": "47.25Z", "région": "11", "département": "77"},
-        déclaration={"période_suffisante": False}
+        déclaration={"période_suffisante": False},
     )
     workbook = await dgt.as_xlsx(debug=True)
     sheet = workbook.active
@@ -236,16 +264,28 @@ async def test_dgt_dump_without_periode_suffisante(declaration):
     # Global notes
     assert sheet["BO1"].value == "Indicateur_1"
     assert sheet["BO2"].value == "nc"
-    assert sheet["BP1"].value == "Indicateur_2"
-    assert sheet["BP2"].value == "nc"
-    assert sheet["BQ1"].value == "Indicateur_3"
+    assert sheet["BP1"].value == "Indicateur_1_objectif"
+    assert sheet["BP2"].value == None
+    assert sheet["BQ1"].value == "Indicateur_2"
     assert sheet["BQ2"].value == "nc"
-    assert sheet["BR1"].value == "Indicateur_2et3"
-    assert sheet["BR2"].value == "nc"
-    assert sheet["BU1"].value == "Indicateur_4"
+    assert sheet["BR1"].value == "Indicateur_2_objectif"
+    assert sheet["BR2"].value == None
+    assert sheet["BS1"].value == "Indicateur_3"
+    assert sheet["BS2"].value == "nc"
+    assert sheet["BT1"].value == "Indicateur_3_objectif"
+    assert sheet["BT2"].value == None
+    assert sheet["BU1"].value == "Indicateur_2et3"
     assert sheet["BU2"].value == "nc"
-    assert sheet["BV1"].value == "Indicateur_5"
-    assert sheet["BV2"].value == "nc"
+    assert sheet["BV1"].value == "Indicateur_2et3_objectif"
+    assert sheet["BV2"].value == None
+    assert sheet["BY1"].value == "Indicateur_4"
+    assert sheet["BY2"].value == "nc"
+    assert sheet["BZ1"].value == "Indicateur_4_objectif"
+    assert sheet["BZ2"].value == None
+    assert sheet["CA1"].value == "Indicateur_5"
+    assert sheet["CA2"].value == "nc"
+    assert sheet["CB1"].value == "Indicateur_5_objectif"
+    assert sheet["CB2"].value == None
 
 
 async def test_dgt_dump_with_coef_mode(declaration):
@@ -528,28 +568,40 @@ async def test_dgt_dump_with_effectif_50_250(declaration):
     assert sheet["BS2"].value is None
     assert sheet["BT1"].value == "Indicateur_1"
     assert sheet["BT2"].value == 36
-    assert sheet["BU1"].value == "Indicateur_2"
-    assert sheet["BU2"].value is None
-    assert sheet["BV1"].value == "Indicateur_3"
+    assert sheet["BU1"].value == "Indicateur_1_objectif"
+    assert sheet["BU2"].value == None
+    assert sheet["BV1"].value == "Indicateur_2"
     assert sheet["BV2"].value is None
-    assert sheet["BW1"].value == "Indicateur_2et3"
-    assert sheet["BW2"].value == 35
-    assert sheet["BX1"].value == "Indicateur_2et3_PourCent"
-    assert sheet["BX2"].value == 25
-    assert sheet["BY1"].value == "Indicateur_2et3_ParSal"
-    assert sheet["BY2"].value == 35
-    assert sheet["BZ1"].value == "Indicateur_4"
-    assert sheet["BZ2"].value == "nc"
-    assert sheet["CA1"].value == "Indicateur_5"
-    assert sheet["CA2"].value == 10
-    assert sheet["CB1"].value == "Nombre_total_points obtenus"
-    assert sheet["CB2"].value == 81
-    assert sheet["CC1"].value == "Nombre_total_points_pouvant_etre_obtenus"
-    assert sheet["CC2"].value == 85
-    assert sheet["CD1"].value == "Resultat_final_sur_100_points"
-    assert sheet["CD2"].value == 95
-    assert sheet["CE1"].value == "Mesures_correction"
-    assert sheet["CE2"].value is None
+    assert sheet["BW1"].value == "Indicateur_2_objectif"
+    assert sheet["BW2"].value == None
+    assert sheet["BX1"].value == "Indicateur_3"
+    assert sheet["BX2"].value is None
+    assert sheet["BY1"].value == "Indicateur_3_objectif"
+    assert sheet["BY2"].value == None
+    assert sheet["BZ1"].value == "Indicateur_2et3"
+    assert sheet["BZ2"].value == 35
+    assert sheet["CA1"].value == "Indicateur_2et3_objectif"
+    assert sheet["CA2"].value == None
+    assert sheet["CB1"].value == "Indicateur_2et3_PourCent"
+    assert sheet["CB2"].value == 25
+    assert sheet["CC1"].value == "Indicateur_2et3_ParSal"
+    assert sheet["CC2"].value == 35
+    assert sheet["CD1"].value == "Indicateur_4"
+    assert sheet["CD2"].value == "nc"
+    assert sheet["CE1"].value == "Indicateur_4_objectif"
+    assert sheet["CE2"].value == None
+    assert sheet["CF1"].value == "Indicateur_5"
+    assert sheet["CF2"].value == 10
+    assert sheet["CG1"].value == "Indicateur_5_objectif"
+    assert sheet["CG2"].value == None
+    assert sheet["CH1"].value == "Nombre_total_points obtenus"
+    assert sheet["CH2"].value == 81
+    assert sheet["CI1"].value == "Nombre_total_points_pouvant_etre_obtenus"
+    assert sheet["CI2"].value == 85
+    assert sheet["CJ1"].value == "Resultat_final_sur_100_points"
+    assert sheet["CJ2"].value == 95
+    assert sheet["CK1"].value == "Mesures_correction"
+    assert sheet["CK2"].value is None
 
 
 async def test_dgt_dump_with_0_index(declaration):
@@ -677,28 +729,40 @@ async def test_dgt_dump_with_0_index(declaration):
     assert sheet["BR2"].value == "hommes"
     assert sheet["BS1"].value == "Indicateur_1"
     assert sheet["BS2"].value == 0
-    assert sheet["BT1"].value == "Indicateur_2"
-    assert sheet["BT2"].value is None
-    assert sheet["BU1"].value == "Indicateur_3"
+    assert sheet["BT1"].value == "Indicateur_1_objectif"
+    assert sheet["BT2"].value == None
+    assert sheet["BU1"].value == "Indicateur_2"
     assert sheet["BU2"].value is None
-    assert sheet["BV1"].value == "Indicateur_2et3"
-    assert sheet["BV2"].value == 0
-    assert sheet["BW1"].value == "Indicateur_2et3_PourCent"
-    assert sheet["BW2"].value == 0
-    assert sheet["BX1"].value == "Indicateur_2et3_ParSal"
-    assert sheet["BX2"].value == 0
-    assert sheet["BY1"].value == "Indicateur_4"
-    assert sheet["BY2"].value == "nc"
-    assert sheet["BZ1"].value == "Indicateur_5"
-    assert sheet["BZ2"].value == 0
-    assert sheet["CA1"].value == "Nombre_total_points obtenus"
+    assert sheet["BV1"].value == "Indicateur_2_objectif"
+    assert sheet["BV2"].value == None
+    assert sheet["BW1"].value == "Indicateur_3"
+    assert sheet["BW2"].value is None
+    assert sheet["BX1"].value == "Indicateur_3_objectif"
+    assert sheet["BX2"].value == None
+    assert sheet["BY1"].value == "Indicateur_2et3"
+    assert sheet["BY2"].value == 0
+    assert sheet["BZ1"].value == "Indicateur_2et3_objectif"
+    assert sheet["BZ2"].value == None
+    assert sheet["CA1"].value == "Indicateur_2et3_PourCent"
     assert sheet["CA2"].value == 0
-    assert sheet["CB1"].value == "Nombre_total_points_pouvant_etre_obtenus"
-    assert sheet["CB2"].value == 85
-    assert sheet["CC1"].value == "Resultat_final_sur_100_points"
-    assert sheet["CC2"].value == 0
-    assert sheet["CD1"].value == "Mesures_correction"
-    assert sheet["CD2"].value == "me"
+    assert sheet["CB1"].value == "Indicateur_2et3_ParSal"
+    assert sheet["CB2"].value == 0
+    assert sheet["CC1"].value == "Indicateur_4"
+    assert sheet["CC2"].value == "nc"
+    assert sheet["CD1"].value == "Indicateur_4_objectif"
+    assert sheet["CD2"].value == None
+    assert sheet["CE1"].value == "Indicateur_5"
+    assert sheet["CE2"].value == 0
+    assert sheet["CF1"].value == "Indicateur_5_objectif"
+    assert sheet["CF2"].value == None
+    assert sheet["CG1"].value == "Nombre_total_points obtenus"
+    assert sheet["CG2"].value == 0
+    assert sheet["CH1"].value == "Nombre_total_points_pouvant_etre_obtenus"
+    assert sheet["CH2"].value == 85
+    assert sheet["CI1"].value == "Resultat_final_sur_100_points"
+    assert sheet["CI2"].value == 0
+    assert sheet["CJ1"].value == "Mesures_correction"
+    assert sheet["CJ2"].value == "me"
 
 
 async def test_dgt_dump_should_compute_declaration_url_for_solen_data(declaration):
