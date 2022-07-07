@@ -70,12 +70,12 @@ def _cross_validate(data):
                 if index < 75:
                     msg_modalites = "Les modalités des objectifs et mesures doivent être définies pour un index inférieur à 75"
                     msg_date = "La date de publication des mesures doit être définie pour un index inférieur à 75"
-                    //assert modalites_obj_mesures, msg_modalites
-                    //assert date_pub_mesures, msg_date
+                    # assert modalites_obj_mesures, msg_modalites
+                    # assert date_pub_mesures, msg_date
                 elif index >= 75 and index < 85:
                     url_decla = data.path("déclaration.publication.url")
                     msg = "L'URL de publication doit être définie pour un index inférieur à 85"
-                    //assert url_decla, msg
+                    # assert url_decla, msg
 
             if data.year >= 2020 or index is not None:
                 msg = "La date de publication doit être définie"
