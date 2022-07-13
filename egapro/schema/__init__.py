@@ -42,7 +42,7 @@ def cross_validate(data):
 
 def _cross_validate(data):
     def is_objective_valid(obj):
-        return not obj.non_calculable and obj.note in range(obj.note, obj.note_max)
+        return not obj["nc"] and obj["note"] in range(obj["note"], obj["note_max"])
 
     data = Data(data)
     if data.validated:
@@ -90,6 +90,7 @@ def _cross_validate(data):
                     "objectif": data.path(
                         "indicateurs.rémunérations.objectif_de_progression"
                     ),
+                    "nc": data.path("indicateurs.rémunérations.non_calculable"),
                     "note": data.path("indicateurs.rémunérations.note"),
                     "note_max": 40,
                 }
@@ -97,6 +98,7 @@ def _cross_validate(data):
                     "objectif": data.path(
                         "indicateurs.augmentations.objectif_de_progression"
                     ),
+                    "nc": data.path("indicateurs.augmentations.non_calculable"),
                     "note": data.path("indicateurs.augmentations.note"),
                     "note_max": 20,
                 }
@@ -104,12 +106,16 @@ def _cross_validate(data):
                     "objectif": data.path(
                         "indicateurs.promotions.objectif_de_progression"
                     ),
+                    "nc": data.path("indicateurs.promotions.non_calculable"),
                     "note": data.path("indicateurs.promotions.note"),
                     "note_max": 15,
                 }
                 aug_et_promotions = {
                     "objectif": data.path(
                         "indicateurs.augmentations_et_promotions.objectif_de_progression"
+                    ),
+                    "nc": data.path(
+                        "indicateurs.augmentations_et_promotions.non_calculable"
                     ),
                     "note": data.path("indicateurs.augmentations_et_promotions.note"),
                     "note_max": 35,
@@ -118,6 +124,7 @@ def _cross_validate(data):
                     "objectif": data.path(
                         "indicateurs.congés_maternité.objectif_de_progression"
                     ),
+                    "nc": data.path("indicateurs.congés_maternité.non_calculable"),
                     "note": data.path("indicateurs.congés_maternité.note"),
                     "note_max": 15,
                 }
@@ -125,39 +132,58 @@ def _cross_validate(data):
                     "objectif": data.path(
                         "indicateurs.hautes_rémunérations.objectif_de_progression"
                     ),
+                    "nc": data.path("indicateurs.hautes_rémunérations.non_calculable"),
                     "note": data.path("indicateurs.hautes_rémunérations.note"),
                     "note_max": 10,
                 }
 
-                msg_error = "Cette valeur doit être supérieure à {note}."
-
-                if remunerations.objectif is not None:
+                msg_error = "Cette valeur ({indicateur}) doit être supérieure à {note} et inférieure à {note_max}."
+                if remunerations["objectif"] is not None:
                     valid_objective = is_objective_valid(remunerations)
                     assert not valid_objective, msg_error.format(
-                        note=remunerations.note
+                        indicateur="rémunérations",
+                        note=remunerations["note"],
+                        note_max=remunerations["note_max"],
                     )
-                if aug_et_promotions is not None:
+                if aug_et_promotions["objectif"] is not None:
                     if effectif_total < 250:
                         valid_objective = is_objective_valid(aug_et_promotions)
                         assert not valid_objective, msg_error.format(
-                            note=aug_et_promotions.note
+                            indicateur="augmentations & promotions",
+                            note=aug_et_promotions["note"],
+                            note_max=aug_et_promotions["note_max"],
                         )
-                if augmentations is not None and promotions is not None:
+                if (
+                    augmentations["objectif"] is not None
+                    and promotions["objectif"] is not None
+                ):
                     if effectif_total >= 250:
                         valid_objective_aug = is_objective_valid(augmentations)
                         valid_objective_promo = is_objective_valid(promotions)
                         assert not valid_objective_aug, msg_error.format(
-                            note=augmentations.note
+                            indicateur="augmentations",
+                            note=augmentations["note"],
+                            note_max=augmentations["note_max"],
                         )
                         assert not valid_objective_promo, msg_error.format(
-                            note=promotions.note
+                            indicateur="promotions",
+                            note=promotions["note"],
+                            note_max=promotions["note_max"],
                         )
                 if conges_mat is not None:
                     valid_objective = is_objective_valid(conges_mat)
-                    assert not valid_objective, msg_error.format(note=conges_mat.note)
+                    assert not valid_objective, msg_error.format(
+                        indicateur="congés maternité",
+                        note=conges_mat["note"],
+                        note_max=conges_mat["note_max"],
+                    )
                 if hautes_rem is not None:
                     valid_objective = is_objective_valid(hautes_rem)
-                    assert not valid_objective, msg_error.format(note=hautes_rem.note)
+                    assert not valid_objective, msg_error.format(
+                        indicateur="hautes rémunérations",
+                        note=hautes_rem["note"],
+                        note_max=hautes_rem["note_max"],
+                    )
 
             if data.year >= 2020 or index is not None:
                 msg = "La date de publication doit être définie"
