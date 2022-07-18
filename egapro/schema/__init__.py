@@ -73,43 +73,41 @@ def _cross_validate(data):
             )
             periode_reference = data.path("déclaration.fin_période_référence")
 
-            if data.year < 2021:
-                if index is not None:
-                    if index >= 85:
-                        remunerations = data.path(
-                            "indicateurs.rémunérations.objectif_de_progression"
-                        )
-                        augmentations = data.path(
-                            "indicateurs.augmentations.objectif_de_progression"
-                        )
-                        promotions = data.path(
-                            "indicateurs.promotions.objectif_de_progression"
-                        )
-                        aug_et_promo = data.path(
-                            "indicateurs.augmentations_et_promotions.objectif_de_progression"
-                        )
-                        conges_mat = data.path(
-                            "indicateurs.congés_maternité.objectif_de_progression"
-                        )
-                        hautes_rem = data.path(
-                            "indicateurs.hautes_rémunérations.objectif_de_progression"
-                        )
-                        indicators = [
-                            remunerations,
-                            augmentations,
-                            promotions,
-                            aug_et_promo,
-                            conges_mat,
-                            hautes_rem,
-                            date_pub_mesures,
-                            date_pub_objectifs,
-                            modalites_obj_mesures,
-                        ]
+            if data.year < 2021 or index is None or index >= 85:
+                remunerations = data.path(
+                    "indicateurs.rémunérations.objectif_de_progression"
+                )
+                augmentations = data.path(
+                    "indicateurs.augmentations.objectif_de_progression"
+                )
+                promotions = data.path(
+                    "indicateurs.promotions.objectif_de_progression"
+                )
+                aug_et_promo = data.path(
+                    "indicateurs.augmentations_et_promotions.objectif_de_progression"
+                )
+                conges_mat = data.path(
+                    "indicateurs.congés_maternité.objectif_de_progression"
+                )
+                hautes_rem = data.path(
+                    "indicateurs.hautes_rémunérations.objectif_de_progression"
+                )
+                indicators = [
+                    remunerations,
+                    augmentations,
+                    promotions,
+                    aug_et_promo,
+                    conges_mat,
+                    hautes_rem,
+                    date_pub_mesures,
+                    date_pub_objectifs,
+                    modalites_obj_mesures,
+                ]
 
-                        msg = "Les objectifs pour ce champ ne doivent pas être définis si l'année de déclaration précède 2021 et si l'index est supérieur ou égal à 85."
+                msg = "Les objectifs pour ce champ ne doivent pas être définis si l'année de déclaration précède 2021 et si l'index est supérieur ou égal à 85."
 
-                        for indicator in indicators:
-                            assert not indicator, msg
+                for indicator in indicators:
+                    assert not indicator, msg
 
             if data.year >= 2021:
                 if index is not None:
