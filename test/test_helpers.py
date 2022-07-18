@@ -449,7 +449,7 @@ async def test_recherche_entreprise_with_com_company(monkeypatch):
                 "etablissementSiege": True,
                 "activitePrincipaleEtablissement": "78.20Z",
             },
-            "simpleLabel": "FOOBAR ST BARTH",
+            "simpleLabel": "FOOBAR SAINT BARTHELEMY",
             "siren": "481912999",
         }
 
@@ -467,6 +467,7 @@ async def test_recherche_entreprise_with_com_company(monkeypatch):
 @pytest.mark.asyncio
 async def test_recherche_entreprise_is_cached(monkeypatch):
     RECHERCHE_ENTREPRISE_SAMPLE["label"] = "123 je vais dans les bois"
+    RECHERCHE_ENTREPRISE_SAMPLE["simpleLabel"] = "123 je vais dans les bois"
 
     async def mock_get(*args, **kwargs):
         return RECHERCHE_ENTREPRISE_SAMPLE
