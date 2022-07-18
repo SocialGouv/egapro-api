@@ -41,9 +41,6 @@ def cross_validate(data):
 
 
 def _cross_validate(data):
-    def is_objective_valid(obj):
-        return not obj["nc"] and obj["note"] in range(obj["note"], obj["note_max"])
-
     data = Data(data)
     if data.validated:
         # Those keys are only required if the data is validated
@@ -80,9 +77,7 @@ def _cross_validate(data):
                 augmentations = data.path(
                     "indicateurs.augmentations.objectif_de_progression"
                 )
-                promotions = data.path(
-                    "indicateurs.promotions.objectif_de_progression"
-                )
+                promotions = data.path("indicateurs.promotions.objectif_de_progression")
                 aug_et_promo = data.path(
                     "indicateurs.augmentations_et_promotions.objectif_de_progression"
                 )
