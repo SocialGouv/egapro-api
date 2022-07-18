@@ -206,15 +206,15 @@ async def test_dgt_dump(declaration):
     assert sheet["BS1"].value == "Indicateur_1"
     assert sheet["BS2"].value == 40
     assert sheet["BT1"].value == "Indicateur_1_objectif"
-    assert sheet["BT2"].value == 60
+    assert sheet["BT2"].value == "60"
     assert sheet["BU1"].value == "Indicateur_2"
     assert sheet["BU2"].value == 20
     assert sheet["BV1"].value == "Indicateur_2_objectif"
-    assert sheet["BV2"].value == 15
+    assert sheet["BV2"].value == "15"
     assert sheet["BW1"].value == "Indicateur_3"
     assert sheet["BW2"].value == 15
     assert sheet["BX1"].value == "Indicateur_3_objectif"
-    assert sheet["BX2"].value == 30
+    assert sheet["BX2"].value == "30"
     assert sheet["BY1"].value == "Indicateur_2et3"
     assert sheet["BY2"].value is None
     assert sheet["BZ1"].value == "Indicateur_2et3_objectif"
@@ -226,11 +226,11 @@ async def test_dgt_dump(declaration):
     assert sheet["CC1"].value == "Indicateur_4"
     assert sheet["CC2"].value == 0
     assert sheet["CD1"].value == "Indicateur_4_objectif"
-    assert sheet["CD2"].value == 18
+    assert sheet["CD2"].value == "18"
     assert sheet["CE1"].value == "Indicateur_5"
     assert sheet["CE2"].value == 5
     assert sheet["CF1"].value == "Indicateur_5_objectif"
-    assert sheet["CF2"].value == 75
+    assert sheet["CF2"].value == "75"
     assert sheet["CG1"].value == "Nombre_total_points obtenus"
     assert sheet["CG2"].value == 80
     assert sheet["CH1"].value == "Nombre_total_points_pouvant_etre_obtenus"
