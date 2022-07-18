@@ -86,14 +86,14 @@ async def test_dgt_dump(declaration):
                 "résultat": 1.08,
                 "catégories": [0.1, 10.5, 10.3, 11.0],
                 "population_favorable": "femmes",
-                "objectif_de_progression": 15,
+                "objectif_de_progression": "15",
             },
             "promotions": {
                 "note": 15,
                 "résultat": 0.5,
                 "catégories": [None, 0.1, -0.3, -0.4],
                 "population_favorable": "femmes",
-                "objectif_de_progression": 30,
+                "objectif_de_progression": "30",
             },
             "rémunérations": {
                 "catégories": [
@@ -136,18 +136,18 @@ async def test_dgt_dump(declaration):
                 ],
                 "mode": "csp",
                 "note": 40,
-                "objectif_de_progression": 60,
+                "objectif_de_progression": "60",
                 "population_favorable": "femmes",
                 "résultat": 0.0,
             },
             "congés_maternité": {
                 "note": 0,
-                "objectif_de_progression": 18,
+                "objectif_de_progression": "18",
                 "résultat": 57.0,
             },
             "hautes_rémunérations": {
                 "note": 5,
-                "objectif_de_progression": 75,
+                "objectif_de_progression": "75",
                 "résultat": 3,
                 "population_favorable": "hommes",
             },
