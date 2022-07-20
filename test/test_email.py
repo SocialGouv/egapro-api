@@ -283,7 +283,7 @@ def test_success_email_with_small_company():
       <li>Indicateur hautes rémunérations: 0</li>
     </ul>
     <p>Si vous souhaitez visualiser ou modifier votre déclaration, veuillez cliquer sur le lien suivant : <a href="/declaration/?siren=514027945&year=2019">/declaration/?siren=514027945&year=2019</a></p>
-    <p>Pour tout renseignement utile, vous pouvez contacter votre référent égalité professionnelle femmes-hommes au sein de votre Direccte en répondant à ce message.</p>
+    <p>Pour tout renseignement utile, vous pouvez contacter votre référent égalité professionnelle femmes-hommes au sein de votre DREETS en répondant à ce message.</p>
     <p>Veuillez agréer, Madame, Monsieur, nos salutations distinguées,</p>
     <p>Les services de l’administration du travail</p>
    </body>
@@ -303,7 +303,7 @@ Si vous souhaitez visualiser ou modifier votre déclaration, veuillez cliquer su
 
 /declaration/?siren=514027945&year=2019
 
-Pour tout renseignement utile, vous pouvez contacter votre référent égalité professionnelle femmes-hommes au sein de votre Direccte en répondant à ce message.
+Pour tout renseignement utile, vous pouvez contacter votre référent égalité professionnelle femmes-hommes au sein de votre DREETS en répondant à ce message.
 
 Veuillez agréer, Madame, Monsieur, nos salutations distinguées,
 
