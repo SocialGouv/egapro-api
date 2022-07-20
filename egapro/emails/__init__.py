@@ -104,8 +104,7 @@ def load():
     root = Path(__file__).parent
     for path in root.iterdir():
         if path.is_dir() and not path.name.startswith("_"):
-            # Don't include carriage return in subject.
-            subject = (path / "subject.txt").read_text()[:-1]
+            subject = (path / "subject.txt").read_text()
             txt = (path / "body.txt").read_text()
             html = path / "body.html"
             if html.exists():
