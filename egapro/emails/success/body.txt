@@ -18,7 +18,13 @@ Si vous souhaitez visualiser ou modifier votre déclaration, veuillez cliquer su
 
 {{ url }}
 
-Pour tout renseignement utile, vous pouvez contacter votre référent égalité professionnelle femmes-hommes au sein de votre Direccte en répondant à ce message.
+{% if déclaration.index is defined and déclaration.index is not none %}
+{% if déclaration.index >= 75 and déclaration.index < 85 %}
+Vous venez de procéder à la transmission aux services du ministre chargé du travail de vos objectifs de progression. L’administration du travail accuse réception par le présent message de votre due transmission. Cet accusé réception ne vaut pas contrôle de conformité de votre déclaration.
+{% endif %}
+{% endif %}
+
+Pour tout renseignement utile, vous pouvez contacter votre référent égalité professionnelle femmes-hommes au sein de votre DREETS en répondant à ce message.
 
 Veuillez agréer, Madame, Monsieur, nos salutations distinguées,
 
