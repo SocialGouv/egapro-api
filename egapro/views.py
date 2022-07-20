@@ -198,6 +198,10 @@ async def resend_receipt(request, response, siren, year):
     data = record.data
     url = request.domain + data.uri
     emails.success.send(owners, url=url, **data)
+
+    if request["objectifs-mesures"]:
+        emails.objectives.send(owners, **data)
+
     response.status = 204
 
 
