@@ -69,22 +69,24 @@ def send(to, subject, txt, html=None, reply_to=None, attachment=None):
 class Email:
     def __init__(self, subject, txt, html, attachment):
         self.subject = self.load(subject)
-        self.subject = self.subject.replace("\n", "")
-        self.subject = self.subject.replace("\r", "")
         self.txt = self.load(txt)
         self.html = self.load(html)
         self.attachment = attachment
 
     def send(self, to, **context):
-        txt, html = self(**context)
+        txt, html, subject = self(**context)
         reply_to = REPLY_TO.get(context.get("departement"))
         attachment = None
         if self.attachment:
             attachment = self.attachment(context)
-        send(to, self.subject, txt, html, reply_to=reply_to, attachment=attachment)
+        send(to, subject, txt, html, reply_to=reply_to, attachment=attachment)
 
     def __call__(self, **context):
-        return self.txt.render(**context), (self.html or "").render(**context)
+        return (
+            self.txt.render(**context),
+            (self.html or "").render(**context),
+            (self.subject or "").render(**context).replace("\r", "").replace("\n", ""),
+        )
 
     def load(self, s):
         try:
