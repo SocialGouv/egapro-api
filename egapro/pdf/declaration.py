@@ -286,7 +286,7 @@ def main(data):
     pdf.write_table("Publication du niveau de résultat global", cells)
 
     index = data.path("déclaration.index")
-    date_pub_objectifs = data.path("déclaration.date_publication_objectifs")
+    date_pub_objectifs = data.path("déclaration.publication.date_publication_objectifs")
 
     if index is not None and date_pub_objectifs is not None:
         if 75 <= index < 85:
@@ -329,7 +329,9 @@ def main(data):
                 ),
                 (
                     "Date de publication des objectifs",
-                    as_date(data.path("déclaration.date_publication_objectifs")),
+                    as_date(
+                        data.path("déclaration.publication.date_publication_objectifs")
+                    ),
                 ),
                 (
                     "Modalités de communication auprès des salariés",
@@ -378,11 +380,15 @@ def main(data):
                 ),
                 (
                     "Date de publication des objectifs de progression",
-                    as_date(data.path("déclaration.date_publication_objectifs")),
+                    as_date(
+                        data.path("déclaration.publication.date_publication_objectifs")
+                    ),
                 ),
                 (
                     "Date de publication des mesures de correction",
-                    as_date(data.path("déclaration.date_publication_mesures")),
+                    as_date(
+                        data.path("déclaration.publication.date_publication_mesures")
+                    ),
                 ),
                 (
                     "Modalités de communication auprès des salariés",
