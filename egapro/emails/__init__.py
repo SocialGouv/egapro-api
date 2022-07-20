@@ -68,7 +68,7 @@ def send(to, subject, txt, html=None, reply_to=None, attachment=None):
 
 class Email:
     def __init__(self, subject, txt, html, attachment):
-        self.subject = subject
+        self.subject = self.load(subject)
         self.txt = self.load(txt)
         self.html = self.load(html)
         self.attachment = attachment

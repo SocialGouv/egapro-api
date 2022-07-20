@@ -293,38 +293,30 @@ def main(data):
             cells = (
                 (
                     "Objectif Indicateur écart de rémunération",
-                    data.path(
-                        "déclaration.indicateurs.rémunérations.objectif_de_progression"
-                    ),
+                    data.path("indicateurs.rémunérations.objectif_de_progression"),
                 ),
                 (
                     "Objectif Indicateur écart de taux d'augmentations individuelles",
-                    data.path(
-                        "déclaration.indicateurs.augmentations.objectif_de_progression"
-                    ),
+                    data.path("indicateurs.augmentations.objectif_de_progression"),
                 ),
                 (
                     "Objectif Indicateur écart de taux de promotions",
-                    data.path(
-                        "déclaration.indicateurs.promotions.objectif_de_progression"
-                    ),
+                    data.path("indicateurs.promotions.objectif_de_progression"),
                 ),
                 (
                     "Objectif Indicateur écart de taux d'augmentations individuelles",
                     data.path(
-                        "déclaration.indicateurs.augmentations_et_promotions.objectif_de_progression"
+                        "indicateurs.augmentations_et_promotions.objectif_de_progression"
                     ),
                 ),
                 (
                     "Objectif Indicateur retour de congé maternité",
-                    data.path(
-                        "déclaration.indicateurs.congés_maternité.objectif_de_progression"
-                    ),
+                    data.path("indicateurs.congés_maternité.objectif_de_progression"),
                 ),
                 (
                     "Objectif Indicateur dix plus hautes rémunérations",
                     data.path(
-                        "déclaration.indicateurs.hautes_rémunérations.objectif_de_progression"
+                        "indicateurs.hautes_rémunérations.objectif_de_progression"
                     ),
                 ),
                 (
@@ -344,38 +336,30 @@ def main(data):
             cells = (
                 (
                     "Objectif Indicateur écart de rémunération",
-                    data.path(
-                        "déclaration.indicateurs.rémunérations.objectif_de_progression"
-                    ),
+                    data.path("indicateurs.rémunérations.objectif_de_progression"),
                 ),
                 (
                     "Objectif Indicateur écart de taux d'augmentations individuelles",
-                    data.path(
-                        "déclaration.indicateurs.augmentations.objectif_de_progression"
-                    ),
+                    data.path("indicateurs.augmentations.objectif_de_progression"),
                 ),
                 (
                     "Objectif Indicateur écart de taux de promotions",
-                    data.path(
-                        "déclaration.indicateurs.promotions.objectif_de_progression"
-                    ),
+                    data.path("indicateurs.promotions.objectif_de_progression"),
                 ),
                 (
                     "Objectif Indicateur écart de taux d'augmentations individuelles",
                     data.path(
-                        "déclaration.indicateurs.augmentations_et_promotions.objectif_de_progression"
+                        "indicateurs.augmentations_et_promotions.objectif_de_progression"
                     ),
                 ),
                 (
                     "Objectif Indicateur retour de congé maternité",
-                    data.path(
-                        "déclaration.indicateurs.congés_maternité.objectif_de_progression"
-                    ),
+                    data.path("indicateurs.congés_maternité.objectif_de_progression"),
                 ),
                 (
                     "Objectif Indicateur dix plus hautes rémunérations",
                     data.path(
-                        "déclaration.indicateurs.hautes_rémunérations.objectif_de_progression"
+                        "indicateurs.hautes_rémunérations.objectif_de_progression"
                     ),
                 ),
                 (
