@@ -198,10 +198,22 @@ async def resend_receipt(request, response, siren, year):
     data = record.data
     url = request.domain + data.uri
     emails.success.send(owners, url=url, **data)
+    response.status = 204
 
-    if request["objectifs-mesures"]:
-        emails.objectives.send(owners, **data)
 
+@app.route("/declaration/{siren}/{year}/objectifs-receipt", methods=["POST"])
+@tokens.require
+@ensure_owner
+async def resend_objectifs_receipt(request, response, siren, year):
+    try:
+        record = await db.declaration.get(siren, year)
+    except db.NoData:
+        raise HttpError(404, f"No declaration with siren {siren} and year {year}")
+    owners = await db.ownership.emails(siren)
+    if not owners:  # Staff member
+        owners = request["email"]
+    data = record.data
+    emails.objectives.send(owners, **data)
     response.status = 204
 
 
