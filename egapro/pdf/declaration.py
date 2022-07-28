@@ -327,9 +327,7 @@ def main(data):
                 ),
                 (
                     "Modalités de communication auprès des salariés",
-                    as_date(
-                        data.path("déclaration.publication.modalités_objectifs_mesures")
-                    ),
+                    data.path("déclaration.publication.modalités_objectifs_mesures")
                 ),
             )
         elif index < 75:
