@@ -287,96 +287,118 @@ def main(data):
 
     index = data.path("déclaration.index")
     date_pub_objectifs = data.path("déclaration.publication.date_publication_objectifs")
+    effectif_tranche = data.path("entreprise.effectif.tranche")
+    cells_title = "Objectifs de progression"
+
+    indicateur2_cell, indicateur3_cell = (
+        ("Objectif Indicateur écart de taux d'augmentations individuelles", ""),
+        (
+            "",
+            data.path("indicateurs.augmentations.objectif_de_progression"),
+        ),
+    ), (
+        ("Objectif Indicateur écart de taux de promotions", ""),
+        (
+            "",
+            data.path("indicateurs.promotions.objectif_de_progression"),
+        ),
+    ) if effectif_tranche != "50:250" else (
+        ((None, None), (None, None)),
+        ((None, None), (None, None)),
+    )
+
+    indicateur2et3_cell = (
+        (
+            ("Objectif Indicateur écart de taux d'augmentations individuelles", ""),
+            (
+                "",
+                data.path(
+                    "indicateurs.augmentations_et_promotions.objectif_de_progression"
+                ),
+            ),
+        )
+        if effectif_tranche == "50:250"
+        else ((None, None), (None, None))
+    )
 
     if index is not None and date_pub_objectifs is not None:
         if 75 <= index < 85:
+
             cells = (
+                ("Objectif Indicateur écart de rémunération", ""),
+                ("", data.path("indicateurs.rémunérations.objectif_de_progression")),
+                *indicateur2_cell,
+                *indicateur3_cell,
+                *indicateur2et3_cell,
+                ("Objectif Indicateur retour de congé maternité", ""),
                 (
-                    "Objectif Indicateur écart de rémunération",
-                    data.path("indicateurs.rémunérations.objectif_de_progression"),
-                ),
-                (
-                    "Objectif Indicateur écart de taux d'augmentations individuelles",
-                    data.path("indicateurs.augmentations.objectif_de_progression"),
-                ),
-                (
-                    "Objectif Indicateur écart de taux de promotions",
-                    data.path("indicateurs.promotions.objectif_de_progression"),
-                ),
-                (
-                    "Objectif Indicateur écart de taux d'augmentations individuelles",
-                    data.path(
-                        "indicateurs.augmentations_et_promotions.objectif_de_progression"
-                    ),
-                ),
-                (
-                    "Objectif Indicateur retour de congé maternité",
+                    "",
                     data.path("indicateurs.congés_maternité.objectif_de_progression"),
                 ),
+                ("Objectif Indicateur dix plus hautes rémunérations", ""),
                 (
-                    "Objectif Indicateur dix plus hautes rémunérations",
+                    "",
                     data.path(
                         "indicateurs.hautes_rémunérations.objectif_de_progression"
                     ),
                 ),
+                ("Date de publication des objectifs", ""),
                 (
-                    "Date de publication des objectifs",
+                    "",
                     as_date(
                         data.path("déclaration.publication.date_publication_objectifs")
                     ),
                 ),
+                ("Modalités de communication auprès des salariés", ""),
                 (
-                    "Modalités de communication auprès des salariés",
-                    data.path("déclaration.publication.modalités_objectifs_mesures")
+                    "",
+                    data.path("déclaration.publication.modalités_objectifs_mesures"),
                 ),
             )
         elif index < 75:
+            cells_title = "Objectifs de progression et mesures de correction"
+
             cells = (
+                ("Objectif Indicateur écart de rémunération", ""),
                 (
-                    "Objectif Indicateur écart de rémunération",
+                    "",
                     data.path("indicateurs.rémunérations.objectif_de_progression"),
                 ),
+                *indicateur2_cell,
+                *indicateur3_cell,
+                *indicateur2et3_cell,
+                ("Objectif Indicateur retour de congé maternité", ""),
                 (
-                    "Objectif Indicateur écart de taux d'augmentations individuelles",
-                    data.path("indicateurs.augmentations.objectif_de_progression"),
-                ),
-                (
-                    "Objectif Indicateur écart de taux de promotions",
-                    data.path("indicateurs.promotions.objectif_de_progression"),
-                ),
-                (
-                    "Objectif Indicateur écart de taux d'augmentations individuelles",
-                    data.path(
-                        "indicateurs.augmentations_et_promotions.objectif_de_progression"
-                    ),
-                ),
-                (
-                    "Objectif Indicateur retour de congé maternité",
+                    "",
                     data.path("indicateurs.congés_maternité.objectif_de_progression"),
                 ),
+                ("Objectif Indicateur dix plus hautes rémunérations", ""),
                 (
-                    "Objectif Indicateur dix plus hautes rémunérations",
+                    "",
                     data.path(
                         "indicateurs.hautes_rémunérations.objectif_de_progression"
                     ),
                 ),
+                ("Date de publication des objectifs de progression", ""),
                 (
-                    "Date de publication des objectifs de progression",
+                    "",
                     as_date(
                         data.path("déclaration.publication.date_publication_objectifs")
                     ),
                 ),
+                ("Date de publication des mesures de correction", ""),
                 (
-                    "Date de publication des mesures de correction",
+                    "",
                     as_date(
                         data.path("déclaration.publication.date_publication_mesures")
                     ),
                 ),
+                ("Modalités de communication auprès des salariés", ""),
                 (
-                    "Modalités de communication auprès des salariés",
+                    "",
                     data.path("déclaration.publication.modalités_objectifs_mesures"),
                 ),
             )
-        pdf.write_table("Objectifs de progression", cells)
+        pdf.write_table(cells_title, cells)
 
     return pdf, f"declaration_{data.siren}_{data.year + 1}.pdf"

@@ -39,10 +39,15 @@ class PDF(fpdf.FPDF):
         self.ln(20)
 
     def write_pair(self, key, value, height, key_width, value_width):
-        self.set_font("Marianne", "B", 11)
-        self.multi_cell(key_width, height, key, ln=3, align="L", max_line_height=5)
+        if key != " ":
+            self.set_font("Marianne", "B", 11)
+            self.multi_cell(key_width, height, key, ln=3, align="L", max_line_height=5)
+
+        align = "R" if key != " " else "L"
         self.set_font("Marianne", "", 11)
-        self.multi_cell(value_width, height, value, ln=3, align="R", max_line_height=5)
+        self.multi_cell(
+            value_width, height, value, ln=3, align=align, max_line_height=5
+        )
         self.ln(height)
 
     def write_headline(self, value):
@@ -58,6 +63,10 @@ class PDF(fpdf.FPDF):
         # 80 chars per line; each line is 10 height.
         h = (len(title) / 80 + 1) * 10
         table = []
+
+        # filter empty cells of NoneType value
+        cells = (c for c in cells if c != (None, None))
+
         for key, value in cells:
             key, value = self.normalize_pair(key, value)
             height, key_width, value_width = self.compute_row_height(key, value)
