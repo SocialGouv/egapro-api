@@ -164,6 +164,7 @@ async def declare(request, response, siren, year):
 @app.route("/declarations/{siren}", methods=["GET"])
 async def get_declarations(request, response, siren):
     declarations = []
+    limit = request.query.int("limit", 10)
 
     for year in constants.YEARS:
         try:
@@ -175,6 +176,8 @@ async def get_declarations(request, response, siren):
             declarations.append(resource)
         except:
             pass
+        if len(declarations) == limit:
+            break
 
     if not declarations:
         raise HttpError(404, f"No declarations with siren {siren} for any year")
