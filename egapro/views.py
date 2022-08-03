@@ -160,6 +160,27 @@ async def declare(request, response, siren, year):
             emails.success.send(owners, url=url, **data)
 
 
+@tokens.require
+@app.route("/declarations/{siren}", methods=["GET"])
+async def get_declarations(request, response, siren):
+    declarations = []
+
+    for year in constants.YEARS:
+        try:
+            record = await db.declaration.get(siren, year)
+
+            resource = record.as_resource()
+            if record.data.path("déclarant.nom"):
+                await helpers.patch_from_recherche_entreprises(resource["data"])
+            declarations.append(resource)
+        except:
+            pass
+
+    if not declarations:
+        raise HttpError(404, f"No declarations with siren {siren} for any year")
+    response.json = declarations
+
+
 @app.route("/declaration/{siren}/{year}", methods=["GET"])
 @tokens.require
 @ensure_owner
