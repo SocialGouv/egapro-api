@@ -268,7 +268,8 @@ BIG_COMPANY = models.Data(
 
 
 def test_success_email_with_small_company():
-    txt, html = emails.success(url=SMALL_COMPANY.uri, **SMALL_COMPANY)
+    print(emails.success(url=SMALL_COMPANY.uri, **SMALL_COMPANY))
+    txt, html, subject = emails.success(url=SMALL_COMPANY.uri, **SMALL_COMPANY)
     # fmt: off
     assert html == """<html>
   <body>
@@ -313,13 +314,13 @@ Les services de l’administration du travail."""
 
 
 def test_success_email_with_small_company_non_calculable_index():
-    txt, html = emails.success(url=SMALL_COMPANY_NC.uri, **SMALL_COMPANY_NC)
+    txt, html, subject = emails.success(url=SMALL_COMPANY_NC.uri, **SMALL_COMPANY_NC)
     assert "Vous avez déclaré un index global non calculable," in html
     assert "Vous avez déclaré un index global non calculable," in txt
 
 
 def test_success_email_with_big_company():
-    txt, html = emails.success(url=BIG_COMPANY.uri, **BIG_COMPANY)
+    txt, html, subject = emails.success(url=BIG_COMPANY.uri, **BIG_COMPANY)
     assert "Indicateur écart de taux d'augmentation : 20" in html
     assert "Indicateur écart de taux de promotion : 15" in html
     assert "Indicateur écart de taux d'augmentations individuelles" not in html
