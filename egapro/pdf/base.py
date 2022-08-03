@@ -65,7 +65,7 @@ class PDF(fpdf.FPDF):
         table = []
 
         # filter empty cells of NoneType value
-        cells = (c for c in cells if any(c))
+        cells = (c for c in cells if c != (None, None))
 
         for key, value in cells:
             key, value = self.normalize_pair(key, value)
