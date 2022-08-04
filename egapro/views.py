@@ -165,8 +165,9 @@ async def declare(request, response, siren, year):
 async def get_declarations(request, response, siren):
     declarations = []
     limit = request.query.int("limit", 10)
+    years = sorted(constants.YEARS, reverse=True)
 
-    for year in constants.YEARS:
+    for year in years:
         try:
             record = await db.declaration.get(siren, year)
 
